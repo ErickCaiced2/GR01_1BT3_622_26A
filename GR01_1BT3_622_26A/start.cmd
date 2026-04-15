@@ -1,5 +1,5 @@
 @echo off
-REM Script para iniciar el proyecto - Windows
+cd /d "%~dp0"
 
 echo.
 echo ========================================
@@ -7,34 +7,53 @@ echo   Sistema de Adopciones
 echo ========================================
 echo.
 
-REM Verificar si Docker está instalado
+REM Verificar Docker
 docker --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
     echo WARNING: Docker no está instalado o no está en el PATH
-    echo Por favor, instálalo desde: https://www.docker.com/products/docker-desktop
+    echo Instalar desde: https://www.docker.com/products/docker-desktop
     echo.
+    pause
+    exit /b
 )
 
-REM Iniciar Docker Compose
+REM Iniciar Docker
 echo Iniciando contenedores de Docker...
-docker-compose up -d
+docker compose -f compose.yaml up -d
+
+if %errorlevel% neq 0 (
+    echo ERROR al iniciar Docker
+    pause
+    exit /b
+)
 
 echo.
-echo Esperando a que MySQL esté listo...
-timeout /t 10
+echo Esperando a MySQL...
+timeout /t 10 >nul
 
-REM Compilar el proyecto
-echo.
-echo Compilando el proyecto...
-call mvn clean install
+REM Crear carpeta faltante
+if not exist src\main\resources\graphql-client (
+    echo Creando carpeta graphql-client...
+    mkdir src\main\resources\graphql-client
+)
 
-REM Ejecutar la aplicación
+REM Compilar
 echo.
-echo Ejecutando la aplicación...
-call mvn spring-boot:run
+echo Compilando proyecto...
+call mvnw.cmd clean install
+
+if %errorlevel% neq 0 (
+    echo ERROR en compilacion
+    pause
+    exit /b
+)
+
+REM Ejecutar
+echo.
+echo Ejecutando aplicacion...
+call mvnw.cmd spring-boot:run
 
 echo.
-echo Sistema de Adopciones iniciado en http://localhost:8080
+echo Sistema en http://localhost:8080
 pause
-
