@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -216,20 +217,20 @@ public class MascotaController {
         mascotaService.agregarFoto(mascotaId, foto);
     }
 
-    private static String guardarArchivo(MultipartFile file) {
-        // Crear directorio si no existe
-        Path uploadPath = Paths.get(UPLOAD_DIR);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
+     private static String guardarArchivo(MultipartFile file) throws IOException {
+         // Crear directorio si no existe
+         Path uploadPath = Paths.get(UPLOAD_DIR);
+         if (!Files.exists(uploadPath)) {
+             Files.createDirectories(uploadPath);
+         }
 
-        // Generar nombre único para el archivo
-        String nombreArchivo = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        Path rutaArchivo = uploadPath.resolve(nombreArchivo);
+         // Generar nombre único para el archivo
+         String nombreArchivo = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+         Path rutaArchivo = uploadPath.resolve(nombreArchivo);
 
-        // Guardar archivo
-        Files.write(rutaArchivo, file.getBytes());
-        return nombreArchivo;
-    }
+         // Guardar archivo
+         Files.write(rutaArchivo, file.getBytes());
+         return nombreArchivo;
+     }
 }
 

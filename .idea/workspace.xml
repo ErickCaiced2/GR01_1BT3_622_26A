@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="972b83d4-74e5-4b04-bff4-368c3752a1fd" name="Changes" comment="Integracion de BDD mysql">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/SistemaDeAdopciones.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dbnavigator.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/GR01_1BT3_622_26A/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/GR01_1BT3_622_26A/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/GR01_1BT3_622_26A/src/main/java/com/example/gr01_1bt3_622_26a/controller/MascotaController.java" beforeDir="false" afterPath="$PROJECT_DIR$/GR01_1BT3_622_26A/src/main/java/com/example/gr01_1bt3_622_26a/controller/MascotaController.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_C:/Users/ERICK CAICEDO/IdeaProjects/SistemaDeAdopciones" value="3CHcsRX4uPY4eDtsTjtOkF0y3I4" />
+    </persistenceIdMap>
+  </component>
+  <component name="CopilotUserSelectedChatMode">
+    <option name="chatModeId" value="Agent" />
+  </component>
+  <component name="CopilotUserSelectedModel">
+    <selectedModels>
+      <entry key="chat-panel" value="Claude Haiku 4.5" />
+      <entry key="agent-panel" value="Claude Haiku 4.5" />
+    </selectedModels>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;ErickCaiced2&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/ErickCaiced2/SistemaDeAdopciones&quot;,
+    &quot;accountId&quot;: &quot;ade1ca1c-18ef-43bc-97f6-30a1b308be9e&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3CHcsRX4uPY4eDtsTjtOkF0y3I4" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.poratu.idea.plugins.tomcat.setting.TomcatServersConfigurable"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="972b83d4-74e5-4b04-bff4-368c3752a1fd" name="Changes" comment="" />
+      <created>1776046141694</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1776046141694</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Integracion de incrementos 1 y 2 Sistema de Adopciones">
+      <option name="closed" value="true" />
+      <created>1776050539122</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1776050539122</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Integracion de incrementos 1 y 2 Sistema de Adopciones (Cambio en Solicitantes)">
+      <option name="closed" value="true" />
+      <created>1776051379107</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1776051379107</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Integracion de incrementos 1 y 2 Sistema de Adopciones (Cambio en Solicitantes)">
+      <option name="closed" value="true" />
+      <created>1776051898250</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1776051898250</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Integracion de incrementos 1 y 2 Sistema de Adopciones (Cambio en Solicitantes)">
+      <option name="closed" value="true" />
+      <created>1776051945768</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1776051945768</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Integracion de incrementos 1 y 2 Sistema de Adopciones (Cambio en Solicitantes)">
+      <option name="closed" value="true" />
+      <created>1776052271800</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1776052271800</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Integracion de incrementos 1 y 2 Sistema de Adopciones (Cambio en Solicitantes)">
+      <option name="closed" value="true" />
+      <created>1776052329178</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1776052329178</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Integracion de BDD mysql">
+      <option name="closed" value="true" />
+      <created>1776266337512</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1776266337512</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Integracion de BDD mysql">
+      <option name="closed" value="true" />
+      <created>1776266377810</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1776266377810</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Integracion de incrementos 1 y 2 Sistema de Adopciones" />
+    <MESSAGE value="Integracion de incrementos 1 y 2 Sistema de Adopciones (Cambio en Solicitantes)" />
+    <MESSAGE value="Integracion de BDD mysql" />
+    <option name="LAST_COMMIT_MESSAGE" value="Integracion de BDD mysql" />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>
