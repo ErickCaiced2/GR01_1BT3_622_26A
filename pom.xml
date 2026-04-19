@@ -131,6 +131,7 @@
 
     <build>
         <plugins>
+            <!-- GraphQL Code Generation Plugin - Disabled for now
             <plugin>
                 <groupId>io.github.deweyjose</groupId>
                 <artifactId>graphqlcodegen-maven-plugin</artifactId>
@@ -152,6 +153,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
