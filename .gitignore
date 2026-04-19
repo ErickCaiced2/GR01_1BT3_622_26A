@@ -31,3 +31,27 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Environment ###
+.env
+.env.local
+.env.*.local
+
+### Project Documentation ###
+CAMBIOS.md
+CONTRIBUTING.md
+DOCUMENTACION.md
+IMPLEMENTACION_COMPLETA.md
+
+### Configuration Files ###
+.gitattributes
+*.vpp
+
+### Build/Compose ###
+compose.yaml
+start.cmd
+start.sh
+
+### SmartTomcat ###
+.smarttomcat/
+
