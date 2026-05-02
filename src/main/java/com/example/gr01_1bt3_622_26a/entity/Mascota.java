@@ -58,8 +58,16 @@ public class Mascota {
     
     @Column(name = "peso_kg")
     private Double pesoKg;
-    
-    // Relación con fotos
+
+    /**
+     * Diagnósticos médicos previos de la mascota.
+     * Campo opcional: una mascota puede no tener historial médico registrado.
+     */
+    @Size(max = 500, message = "Los diagnósticos previos no deben exceder 500 caracteres")
+    @Column(name = "diagnosticos_previos", length = 500, nullable = true)
+    private String diagnosticosPrevios;
+
+    // ...existing code...
     @OneToMany(mappedBy = "mascota", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Foto> fotos;
     

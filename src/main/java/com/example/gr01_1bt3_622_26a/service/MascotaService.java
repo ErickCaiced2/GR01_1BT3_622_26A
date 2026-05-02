@@ -168,6 +168,69 @@ public class MascotaService {
     }
 
     /**
+     * Obtener datos de mascota (alias para obtenerMascotaPorId)
+     *
+     * Método de conveniencia para obtener los datos completos de una mascota.
+     * Útil para consultar el detalle de una mascota específica antes de visualizarla.
+     *
+     * Comportamiento:
+     * - Retorna Optional con la mascota si existe
+     * - Retorna Optional vacío si no existe (útil para Escenario 4 de HU)
+     * - Registra en logs todas las consultas para auditoría
+     * - Valida que el ID sea positivo
+     *
+     * @param mascotaId ID de la mascota a recuperar (debe ser positivo)
+     * @return Optional<Mascota> con los datos de la mascota o vacío si no existe
+     * @throws IllegalArgumentException si mascotaId es null o menor o igual a 0
+     */
+    public Optional<Mascota> obtenerDatosMascota(Long mascotaId) {
+        if (mascotaId == null || mascotaId <= 0) {
+            log.warn("Intento de obtener mascota con ID inválido: {}", mascotaId);
+            throw new IllegalArgumentException("El ID de la mascota debe ser un número positivo");
+        }
+        log.info("Obteniendo datos de mascota con ID: {}", mascotaId);
+        Optional<Mascota> mascota = obtenerMascotaPorId(mascotaId);
+        if (mascota.isPresent()) {
+            log.debug("Mascota encontrada: {}", mascota.get().getNombre());
+        } else {
+            log.debug("Mascota no encontrada con ID: {}", mascotaId);
+        }
+        return mascota;
+    }
+
+    /**
+     * Obtener fotos de mascota (alias para obtenerFotosDeMascota)
+     *
+     * Método de conveniencia para obtener todas las fotos asociadas a una mascota.
+     * Garantiza retornar una lista nunca nula, facilitando el procesamiento en vistas.
+     *
+     * Comportamiento:
+     * - Retorna lista con todas las fotos de la mascota
+     * - Retorna lista vacía si no hay fotos (nunca null)
+     * - Registra en logs cantidad de fotos recuperadas
+     * - Valida que el ID sea positivo
+     *
+     * Contrato garantizado: La lista nunca será null, permitiendo:
+     * - Iteración segura sin verificar null
+     * - Uso directo en templates JSP con forEach
+     * - Operaciones stream sin NullPointerException
+     *
+     * @param mascotaId ID de la mascota (debe ser positivo)
+     * @return List<Foto> nunca nula, vacía si no hay fotos
+     * @throws IllegalArgumentException si mascotaId es null o menor o igual a 0
+     */
+    public List<Foto> obtenerFotosMascota(Long mascotaId) {
+        if (mascotaId == null || mascotaId <= 0) {
+            log.warn("Intento de obtener fotos con ID de mascota inválido: {}", mascotaId);
+            throw new IllegalArgumentException("El ID de la mascota debe ser un número positivo");
+        }
+        log.info("Obteniendo fotos de mascota con ID: {}", mascotaId);
+        List<Foto> fotos = obtenerFotosDeMascota(mascotaId);
+        log.debug("Se encontraron {} fotos para la mascota con ID: {}", fotos.size(), mascotaId);
+        return fotos;
+    }
+
+    /**
      * Obtener estadísticas generales
      */
     public java.util.Map<String, Long> obtenerEstadisticas() {
