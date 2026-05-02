@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe -Command \"Stop-Process -Id 24600 -Force; Write-Host 'Proceso 24600 \\(java\\) terminado'\")"
+    ]
+  }
+}
