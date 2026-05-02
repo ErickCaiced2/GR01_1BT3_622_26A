@@ -16,5 +16,18 @@ services:
       timeout: 20s
       retries: 10
 
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    ports:
+      - '8080:8080'
+      - '50000:50000'
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    depends_on:
+      mysql:
+        condition: service_healthy
+
 volumes:
   mysql_data:
+  jenkins_home:
