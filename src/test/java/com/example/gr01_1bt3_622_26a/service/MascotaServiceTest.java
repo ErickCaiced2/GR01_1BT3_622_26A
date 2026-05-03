@@ -162,4 +162,67 @@ public class MascotaServiceTest {
         verify(fotoRepository, times(1))
                 .findByMascotaId(ID_MASCOTA_1);
     }
+
+    @Test
+    @DisplayName("🔴 RED - obtenerFotosMascota retorna lista vacía si el repositorio devuelve null")
+    void red_obtenerFotosMascota_retornaListaVacia_siRepositorioDevuelveNull() {
+        // ARRANGE
+        when(fotoRepository.findByMascotaId(ID_MASCOTA_1))
+                .thenReturn(null);
+
+        // ACT
+        List<Foto> resultado = mascotaService.obtenerFotosMascota(ID_MASCOTA_1);
+
+        // ASSERT
+        assertThat(resultado)
+                .isNotNull()
+                .isEmpty();
+
+        verify(fotoRepository, times(1))
+                .findByMascotaId(ID_MASCOTA_1);
+    }
+
+    @Test
+    @DisplayName("GREEN - obtenerMascotasRelacionadas retorna solo disponibles del mismo tipo")
+    void green_obtenerMascotasRelacionadas_filtraPorTipoEstadoYExclusion() {
+        Mascota relacionadaDisponible = new Mascota();
+        relacionadaDisponible.setId(3L);
+        relacionadaDisponible.setNombre("Rocky");
+        relacionadaDisponible.setTipo("Perro");
+        relacionadaDisponible.setEstado("Disponible");
+
+        Mascota relacionadaAdoptada = new Mascota();
+        relacionadaAdoptada.setId(4L);
+        relacionadaAdoptada.setNombre("Max");
+        relacionadaAdoptada.setTipo("Perro");
+        relacionadaAdoptada.setEstado("Adoptado");
+
+        when(mascotaRepository.findById(ID_MASCOTA_1))
+                .thenReturn(Optional.of(mascota1));
+        when(mascotaRepository.findByTipo("Perro"))
+                .thenReturn(Arrays.asList(mascota1, relacionadaDisponible, relacionadaAdoptada));
+
+        List<Mascota> resultado = mascotaService.obtenerMascotasRelacionadas(ID_MASCOTA_1, 3);
+
+        assertThat(resultado)
+                .hasSize(1)
+                .containsExactly(relacionadaDisponible);
+
+        verify(mascotaRepository).findById(ID_MASCOTA_1);
+        verify(mascotaRepository).findByTipo("Perro");
+    }
+
+    @Test
+    @DisplayName("GREEN - obtenerMascotasRelacionadas retorna vacia si mascota base no existe")
+    void green_obtenerMascotasRelacionadas_retornaVacia_siMascotaBaseNoExiste() {
+        when(mascotaRepository.findById(99L))
+                .thenReturn(Optional.empty());
+
+        List<Mascota> resultado = mascotaService.obtenerMascotasRelacionadas(99L, 3);
+
+        assertThat(resultado).isEmpty();
+
+        verify(mascotaRepository).findById(99L);
+        verify(mascotaRepository, never()).findByTipo(anyString());
+    }
 }

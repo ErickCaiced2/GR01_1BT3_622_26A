@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -225,9 +226,35 @@ public class MascotaService {
             throw new IllegalArgumentException("El ID de la mascota debe ser un número positivo");
         }
         log.info("Obteniendo fotos de mascota con ID: {}", mascotaId);
-        List<Foto> fotos = obtenerFotosDeMascota(mascotaId);
+        List<Foto> fotos = Optional.ofNullable(obtenerFotosDeMascota(mascotaId))
+                .orElse(Collections.emptyList());
         log.debug("Se encontraron {} fotos para la mascota con ID: {}", fotos.size(), mascotaId);
         return fotos;
+    }
+
+    /**
+     * Obtener mascotas relacionadas para enriquecer la vista de detalle.
+     *
+     * Criterio inicial: mismo tipo, estado disponible, excluyendo la mascota actual.
+     */
+    public List<Mascota> obtenerMascotasRelacionadas(Long mascotaId, int limite) {
+        if (limite <= 0) {
+            return Collections.emptyList();
+        }
+
+        Optional<Mascota> mascotaActual = obtenerDatosMascota(mascotaId);
+        if (mascotaActual.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Mascota> candidatas = Optional.ofNullable(obtenerPorTipo(mascotaActual.get().getTipo()))
+                .orElse(Collections.emptyList());
+
+        return candidatas.stream()
+                .filter(mascota -> mascota.getId() != null && !mascota.getId().equals(mascotaId))
+                .filter(mascota -> "Disponible".equalsIgnoreCase(mascota.getEstado()))
+                .limit(limite)
+                .toList();
     }
 
     /**

@@ -11,6 +11,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -27,6 +28,8 @@ import java.util.List;
 public class MascotaController {
 
     private static final String UPLOAD_DIR = "uploads/fotos/";
+    private static final String MENSAJE_ERROR_DETALLE = "No fue posible cargar la información de la mascota";
+    private static final int LIMITE_MASCOTAS_RELACIONADAS = 3;
 
     @Autowired
     private MascotaService mascotaService;
@@ -95,17 +98,33 @@ public class MascotaController {
      * Mostrar detalle de mascota
      */
     @GetMapping("/detalle/{id}")
-    public String mostrarDetalleMascota(@PathVariable Long id, Model model) {
+    public String mostrarDetalleMascota(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         log.info("Mostrando detalle de mascota con ID: {}", id);
 
-        Mascota mascota = mascotaService.obtenerMascotaPorId(id)
-            .orElseThrow(() -> new RuntimeException("Mascota no encontrada con ID: " + id));
+        try {
+            return mascotaService.obtenerDatosMascota(id)
+                    .map(mascota -> {
+                        List<Foto> fotos = mascotaService.obtenerFotosMascota(id);
+                        List<Mascota> relacionadas = mascotaService.obtenerMascotasRelacionadas(id, LIMITE_MASCOTAS_RELACIONADAS);
+                        cargarDetalleMascota(model, mascota, fotos, relacionadas);
+                        return "mascotas/detalleMascota";
+                    })
+                    .orElseGet(() -> redirigirAListaDisponiblesConError(redirectAttributes));
+        } catch (Exception e) {
+            log.error("No fue posible cargar el detalle de la mascota con ID: {}", id, e);
+            return redirigirAListaDisponiblesConError(redirectAttributes);
+        }
+    }
 
-        List<Foto> fotos = mascotaService.obtenerFotosDeMascota(id);
-
+    private void cargarDetalleMascota(Model model, Mascota mascota, List<Foto> fotos, List<Mascota> relacionadas) {
         model.addAttribute("mascota", mascota);
         model.addAttribute("fotos", fotos);
-        return "mascotas/detalleMascota";
+        model.addAttribute("mascotasRelacionadas", relacionadas != null ? relacionadas : List.of());
+    }
+
+    private String redirigirAListaDisponiblesConError(RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("error", MENSAJE_ERROR_DETALLE);
+        return "redirect:/mascotas/disponibles";
     }
 
     /**

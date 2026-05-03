@@ -105,6 +105,25 @@
                         </a>
                     </c:if>
                 </div>
+
+                <c:if test="${not empty mascotasRelacionadas}">
+                    <div class="info-section mt-3">
+                        <h5><i class="fas fa-paw"></i> Tambien te puede interesar</h5>
+                        <div class="row">
+                            <c:forEach var="relacionada" items="${mascotasRelacionadas}">
+                                <div class="col-md-6 mb-2">
+                                    <div class="border rounded p-2 d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>${relacionada.nombre}</strong>
+                                            <div class="text-muted small">${relacionada.tipo} - ${relacionada.raza}</div>
+                                        </div>
+                                        <a href="/mascotas/detalle/${relacionada.id}" class="btn btn-sm btn-outline-primary">Ver</a>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </div>
+                </c:if>
             </div>
         </div>
     </div>
