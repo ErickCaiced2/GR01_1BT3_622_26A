@@ -16,6 +16,21 @@ services:
       timeout: 20s
       retries: 10
 
+  adopciones-app:
+    image: adopciones-sistema:latest
+    container_name: adopciones-app
+    ports:
+      - '8090:8090'
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:mysql://adopciones-mysql:3306/adopciones_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SERVER_PORT: 8090
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: on-failure
+
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins
