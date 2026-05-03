@@ -41,7 +41,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 
 # Variables de entorno por defecto para conectar a MySQL
 # Estas pueden ser sobrescritas al ejecutar el contenedor
-ENV SPRING_DATASOURCE_URL=jdbc:mysql://adopciones-mysql:3306/adopciones_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+ENV SPRING_DATASOURCE_URL="jdbc:mysql://adopciones-mysql:3306/adopciones_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
 ENV SPRING_DATASOURCE_USERNAME=myuser
 ENV SPRING_DATASOURCE_PASSWORD=secret
 ENV SERVER_PORT=8090
