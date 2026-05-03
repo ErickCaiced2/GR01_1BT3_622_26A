@@ -24,10 +24,10 @@ RUN useradd -m -u 1000 appuser
 WORKDIR /app
 
 # Copiar el JAR generado por Maven (compilado por Jenkins)
-COPY target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.jar app.jar
+COPY target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war app.war
 
 # Cambiar propietario del JAR al usuario appuser
-RUN chown appuser:appuser app.jar
+RUN chown appuser:appuser app.war
 
 # Cambiar al usuario no-root
 USER appuser
@@ -48,7 +48,7 @@ ENV SERVER_PORT=8090
 
 # Comando que se ejecuta al arrancar el contenedor
 # Spring Boot genera un JAR ejecutable con el main manifest
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.war"]
 
 # Parámetros por defecto (pueden ser sobrescritos)
 CMD ["--spring.profiles.active=prod"]
