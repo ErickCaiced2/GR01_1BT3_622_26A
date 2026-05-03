@@ -299,6 +299,12 @@
                         </div>
                     </c:if>
 
+                    <!-- Diagnósticos Previos -->
+                    <div class="description">
+                        <h5><i class="fas fa-stethoscope"></i> Diagnósticos Previos</h5>
+                        <p>${mascota.diagnosticosPrevios != null && mascota.diagnosticosPrevios.trim().length() > 0 ? mascota.diagnosticosPrevios : 'Sin diagnósticos previos'}</p>
+                    </div>
+
                     <!-- Fecha de Registro -->
                     <div class="info-item">
                         <div class="info-label"><i class="fas fa-calendar"></i> Fecha de Registro</div>
