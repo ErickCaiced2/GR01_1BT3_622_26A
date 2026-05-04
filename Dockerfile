@@ -26,6 +26,11 @@ WORKDIR /app
 # Copiar el JAR generado por Maven (compilado por Jenkins)
 COPY target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war app.war
 
+# Instalar curl COMO ROOT (antes de cambiar usuario)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
 # Cambiar propietario del JAR al usuario appuser
 RUN chown appuser:appuser app.war
 
@@ -52,4 +57,3 @@ ENTRYPOINT ["java", "-jar", "app.war"]
 
 # Parámetros por defecto (pueden ser sobrescritos)
 CMD ["--spring.profiles.active=prod"]
-
