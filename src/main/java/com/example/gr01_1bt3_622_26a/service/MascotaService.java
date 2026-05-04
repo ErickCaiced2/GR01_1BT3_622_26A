@@ -185,10 +185,7 @@ public class MascotaService {
      * @throws IllegalArgumentException si mascotaId es null o menor o igual a 0
      */
     public Optional<Mascota> obtenerDatosMascota(Long mascotaId) {
-        if (mascotaId == null || mascotaId <= 0) {
-            log.warn("Intento de obtener mascota con ID inválido: {}", mascotaId);
-            throw new IllegalArgumentException("El ID de la mascota debe ser un número positivo");
-        }
+        validarIdPositivo(mascotaId, "mascota");
         log.info("Obteniendo datos de mascota con ID: {}", mascotaId);
         Optional<Mascota> mascota = obtenerMascotaPorId(mascotaId);
         if (mascota.isPresent()) {
@@ -221,15 +218,19 @@ public class MascotaService {
      * @throws IllegalArgumentException si mascotaId es null o menor o igual a 0
      */
     public List<Foto> obtenerFotosMascota(Long mascotaId) {
-        if (mascotaId == null || mascotaId <= 0) {
-            log.warn("Intento de obtener fotos con ID de mascota inválido: {}", mascotaId);
-            throw new IllegalArgumentException("El ID de la mascota debe ser un número positivo");
-        }
+        validarIdPositivo(mascotaId, "fotos");
         log.info("Obteniendo fotos de mascota con ID: {}", mascotaId);
         List<Foto> fotos = Optional.ofNullable(obtenerFotosDeMascota(mascotaId))
                 .orElse(Collections.emptyList());
         log.debug("Se encontraron {} fotos para la mascota con ID: {}", fotos.size(), mascotaId);
         return fotos;
+    }
+
+    private void validarIdPositivo(Long id, String contexto) {
+        if (id == null || id <= 0) {
+            log.warn("Intento de obtener {} con ID inválido: {}", contexto, id);
+            throw new IllegalArgumentException("El ID de la mascota debe ser un número positivo");
+        }
     }
 
     /**
