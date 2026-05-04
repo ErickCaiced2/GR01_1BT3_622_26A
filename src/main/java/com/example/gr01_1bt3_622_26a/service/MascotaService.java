@@ -257,7 +257,7 @@ public class MascotaService {
 
         return candidatas.stream()
                 .filter(mascota -> mascota.getId() != null && !mascota.getId().equals(mascotaId))
-                .filter(mascota -> "Disponible".equalsIgnoreCase(mascota.getEstado()))
+                .filter(mascota -> mascota.esDisponible())
                 .limit(limite)
                 .toList();
     }
