@@ -222,8 +222,10 @@ public class MascotaService {
     public List<Foto> obtenerFotosMascota(Long mascotaId) {
         validarIdPositivo(mascotaId, "fotos");
         log.info("Obteniendo fotos de mascota con ID: {}", mascotaId);
-        List<Foto> fotos = Optional.ofNullable(obtenerFotosDeMascota(mascotaId))
-                .orElse(Collections.emptyList());
+        List<Foto> fotos = fotoRepository.findByMascotaId(mascotaId);
+        if (fotos == null) {
+            fotos = Collections.emptyList();
+        }
         log.debug("Se encontraron {} fotos para la mascota con ID: {}", fotos.size(), mascotaId);
         return fotos;
     }
@@ -251,8 +253,7 @@ public class MascotaService {
             return Collections.emptyList();
         }
 
-        List<Mascota> candidatas = Optional.ofNullable(obtenerPorTipo(mascotaActual.get().getTipo()))
-                .orElse(Collections.emptyList());
+        List<Mascota> candidatas = mascotaRepository.findByTipo(mascotaActual.get().getTipo());
 
         return candidatas.stream()
                 .filter(mascota -> mascota.getId() != null && !mascota.getId().equals(mascotaId))
