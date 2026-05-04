@@ -1,13 +1,20 @@
-# Guía de configuración del entorno — Sistema de Adopciones
+# Guía de Configuración del Entorno - Sistema de Adopciones de Mascotas
 
-## Requisitos previos
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo
-- Git
+> **Versión actualizada:** 2026-05-03  
+> **Estado:** ✅ Completamente funcional con Docker + Jenkins + MySQL
 
 ---
 
-## 1. Clonar el repositorio
+## 📋 Requisitos Previos
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y ejecutándose
+- Git
+- PowerShell (Windows) o Bash (Linux/Mac)
+- ~5 GB de espacio en disco
+
+---
+
+## 1️⃣ Clonar el Repositorio
 
 ```bash
 git clone https://github.com/ErickCaiced2/GR01_1BT3_622_26A.git
@@ -16,17 +23,20 @@ cd GR01_1BT3_622_26A
 
 ---
 
-## 2. Crear la red compartida de Docker
-
-Ambos contenedores (MySQL y Jenkins) deben estar en la misma red para que puedan comunicarse por nombre de host.
+## 2️⃣ Crear la Red Compartida de Docker
 
 ```bash
 docker network create adopciones-network
 ```
 
+Verifica que se creó correctamente:
+```bash
+docker network inspect adopciones-network
+```
+
 ---
 
-## 3. Levantar el contenedor de MySQL
+## 3️⃣ Levantar MySQL 8.0
 
 ```bash
 docker run -d \
@@ -38,25 +48,22 @@ docker run -d \
   mysql:8.0
 ```
 
-Verificar que está corriendo:
-
-```bash
-docker ps
-```
-
-Esperar unos segundos hasta que MySQL esté listo (se puede verificar con):
+**Esperar a que MySQL esté listo (15-20 segundos):**
 
 ```bash
 docker exec mysql-adopciones mysqladmin ping -h localhost -u root -p1234
 ```
 
+Debería mostrar:
+```
+mysqld is alive
+```
+
 ---
 
-## 4. Levantar el contenedor de Jenkins CON DOCKER IN DOCKER
+## 4️⃣ Levantar Jenkins con Docker in Docker (DinD)
 
-> **IMPORTANTE:** Este contenedor necesita capacidad Docker in Docker (DinD) para crear y ejecutar contenedores desde sus pipelines.
-
-### 4.1 Crear el contenedor Jenkins con DinD
+### 4.1 Crear el Contenedor Jenkins
 
 ```bash
 docker run -d \
@@ -69,372 +76,365 @@ docker run -d \
   jenkins/jenkins:lts
 ```
 
-**Parámetros:**
-- `-p 8080:8080` → Puerto web de Jenkins
-- `-p 50000:50000` → Comunicación con agentes Jenkins
-- `-v jenkins_home:/var/jenkins_home` → Persistencia de configuración
-- `-v /var/run/docker.sock:/var/run/docker.sock` → **Acceso a Docker del host (DinD)**
-
 ### 4.2 Instalar Docker CLI dentro de Jenkins
 
 ```bash
-# Actualizar paquetes
 docker exec -u root jenkins apt-get update
-
-# Instalar Docker CLI
 docker exec -u root jenkins apt-get install -y docker.io
-
-# Verificar instalación
 docker exec jenkins docker --version
 ```
 
-### 4.3 Configurar permisos para Jenkins
+### 4.3 Configurar Permisos
 
 ```bash
-# Agregar usuario jenkins al grupo docker
 docker exec -u root jenkins usermod -aG docker jenkins
-
-# Ajustar permisos del socket
 docker exec -u root jenkins chmod 666 /var/run/docker.sock
 ```
 
-### 4.4 Verificar que DinD funciona
+### 4.4 Verificar que Docker Funciona dentro de Jenkins
 
 ```bash
 docker exec jenkins docker ps
 ```
 
-**Salida esperada:**
-```
-CONTAINER ID   IMAGE              STATUS             NAMES
-b7b4b8fbec45   jenkins/jenkins    Up About a minute  jenkins
-68af4fc0e7c7   mysql:8.0          Up X hours         mysql-adopciones
-```
+Debería mostrar los contenedores disponibles.
 
 ---
 
-## 4.5 Estructura del Docker in Docker
+## 5️⃣ Acceder a Jenkins
 
-```
-Host (Windows/Linux/Mac)
-  └── Docker Desktop
-        ├── Jenkins Container (DinD habilitado)
-        │    ├── Maven
-        │    ├── Java
-        │    └── Docker CLI → acceso a /var/run/docker.sock
-        │
-        ├── MySQL Container
-        │    └── Puerto 3306
-        │
-        └── Aplicación Container (creado por Jenkins)
-             └── Puerto 8090
-```
+1. Abre el navegador en: **http://localhost:8080**
 
----
-
-## 5. Descargar e instalar Maven en Jenkins
-
-Antes de configurar Jenkins, necesitas tener Maven disponible.
-
-### 5.1 Descargar Maven
-
-```bash
-# Ir a Administrar Jenkins → Configurar sistema
-# Ir a "Global Tool Configuration"
-# En "Maven installations" → "Add Maven"
-#   Nombre: Maven 3.9.x
-#   Instalar automáticamente ✓
-#   Versión: 3.9.6 (o la más reciente)
-```
-
----
-
-## 6. Crear el Dockerfile
-
-El archivo `Dockerfile` ya debe estar en la raíz del proyecto. Si no existe, créalo:
-
-**Archivo:** `Dockerfile` (sin extensión)
-
-```dockerfile
-# Multi-stage Dockerfile para Sistema de Adopciones de Mascotas
-FROM eclipse-temurin:21-jre-jammy
-
-LABEL maintainer="Sistema de Adopciones"
-LABEL description="Contenedor Docker para Sistema de Adopciones de Mascotas"
-LABEL version="0.0.1-SNAPSHOT"
-
-# Crear usuario no-root por seguridad
-RUN useradd -m -u 1000 appuser
-
-WORKDIR /app
-
-# Copiar el JAR generado por Maven
-COPY target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.jar app.jar
-
-RUN chown appuser:appuser app.jar
-
-USER appuser
-
-EXPOSE 8090
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:8090/actuator/health || exit 1
-
-# Variables de entorno
-ENV SPRING_DATASOURCE_URL=jdbc:mysql://mysql-adopciones:3306/sistema_adopciones
-ENV SPRING_DATASOURCE_USERNAME=root
-ENV SPRING_DATASOURCE_PASSWORD=1234
-ENV SERVER_PORT=8090
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
-CMD ["--spring.profiles.active=prod"]
-```
-
----
-
-## 7. Configurar el Pipeline en Jenkins
-
-### 7.1 Acceder a Jenkins
-
-Abrir el navegador en: **http://localhost:8080**
-
-Obtener la contraseña inicial:
-
+2. Obtén la contraseña inicial:
 ```bash
 docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 ```
 
-### 7.2 Crear el Job
+3. Copia la contraseña y pégala en Jenkins
+4. Completa la instalación (Install Suggested Plugins)
+5. Crea tu usuario admin
+
+---
+
+## 6️⃣ Configurar Maven en Jenkins
+
+1. En Jenkins → **Administrar Jenkins** → **Global Tool Configuration**
+2. Busca **Maven installations**
+3. Click en **Add Maven**
+4. Configurar:
+   - **Nombre:** `Maven 3.9`
+   - ☑ **Install automatically**
+   - **Versión:** `3.9.6` (o la más reciente)
+5. **Guardar**
+
+---
+
+## 7️⃣ Crear el Job de Jenkins
+
+### 7.1 Nueva Tarea
 
 1. Click en **Nueva tarea**
-2. Nombre: `EjecucionSistemaAdopciones`
-3. Tipo: **Proyecto de estilo libre**
-4. Click en **Crear**
+2. **Nombre:** `EjecucionSistemaAdopciones`
+3. **Tipo:** Proyecto de estilo libre
+4. Click **Crear**
 
-### 7.3 Configurar Gestión del Código Fuente
+### 7.2 Configurar Gestión del Código Fuente
 
 1. **Gestión del código fuente** → **Git**
 2. **URL del repositorio:**
    ```
    https://github.com/ErickCaiced2/GR01_1BT3_622_26A.git
    ```
-3. **Rama:** `*/Prueba` (o `*/main` según corresponda)
+3. **Rama:** `*/Prueba` (o `*/main` según sea necesario)
+4. **Guardar**
 
-### 7.4 PASO 1: Compilación con Maven
+### 7.3 Configurar Desencadenador de Compilación (Opcional)
 
-1. **Pasos de construcción** → **Agregar paso** → **Invocar targets de Maven de nivel superior**
-2. **Configurar:**
-   - Versión de Maven: `Maven 3.9.x` (la instalada)
-   - Goals: `clean package`
-   - POM: (dejar vacío)
-3. **Guardar**
+1. **Desencadenadores** → ☑ **Sondear el repositorio SCM**
+2. **Expresión cron:** `H/5 * * * *` (cada 5 minutos)
+3. O usar **GitHub hook trigger for GITScm polling** si tienes webhooks configurados
 
-### 7.5 PASO 2: Construir e Ejecutar Contenedor Docker
+### 7.4 Configurar Pasos de Construcción
+
+**Paso 1: Ejecutar Shell**
 
 1. **Pasos de construcción** → **Agregar paso** → **Ejecutar shell**
-2. **Pegar el siguiente script:**
+2. Pega el script completo abajo:
 
 ```bash
 #!/bin/bash
 set -e
 
-echo "=== Sistema de Adopciones - Build Pipeline ==="
-
-# 1. Verificar Docker
-echo "=== [1/5] Verificando Docker ==="
+echo "=== [1/7] Verificando Docker ==="
 docker --version
 
-# 2. Limpiar contenedores anteriores
-echo "=== [2/5] Limpiando contenedores anteriores ==="
+echo "=== [2/7] Compilando con Maven ==="
+bash mvnw clean package -DskipTests
+
+echo "=== [3/7] Verificando WAR ==="
+test -f target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war || (echo "ERROR: WAR no encontrado" && exit 1)
+
+echo "=== [4/7] Creando red Docker ==="
+docker network create adopciones-network 2>/dev/null || echo "Red ya existe"
+
+echo "=== [5/7] Verificando MySQL ==="
+if [ "$(docker inspect -f '{{.State.Running}}' mysql-adopciones 2>/dev/null)" != "true" ]; then
+    echo "Levantando MySQL..."
+    docker start mysql-adopciones 2>/dev/null || docker run -d \
+        --name mysql-adopciones \
+        --network adopciones-network \
+        -e MYSQL_ROOT_PASSWORD=1234 \
+        -e MYSQL_DATABASE=sistema_adopciones \
+        -p 3306:3306 \
+        mysql:8.0
+    echo "Esperando MySQL..."
+    sleep 30
+else
+    echo "MySQL ya corriendo."
+fi
+
+echo "=== [6/7] Limpiando contenedor anterior ==="
 docker stop adopciones-app 2>/dev/null || true
 docker rm adopciones-app 2>/dev/null || true
 
-# 3. Construir imagen Docker
-echo "=== [3/5] Construyendo imagen Docker ==="
-docker build -t adopciones-sistema:latest -t adopciones-sistema:${BUILD_NUMBER} .
+echo "=== [7/7] Construyendo y ejecutando ==="
+docker build -t adopciones-sistema:latest -t adopciones-sistema:${BUILD_NUMBER:-latest} .
 
-# 4. Ejecutar contenedor
-echo "=== [4/5] Ejecutando contenedor Docker ==="
-docker run \
-  --rm \
-  --detach \
+docker run -d \
   --name adopciones-app \
   --network adopciones-network \
   -p 8090:8090 \
-  -e SPRING_DATASOURCE_URL=jdbc:mysql://mysql-adopciones:3306/sistema_adopciones \
+  -e SPRING_DATASOURCE_URL="jdbc:mysql://mysql-adopciones:3306/sistema_adopciones?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true" \
   -e SPRING_DATASOURCE_USERNAME=root \
   -e SPRING_DATASOURCE_PASSWORD=1234 \
   adopciones-sistema:latest
 
-# 5. Esperar y verificar
-echo "=== [5/5] Esperando que la aplicación inicie ==="
-sleep 15
-
-docker logs adopciones-app || true
-
-if docker ps | grep -q adopciones-app; then
-    echo "✓ Aplicación corriendo en http://localhost:8090"
-else
-    echo "✗ Error: contenedor no está corriendo"
-    exit 1
-fi
+sleep 10
+echo "=== Sistema en http://localhost:8090 ==="
 ```
 
 3. **Guardar**
 
-### 7.6 Resultado Final
-
-Tu Job tiene 2 pasos de construcción:
-
-| Paso | Tipo | Acción |
-|------|------|--------|
-| 1 | Maven | Compila código, ejecuta tests, genera JAR |
-| 2 | Shell | Construye imagen Docker y ejecuta contenedor |
-
 ---
 
-## 8. Configurar Actualización Automática (Opcional)
+## 8️⃣ Verificar que Todo Funciona
 
-### 8.1 Con GitHub Webhook
+### Estado de Servicios
 
-1. **Jenkins → Configuración del Job → Desencadenadores**
-2. ☑ **GitHub hook trigger for GITScm polling**
+| Servicio | URL | Descripción |
+|----------|-----|-------------|
+| Jenkins | http://localhost:8080 | Orquestador CI/CD |
+| Aplicación | http://localhost:8090 | Spring Boot War |
+| MySQL | localhost:3306 | Base de datos |
 
-En GitHub:
-1. `Settings` → `Webhooks` → `Add webhook`
-2. Payload URL: `http://tu-jenkins:8080/github-webhook/`
-3. Eventos: `Push events`
+### Verificar MySQL
 
-### 8.2 Con Polling Manual
-
-1. **Jenkins → Configuración del Job → Desencadenadores**
-2. ☑ **Sondear el repositorio SCM**
-3. Expresión: `H/5 * * * *` (cada 5 minutos)
-
----
-
-## 9. Flujo de Desarrollo Automatizado
-
-```
-1. TÚ haces git push
-           ↓
-2. GitHub notifica a Jenkins (webhook)
-           ↓
-3. Jenkins ejecuta automáticamente:
-   └── Maven compila
-   └── Docker construye imagen
-   └── Docker ejecuta contenedor
-           ↓
-4. Aplicación actualizada en http://localhost:8090
-   └── Conectada a MySQL
-   └── Con todos tus cambios
+```bash
+docker exec mysql-adopciones mysql -u root -p1234 -e "SHOW DATABASES;"
 ```
 
-**Tiempo total:** ~1-2 minutos desde push hasta producción
+### Verificar Aplicación
+
+Después de ejecutar el build en Jenkins:
+
+```bash
+curl http://localhost:8090/actuator/health
+```
+
+Debería retornar:
+```json
+{"status":"UP"}
+```
 
 ---
 
-## 10. Verificar que todo funciona
-
-| Servicio       | URL                          |
-|----------------|------------------------------|
-| Jenkins        | http://localhost:8080        |
-| Aplicación web | http://localhost:8090        |
-| MySQL          | localhost:3306               |
-
----
-
-## 11. Estructura de contenedores
+## 9️⃣ Estructura de Contenedores
 
 ```
-adopciones-network (Red Docker Compartida)
+adopciones-network (Red compartida)
 │
 ├── mysql-adopciones (mysql:8.0)
-│   └── Puerto 3306 → Base de datos
+│   ├── Puerto: 3306
+│   ├── Base de datos: sistema_adopciones
+│   ├── Usuario: root
+│   └── Contraseña: 1234
 │
 ├── jenkins (jenkins:lts con DinD)
-│   ├── Puerto 8080 → Interfaz web
-│   ├── Puerto 50000 → Agentes
-│   ├── /var/run/docker.sock → Acceso a Docker
-│   └── Genera automáticamente:
+│   ├── Puerto: 8080
+│   ├── Puerto agentes: 50000
+│   ├── Volumen: jenkins_home
+│   └── Docker Socket: /var/run/docker.sock
 │
-└── adopciones-app (creado por Jenkins)
-    └── Puerto 8090 → Aplicación Spring Boot
+└── adopciones-app (Creado automáticamente por Jenkins)
+    ├── Puerto: 8090
+    ├── Conecta a: mysql-adopciones:3306
+    └── Deploy: Automático con cada build
 ```
 
 ---
 
-## 12. Notas importantes
+## 🔟 Flujo de Trabajo Automatizado
 
-### Instalación Inicial
-
-- ✅ El Dockerfile debe estar en la raíz del proyecto
-- ✅ Maven debe estar configurado en Jenkins
-- ✅ Jenkins DEBE tener Docker in Docker habilitado
-- ✅ El socket de Docker debe tener permisos 666
-
-### Persistencia de Datos
-
-- El volumen `jenkins_home` persiste la configuración entre reinicios
-- El volumen `mysql_data` persiste la BD (si lo agregaste)
-- **Nunca eliminar estos volúmenes** a menos que quieras resetear todo
-
-### Recuperación
-
-Si algo falla, puedes resetear todo:
-
-```bash
-# Detener todos los contenedores
-docker-compose down  # si usas compose
-docker stop $(docker ps -aq)
-
-# Limpiar volúmenes
-docker volume rm jenkins_home
-
-# Reiniciar desde cero
-docker network create adopciones-network
-# ... seguir los pasos 3-7 arriba
+```
+1. Haces git push a rama Prueba
+           ↓
+2. Jenkins detecta cambios (cada 5 min)
+           ↓
+3. Jenkins ejecuta automáticamente:
+   ✓ Maven compila código
+   ✓ Genera WAR
+   ✓ Construye imagen Docker
+   ✓ Ejecuta contenedor
+           ↓
+4. Aplicación actualizada en http://localhost:8090
+   ✓ Conectada a MySQL
+   ✓ Con últimos cambios
 ```
 
-### Troubleshooting
+**Tiempo total:** 1-2 minutos desde push hasta producción
 
-**Jenkins no ve Docker:**
+---
+
+## 1️⃣1️⃣ Dockerfile (Incluido en el Proyecto)
+
+El proyecto incluye `Dockerfile` ya configurado con:
+- ✅ Java 21
+- ✅ Usuario no-root (appuser)
+- ✅ curl instalado (para healthcheck)
+- ✅ Healthcheck automático
+- ✅ Credenciales sobrescribibles
+
+**No necesitas modificarlo.** Las variables de entorno se pasan desde Jenkins.
+
+---
+
+## 1️⃣2️⃣ Troubleshooting
+
+### Error: "Network not found"
+
+```bash
+docker network create adopciones-network
+```
+
+### Error: "MySQL connection refused"
+
+Espera 30 segundos después de levantar MySQL:
+```bash
+docker logs mysql-adopciones
+```
+
+### Error: "Application not responding"
+
+Revisa los logs:
+```bash
+docker logs adopciones-app
+```
+
+### Error: "Jenkins no ve Docker"
+
 ```bash
 docker exec -u root jenkins chmod 666 /var/run/docker.sock
+docker restart jenkins
 ```
 
-**Aplicación no conecta a MySQL:**
-```bash
-docker exec adopciones-app ping mysql-adopciones
-```
+### Resetear todo
 
-**El contenedor anterior no se detiene:**
 ```bash
-docker stop adopciones-app
-docker rm adopciones-app
+docker stop $(docker ps -aq)
+docker rm $(docker ps -aq)
+docker network rm adopciones-network
+docker volume rm jenkins_home
+
+# Vuelve a empezar desde el paso 2
 ```
 
 ---
 
-## 13. Comandos útiles para desarrollo
+## 1️⃣3️⃣ Comandos Útiles
 
 ```bash
-# Ver logs de Jenkins
-docker logs jenkins
-
-# Ver logs de la aplicación
-docker logs adopciones-app
+# Ver logs en tiempo real
+docker logs -f adopciones-app
+docker logs -f mysql-adopciones
+docker logs -f jenkins
 
 # Acceder a MySQL
 docker exec -it mysql-adopciones mysql -u root -p1234 -D sistema_adopciones
 
-# Ejecutar un build manualmente en Jenkins
+# Listar contenedores
+docker ps -a
+
+# Ver estado de red
+docker network inspect adopciones-network
+
+# Ejecutar build manualmente en Jenkins
 curl -X POST http://localhost:8080/job/EjecucionSistemaAdopciones/build
 
-# Ver todas las imágenes Docker creadas
+# Ver imágenes Docker
 docker images | grep adopciones
 
-# Eliminar imagen (para reconstruir)
-docker image rm adopciones-sistema:latest
+# Limpiar imágenes antiguas
+docker image prune -a
 ```
+
+---
+
+## 1️⃣4️⃣ Credenciales y Configuración
+
+| Componente | Usuario | Contraseña | Host | Puerto |
+|-----------|---------|-----------|------|--------|
+| MySQL | root | 1234 | mysql-adopciones | 3306 |
+| MySQL BD | - | - | sistema_adopciones | - |
+| Jenkins | (Tu usuario admin) | (Tu contraseña) | localhost | 8080 |
+| App | - | - | localhost | 8090 |
+
+---
+
+## 1️⃣5️⃣ Notas Importantes
+
+### ✅ Lo que mantenemos igual
+
+- Dockerfile con usuario no-root (seguridad)
+- Spring Boot 4.0.5 con Java 21
+- WAR como artefacto final
+- MySQL 8.0
+
+### ✅ Lo que cambió
+
+- Red: `adopciones-network` (más simple que compose)
+- MySQL container: `mysql-adopciones`
+- Contraseñas: `root/1234` (para desarrollo local)
+- Base de datos: `sistema_adopciones`
+- Script de Jenkins: Completamente automatizado
+
+### ⚠️ Para Producción
+
+- Cambiar credenciales MySQL
+- No pasar ENV variables sensibles (usar secrets de Docker)
+- Usar HTTPS en lugar de HTTP
+- Configurar backups de volumen jenkins_home
+
+---
+
+## 🎯 Resumen
+
+1. ✅ Clonar repo
+2. ✅ Crear red Docker
+3. ✅ Levantar MySQL
+4. ✅ Levantar Jenkins
+5. ✅ Instalar Docker CLI en Jenkins
+6. ✅ Configurar Maven en Jenkins
+7. ✅ Crear job con script CI/CD
+8. ✅ ¡Listo! Cada push dispara deploy automático
+
+**Tiempo total de configuración: ~30 minutos**
+
+---
+
+## 📞 Soporte
+
+Si tienes problemas:
+
+1. Revisa los logs: `docker logs [container-name]`
+2. Verifica la conectividad: `docker exec [container] ping [otro-container]`
+3. Limpia y reinicia: `docker-compose down && docker-compose up -d`
