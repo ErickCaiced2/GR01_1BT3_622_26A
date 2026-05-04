@@ -172,7 +172,8 @@ public class MascotaService {
      * Obtener datos de mascota (alias para obtenerMascotaPorId)
      *
      * Método de conveniencia para obtener los datos completos de una mascota.
-     * Útil para consultar el detalle de una mascota específica antes de visualizarla.
+     * Útil para consultar el detalle de una mascota específica antes de
+     * visualizarla.
      *
      * Comportamiento:
      * - Retorna Optional con la mascota si existe
@@ -200,7 +201,8 @@ public class MascotaService {
      * Obtener fotos de mascota (alias para obtenerFotosDeMascota)
      *
      * Método de conveniencia para obtener todas las fotos asociadas a una mascota.
-     * Garantiza retornar una lista nunca nula, facilitando el procesamiento en vistas.
+     * Garantiza retornar una lista nunca nula, facilitando el procesamiento en
+     * vistas.
      *
      * Comportamiento:
      * - Retorna lista con todas las fotos de la mascota
@@ -236,7 +238,8 @@ public class MascotaService {
     /**
      * Obtener mascotas relacionadas para enriquecer la vista de detalle.
      *
-     * Criterio inicial: mismo tipo, estado disponible, excluyendo la mascota actual.
+     * Criterio inicial: mismo tipo, estado disponible, excluyendo la mascota
+     * actual.
      */
     public List<Mascota> obtenerMascotasRelacionadas(Long mascotaId, int limite) {
         if (limite <= 0) {
@@ -271,4 +274,3 @@ public class MascotaService {
         return stats;
     }
 }
-

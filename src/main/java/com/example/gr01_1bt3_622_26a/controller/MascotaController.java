@@ -73,8 +73,8 @@ public class MascotaController {
      */
     @PostMapping("/registrar")
     public String registrarMascota(@Valid @ModelAttribute("mascota") Mascota mascota,
-                                   BindingResult bindingResult,
-                                   Model model) {
+            BindingResult bindingResult,
+            Model model) {
         log.info("Registrando nueva mascota: {}", mascota.getNombre());
 
         if (bindingResult.hasErrors()) {
@@ -104,9 +104,11 @@ public class MascotaController {
         try {
             return mascotaService.obtenerDatosMascota(id)
                     .map(mascota -> {
-                        List<Foto> fotos = mascotaService.obtenerFotosMascota(id);
-                        List<Mascota> relacionadas = mascotaService.obtenerMascotasRelacionadas(id, LIMITE_MASCOTAS_RELACIONADAS);
-                        cargarDetalleMascota(model, mascota, fotos, relacionadas);
+                        cargarDetalleMascota(
+                                model,
+                                mascota,
+                                mascotaService.obtenerFotosMascota(id),
+                                mascotaService.obtenerMascotasRelacionadas(id, LIMITE_MASCOTAS_RELACIONADAS));
                         return "mascotas/detalleMascota";
                     })
                     .orElseGet(() -> redirigirAListaDisponiblesConError(redirectAttributes));
@@ -135,7 +137,7 @@ public class MascotaController {
         log.info("Mostrando formulario de edición para mascota con ID: {}", id);
 
         Mascota mascota = mascotaService.obtenerMascotaPorId(id)
-            .orElseThrow(() -> new RuntimeException("Mascota no encontrada con ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Mascota no encontrada con ID: " + id));
 
         model.addAttribute("mascota", mascota);
         return "mascotas/formularioEditarMascota";
@@ -146,8 +148,8 @@ public class MascotaController {
      */
     @PostMapping("/actualizar/{id}")
     public String actualizarMascota(@PathVariable Long id,
-                                    @Valid @ModelAttribute("mascota") Mascota mascota,
-                                    BindingResult bindingResult) {
+            @Valid @ModelAttribute("mascota") Mascota mascota,
+            BindingResult bindingResult) {
         log.info("Actualizando mascota con ID: {}", id);
 
         if (bindingResult.hasErrors()) {
@@ -204,7 +206,7 @@ public class MascotaController {
      */
     @PostMapping("/cargarFoto/{mascotaId}")
     public String cargarFoto(@PathVariable Long mascotaId,
-                            @RequestParam("foto") MultipartFile file) {
+            @RequestParam("foto") MultipartFile file) {
         log.info("Cargando foto para mascota con ID: {}", mascotaId);
 
         try {
@@ -213,10 +215,10 @@ public class MascotaController {
                 return "redirect:/mascotas/detalle/" + mascotaId + "?error=archivo_vacio";
             }
 
-            //Guardar archivo de foto en servidor
+            // Guardar archivo de foto en servidor
             String nombreArchivo = guardarArchivo(file);
 
-            //Guardar objeto Foto asociado a una mascota
+            // Guardar objeto Foto asociado a una mascota
             guardarFotoMascota(mascotaId, nombreArchivo);
 
             log.info("Foto cargada exitosamente");
@@ -236,20 +238,19 @@ public class MascotaController {
         mascotaService.agregarFoto(mascotaId, foto);
     }
 
-     private static String guardarArchivo(MultipartFile file) throws IOException {
-         // Crear directorio si no existe
-         Path uploadPath = Paths.get(UPLOAD_DIR);
-         if (!Files.exists(uploadPath)) {
-             Files.createDirectories(uploadPath);
-         }
+    private static String guardarArchivo(MultipartFile file) throws IOException {
+        // Crear directorio si no existe
+        Path uploadPath = Paths.get(UPLOAD_DIR);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
 
-         // Generar nombre único para el archivo
-         String nombreArchivo = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-         Path rutaArchivo = uploadPath.resolve(nombreArchivo);
+        // Generar nombre único para el archivo
+        String nombreArchivo = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path rutaArchivo = uploadPath.resolve(nombreArchivo);
 
-         // Guardar archivo
-         Files.write(rutaArchivo, file.getBytes());
-         return nombreArchivo;
-     }
+        // Guardar archivo
+        Files.write(rutaArchivo, file.getBytes());
+        return nombreArchivo;
+    }
 }
-
