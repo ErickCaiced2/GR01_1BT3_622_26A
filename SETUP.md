@@ -40,10 +40,12 @@ docker network inspect adopciones-network
 
 ```bash
 docker run -d \
-  --name mysql-adopciones \
+  --name adopciones-mysql \
   --network adopciones-network \
   -e MYSQL_ROOT_PASSWORD=1234 \
-  -e MYSQL_DATABASE=sistema_adopciones \
+  -e MYSQL_DATABASE=adopciones_db \
+  -e MYSQL_USER=myuser \
+  -e MYSQL_PASSWORD=secret \
   -p 3306:3306 \
   mysql:8.0
 ```
@@ -51,7 +53,7 @@ docker run -d \
 **Esperar a que MySQL esté listo (15-20 segundos):**
 
 ```bash
-docker exec mysql-adopciones mysqladmin ping -h localhost -u root -p1234
+docker exec adopciones-mysql mysqladmin ping -h localhost -u root -p1234
 ```
 
 Debería mostrar:
@@ -165,52 +167,18 @@ docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 #!/bin/bash
 set -e
 
-echo "=== [1/7] Verificando Docker ==="
-docker --version
-
-echo "=== [2/7] Compilando con Maven ==="
+echo "=== [1/4] Compilar WAR ==="
 bash mvnw clean package -DskipTests
+test -f target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war
 
-echo "=== [3/7] Verificando WAR ==="
-test -f target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war || (echo "ERROR: WAR no encontrado" && exit 1)
+echo "=== [2/4] Levantar MySQL + App (build desde Dockerfile) ==="
+docker compose -f compose.yaml up -d --build mysql adopciones-app
 
-echo "=== [4/7] Creando red Docker ==="
-docker network create adopciones-network 2>/dev/null || echo "Red ya existe"
+echo "=== [3/4] Verificar contenedores ==="
+docker compose -f compose.yaml ps
 
-echo "=== [5/7] Verificando MySQL ==="
-if [ "$(docker inspect -f '{{.State.Running}}' mysql-adopciones 2>/dev/null)" != "true" ]; then
-    echo "Levantando MySQL..."
-    docker start mysql-adopciones 2>/dev/null || docker run -d \
-        --name mysql-adopciones \
-        --network adopciones-network \
-        -e MYSQL_ROOT_PASSWORD=1234 \
-        -e MYSQL_DATABASE=sistema_adopciones \
-        -p 3306:3306 \
-        mysql:8.0
-    echo "Esperando MySQL..."
-    sleep 30
-else
-    echo "MySQL ya corriendo."
-fi
-
-echo "=== [6/7] Limpiando contenedor anterior ==="
-docker stop adopciones-app 2>/dev/null || true
-docker rm adopciones-app 2>/dev/null || true
-
-echo "=== [7/7] Construyendo y ejecutando ==="
-docker build -t adopciones-sistema:latest -t adopciones-sistema:${BUILD_NUMBER:-latest} .
-
-docker run -d \
-  --name adopciones-app \
-  --network adopciones-network \
-  -p 8090:8090 \
-  -e SPRING_DATASOURCE_URL="jdbc:mysql://mysql-adopciones:3306/sistema_adopciones?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true" \
-  -e SPRING_DATASOURCE_USERNAME=root \
-  -e SPRING_DATASOURCE_PASSWORD=1234 \
-  adopciones-sistema:latest
-
-sleep 10
-echo "=== Sistema en http://localhost:8090 ==="
+echo "=== [4/4] URL ==="
+echo "http://localhost:8090"
 ```
 
 3. **Guardar**
@@ -230,7 +198,7 @@ echo "=== Sistema en http://localhost:8090 ==="
 ### Verificar MySQL
 
 ```bash
-docker exec mysql-adopciones mysql -u root -p1234 -e "SHOW DATABASES;"
+docker exec adopciones-mysql mysql -u root -p1234 -e "SHOW DATABASES;"
 ```
 
 ### Verificar Aplicación
@@ -253,11 +221,11 @@ Debería retornar:
 ```
 adopciones-network (Red compartida)
 │
-├── mysql-adopciones (mysql:8.0)
+├── adopciones-mysql (mysql:8.0)
 │   ├── Puerto: 3306
-│   ├── Base de datos: sistema_adopciones
-│   ├── Usuario: root
-│   └── Contraseña: 1234
+│   ├── Base de datos: adopciones_db
+│   ├── Usuario app: myuser
+│   └── Contraseñas: myuser/secret, root/1234
 │
 ├── jenkins (jenkins:lts con DinD)
 │   ├── Puerto: 8080
@@ -265,9 +233,9 @@ adopciones-network (Red compartida)
 │   ├── Volumen: jenkins_home
 │   └── Docker Socket: /var/run/docker.sock
 │
-└── adopciones-app (Creado automáticamente por Jenkins)
+└── adopciones-app (Creado automáticamente por Jenkins + Compose)
     ├── Puerto: 8090
-    ├── Conecta a: mysql-adopciones:3306
+    ├── Conecta a: adopciones-mysql:3306
     └── Deploy: Automático con cada build
 ```
 
@@ -283,8 +251,8 @@ adopciones-network (Red compartida)
 3. Jenkins ejecuta automáticamente:
    ✓ Maven compila código
    ✓ Genera WAR
-   ✓ Construye imagen Docker
-   ✓ Ejecuta contenedor
+   ✓ Construye imagen Docker desde Dockerfile
+   ✓ Levanta mysql + app con Docker Compose
            ↓
 4. Aplicación actualizada en http://localhost:8090
    ✓ Conectada a MySQL
@@ -320,7 +288,7 @@ docker network create adopciones-network
 
 Espera 30 segundos después de levantar MySQL:
 ```bash
-docker logs mysql-adopciones
+docker logs adopciones-mysql
 ```
 
 ### Error: "Application not responding"
@@ -355,11 +323,11 @@ docker volume rm jenkins_home
 ```bash
 # Ver logs en tiempo real
 docker logs -f adopciones-app
-docker logs -f mysql-adopciones
+docker logs -f adopciones-mysql
 docker logs -f jenkins
 
 # Acceder a MySQL
-docker exec -it mysql-adopciones mysql -u root -p1234 -D sistema_adopciones
+docker exec -it adopciones-mysql mysql -u root -p1234 -D adopciones_db
 
 # Listar contenedores
 docker ps -a
@@ -383,8 +351,8 @@ docker image prune -a
 
 | Componente | Usuario | Contraseña | Host | Puerto |
 |-----------|---------|-----------|------|--------|
-| MySQL | root | 1234 | mysql-adopciones | 3306 |
-| MySQL BD | - | - | sistema_adopciones | - |
+| MySQL | root / myuser | 1234 / secret | adopciones-mysql | 3306 |
+| MySQL BD | - | - | adopciones_db | - |
 | Jenkins | (Tu usuario admin) | (Tu contraseña) | localhost | 8080 |
 | App | - | - | localhost | 8090 |
 
@@ -401,11 +369,11 @@ docker image prune -a
 
 ### ✅ Lo que cambió
 
-- Red: `adopciones-network` (más simple que compose)
-- MySQL container: `mysql-adopciones`
-- Contraseñas: `root/1234` (para desarrollo local)
-- Base de datos: `sistema_adopciones`
-- Script de Jenkins: Completamente automatizado
+- Deploy con `docker compose` para levantar `mysql` + `adopciones-app`
+- MySQL container: `adopciones-mysql`
+- Base de datos por defecto: `adopciones_db`
+- Usuario app por defecto: `myuser/secret`
+- Script de Jenkins (tarea libre): compilación WAR + despliegue automático
 
 ### ⚠️ Para Producción
 

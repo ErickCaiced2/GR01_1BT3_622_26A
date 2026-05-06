@@ -23,8 +23,9 @@ RUN useradd -m -u 1000 appuser
 # Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar el JAR generado por Maven (compilado por Jenkins)
-COPY target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war app.war
+# WAR generado por Maven en Jenkins
+ARG WAR_FILE=target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war
+COPY ${WAR_FILE} app.war
 
 # Instalar curl COMO ROOT (antes de cambiar usuario)
 RUN apt-get update && \
