@@ -83,15 +83,24 @@ docker run -d \
 ```bash
 docker exec -u root jenkins apt-get update
 docker exec -u root jenkins apt-get install -y docker.io
+docker exec -u root jenkins apt-get install -y docker-compose-plugin
 docker exec jenkins docker --version
+docker exec jenkins docker compose version
 ```
 
-### 4.3 Configurar Permisos
+### 4.3 Configurar Permisos (con persistencia)
 
 ```bash
 docker exec -u root jenkins usermod -aG docker jenkins
 docker exec -u root jenkins chmod 666 /var/run/docker.sock
 ```
+
+> ⚠️ **Nota:** `chmod 666` se aplica en el momento pero se pierde si Docker Desktop reinicia el socket.  
+> Para que persista en cada reinicio del contenedor Jenkins, recuerda volver a ejecutar:
+> ```bash
+> docker exec -u root jenkins chmod 666 /var/run/docker.sock
+> ```
+> O bien, al recrear Jenkins, agrégale la variable de entorno `-e DOCKER_OPTS=""` o usa un script de inicio.
 
 ### 4.4 Verificar que Docker Funciona dentro de Jenkins
 
@@ -163,22 +172,55 @@ docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 1. **Pasos de construcción** → **Agregar paso** → **Ejecutar shell**
 2. Pega el script completo abajo:
 
+> 🔧 **Nota:** El script usa comandos `docker` directos (sin Docker Compose) ya que el plugin  
+> `docker-compose-plugin` no está disponible en los repositorios APT de la imagen `jenkins:lts` (Debian trixie).  
+> Se instala Compose v2 manualmente si se desea, pero este script funciona solo con `docker.io`.
+
 ```bash
 #!/bin/bash
 set -e
 
-echo "=== [1/4] Compilar WAR ==="
+echo "=== [1/5] Compilar WAR ==="
 bash mvnw clean package
 test -f target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war
 
-echo "=== [2/4] Levantar MySQL + App (build desde Dockerfile) ==="
-docker compose -f compose.yaml up -d --build mysql adopciones-app
+echo "=== [2/5] Red Docker ==="
+docker network create adopciones-network 2>/dev/null || true
 
-echo "=== [3/4] Verificar contenedores ==="
-docker compose -f compose.yaml ps
+echo "=== [3/5] Levantar MySQL ==="
+if [ "$(docker inspect -f '{{.State.Running}}' adopciones-mysql 2>/dev/null)" != "true" ]; then
+  docker rm -f adopciones-mysql 2>/dev/null || true
+  docker run -d \
+    --name adopciones-mysql \
+    --network adopciones-network \
+    -e MYSQL_DATABASE=adopciones_db \
+    -e MYSQL_USER=myuser \
+    -e MYSQL_PASSWORD=secret \
+    -e MYSQL_ROOT_PASSWORD=1234 \
+    -p 3306:3306 \
+    mysql:8.0
+  echo "Esperando MySQL..."
+  sleep 30
+else
+  echo "MySQL ya corriendo."
+fi
 
-echo "=== [4/4] URL ==="
-echo "http://localhost:8090"
+echo "=== [4/5] Build imagen + levantar app ==="
+docker rm -f adopciones-app 2>/dev/null || true
+docker build -t adopciones-sistema:latest .
+docker run -d \
+  --name adopciones-app \
+  --network adopciones-network \
+  -p 8090:8090 \
+  -e SPRING_DATASOURCE_URL="jdbc:mysql://adopciones-mysql:3306/adopciones_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true" \
+  -e SPRING_DATASOURCE_USERNAME=myuser \
+  -e SPRING_DATASOURCE_PASSWORD=secret \
+  -e SERVER_PORT=8090 \
+  adopciones-sistema:latest
+
+echo "=== [5/5] Estado ==="
+docker ps --filter name=adopciones-mysql --filter name=adopciones-app
+echo "App: http://localhost:8090"
 ```
 
 3. **Guardar**
@@ -369,11 +411,12 @@ docker image prune -a
 
 ### ✅ Lo que cambió
 
-- Deploy con `docker compose` para levantar `mysql` + `adopciones-app`
+- Deploy con comandos `docker` directos (sin Docker Compose) desde Jenkins
 - MySQL container: `adopciones-mysql`
 - Base de datos por defecto: `adopciones_db`
 - Usuario app por defecto: `myuser/secret`
 - Script de Jenkins (tarea libre): compilación WAR + despliegue automático
+- Permisos Docker socket configurados con persistencia via `usermod -aG docker jenkins`
 
 ### ⚠️ Para Producción
 
