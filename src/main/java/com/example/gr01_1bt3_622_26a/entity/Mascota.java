@@ -80,5 +80,12 @@ public class Mascota {
             estado = "Disponible";
         }
     }
+
+    /**
+     * Verifica si la mascota está disponible para adopción.
+     */
+    public boolean esDisponible() {
+        return "Disponible".equalsIgnoreCase(this.estado);
+    }
 }
 

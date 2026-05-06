@@ -172,7 +172,8 @@ public class MascotaService {
      * Obtener datos de mascota (alias para obtenerMascotaPorId)
      *
      * Método de conveniencia para obtener los datos completos de una mascota.
-     * Útil para consultar el detalle de una mascota específica antes de visualizarla.
+     * Útil para consultar el detalle de una mascota específica antes de
+     * visualizarla.
      *
      * Comportamiento:
      * - Retorna Optional con la mascota si existe
@@ -185,10 +186,7 @@ public class MascotaService {
      * @throws IllegalArgumentException si mascotaId es null o menor o igual a 0
      */
     public Optional<Mascota> obtenerDatosMascota(Long mascotaId) {
-        if (mascotaId == null || mascotaId <= 0) {
-            log.warn("Intento de obtener mascota con ID inválido: {}", mascotaId);
-            throw new IllegalArgumentException("El ID de la mascota debe ser un número positivo");
-        }
+        validarIdPositivo(mascotaId, "mascota");
         log.info("Obteniendo datos de mascota con ID: {}", mascotaId);
         Optional<Mascota> mascota = obtenerMascotaPorId(mascotaId);
         if (mascota.isPresent()) {
@@ -203,7 +201,8 @@ public class MascotaService {
      * Obtener fotos de mascota (alias para obtenerFotosDeMascota)
      *
      * Método de conveniencia para obtener todas las fotos asociadas a una mascota.
-     * Garantiza retornar una lista nunca nula, facilitando el procesamiento en vistas.
+     * Garantiza retornar una lista nunca nula, facilitando el procesamiento en
+     * vistas.
      *
      * Comportamiento:
      * - Retorna lista con todas las fotos de la mascota
@@ -221,21 +220,28 @@ public class MascotaService {
      * @throws IllegalArgumentException si mascotaId es null o menor o igual a 0
      */
     public List<Foto> obtenerFotosMascota(Long mascotaId) {
-        if (mascotaId == null || mascotaId <= 0) {
-            log.warn("Intento de obtener fotos con ID de mascota inválido: {}", mascotaId);
-            throw new IllegalArgumentException("El ID de la mascota debe ser un número positivo");
-        }
+        validarIdPositivo(mascotaId, "fotos");
         log.info("Obteniendo fotos de mascota con ID: {}", mascotaId);
-        List<Foto> fotos = Optional.ofNullable(obtenerFotosDeMascota(mascotaId))
-                .orElse(Collections.emptyList());
+        List<Foto> fotos = fotoRepository.findByMascotaId(mascotaId);
+        if (fotos == null) {
+            fotos = Collections.emptyList();
+        }
         log.debug("Se encontraron {} fotos para la mascota con ID: {}", fotos.size(), mascotaId);
         return fotos;
+    }
+
+    private void validarIdPositivo(Long id, String contexto) {
+        if (id == null || id <= 0) {
+            log.warn("Intento de obtener {} con ID inválido: {}", contexto, id);
+            throw new IllegalArgumentException("El ID de la mascota debe ser un número positivo");
+        }
     }
 
     /**
      * Obtener mascotas relacionadas para enriquecer la vista de detalle.
      *
-     * Criterio inicial: mismo tipo, estado disponible, excluyendo la mascota actual.
+     * Criterio inicial: mismo tipo, estado disponible, excluyendo la mascota
+     * actual.
      */
     public List<Mascota> obtenerMascotasRelacionadas(Long mascotaId, int limite) {
         if (limite <= 0) {
@@ -247,12 +253,11 @@ public class MascotaService {
             return Collections.emptyList();
         }
 
-        List<Mascota> candidatas = Optional.ofNullable(obtenerPorTipo(mascotaActual.get().getTipo()))
-                .orElse(Collections.emptyList());
+        List<Mascota> candidatas = mascotaRepository.findByTipo(mascotaActual.get().getTipo());
 
         return candidatas.stream()
                 .filter(mascota -> mascota.getId() != null && !mascota.getId().equals(mascotaId))
-                .filter(mascota -> "Disponible".equalsIgnoreCase(mascota.getEstado()))
+                .filter(mascota -> mascota.esDisponible())
                 .limit(limite)
                 .toList();
     }
@@ -270,4 +275,3 @@ public class MascotaService {
         return stats;
     }
 }
-
