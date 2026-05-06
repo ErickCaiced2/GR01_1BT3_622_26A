@@ -168,7 +168,7 @@ docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 set -e
 
 echo "=== [1/4] Compilar WAR ==="
-bash mvnw clean package -DskipTests
+bash mvnw clean package
 test -f target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war
 
 echo "=== [2/4] Levantar MySQL + App (build desde Dockerfile) ==="
