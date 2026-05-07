@@ -33,6 +33,13 @@
         <h2><i class="fas fa-heart"></i> Mascotas Disponibles para Adopción</h2>
         <p>Total disponibles: <strong>${totalMascotas}</strong></p>
 
+        <c:if test="${not empty error}">
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle"></i> ${error}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </c:if>
+
         <c:if test="${not empty mascotas}">
             <div class="row g-4">
                 <c:forEach var="mascota" items="${mascotas}">

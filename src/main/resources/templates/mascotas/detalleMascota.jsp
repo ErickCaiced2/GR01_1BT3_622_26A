@@ -299,6 +299,12 @@
                         </div>
                     </c:if>
 
+                    <!-- Diagnósticos Previos -->
+                    <div class="description">
+                        <h5><i class="fas fa-stethoscope"></i> Diagnósticos Previos</h5>
+                        <p>${mascota.diagnosticosPrevios != null && mascota.diagnosticosPrevios.trim().length() > 0 ? mascota.diagnosticosPrevios : 'Sin diagnósticos previos'}</p>
+                    </div>
+
                     <!-- Fecha de Registro -->
                     <div class="info-item">
                         <div class="info-label"><i class="fas fa-calendar"></i> Fecha de Registro</div>
@@ -322,6 +328,29 @@
                             </button>
                         </form>
                     </div>
+
+                    <c:if test="${not empty mascotasRelacionadas}">
+                        <div class="description">
+                            <h5><i class="fas fa-paw"></i> Tambien te puede interesar</h5>
+                            <div class="row g-2 mt-1">
+                                <c:forEach var="relacionada" items="${mascotasRelacionadas}">
+                                    <div class="col-md-6">
+                                        <div class="info-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <div class="info-value">${relacionada.nombre}</div>
+                                                    <div class="info-label">${relacionada.tipo} - ${relacionada.raza}</div>
+                                                </div>
+                                                <a href="/mascotas/detalle/${relacionada.id}" class="btn btn-sm btn-outline-primary">
+                                                    Ver
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </div>
+                    </c:if>
 
                     <!-- Sección de Carga de Fotos -->
                     <div class="upload-section">

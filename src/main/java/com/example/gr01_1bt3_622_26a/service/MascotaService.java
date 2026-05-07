@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -168,6 +169,100 @@ public class MascotaService {
     }
 
     /**
+     * Obtener datos de mascota (alias para obtenerMascotaPorId)
+     *
+     * Método de conveniencia para obtener los datos completos de una mascota.
+     * Útil para consultar el detalle de una mascota específica antes de
+     * visualizarla.
+     *
+     * Comportamiento:
+     * - Retorna Optional con la mascota si existe
+     * - Retorna Optional vacío si no existe (útil para Escenario 4 de HU)
+     * - Registra en logs todas las consultas para auditoría
+     * - Valida que el ID sea positivo
+     *
+     * @param mascotaId ID de la mascota a recuperar (debe ser positivo)
+     * @return Optional<Mascota> con los datos de la mascota o vacío si no existe
+     * @throws IllegalArgumentException si mascotaId es null o menor o igual a 0
+     */
+    public Optional<Mascota> obtenerDatosMascota(Long mascotaId) {
+        validarIdPositivo(mascotaId, "mascota");
+        log.info("Obteniendo datos de mascota con ID: {}", mascotaId);
+        Optional<Mascota> mascota = obtenerMascotaPorId(mascotaId);
+        if (mascota.isPresent()) {
+            log.debug("Mascota encontrada: {}", mascota.get().getNombre());
+        } else {
+            log.debug("Mascota no encontrada con ID: {}", mascotaId);
+        }
+        return mascota;
+    }
+
+    /**
+     * Obtener fotos de mascota (alias para obtenerFotosDeMascota)
+     *
+     * Método de conveniencia para obtener todas las fotos asociadas a una mascota.
+     * Garantiza retornar una lista nunca nula, facilitando el procesamiento en
+     * vistas.
+     *
+     * Comportamiento:
+     * - Retorna lista con todas las fotos de la mascota
+     * - Retorna lista vacía si no hay fotos (nunca null)
+     * - Registra en logs cantidad de fotos recuperadas
+     * - Valida que el ID sea positivo
+     *
+     * Contrato garantizado: La lista nunca será null, permitiendo:
+     * - Iteración segura sin verificar null
+     * - Uso directo en templates JSP con forEach
+     * - Operaciones stream sin NullPointerException
+     *
+     * @param mascotaId ID de la mascota (debe ser positivo)
+     * @return List<Foto> nunca nula, vacía si no hay fotos
+     * @throws IllegalArgumentException si mascotaId es null o menor o igual a 0
+     */
+    public List<Foto> obtenerFotosMascota(Long mascotaId) {
+        validarIdPositivo(mascotaId, "fotos");
+        log.info("Obteniendo fotos de mascota con ID: {}", mascotaId);
+        List<Foto> fotos = fotoRepository.findByMascotaId(mascotaId);
+        if (fotos == null) {
+            fotos = Collections.emptyList();
+        }
+        log.debug("Se encontraron {} fotos para la mascota con ID: {}", fotos.size(), mascotaId);
+        return fotos;
+    }
+
+    private void validarIdPositivo(Long id, String contexto) {
+        if (id == null || id <= 0) {
+            log.warn("Intento de obtener {} con ID inválido: {}", contexto, id);
+            throw new IllegalArgumentException("El ID de la mascota debe ser un número positivo");
+        }
+    }
+
+    /**
+     * Obtener mascotas relacionadas para enriquecer la vista de detalle.
+     *
+     * Criterio inicial: mismo tipo, estado disponible, excluyendo la mascota
+     * actual.
+     */
+    public List<Mascota> obtenerMascotasRelacionadas(Long mascotaId, int limite) {
+        if (limite <= 0) {
+            return Collections.emptyList();
+        }
+
+        Optional<Mascota> mascotaActual = obtenerDatosMascota(mascotaId);
+        if (mascotaActual.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Mascota> candidatas = mascotaRepository.findByTipo(mascotaActual.get().getTipo());
+
+        return candidatas.stream()
+                .filter(mascota -> mascota.getId() != null && !mascota.getId().equals(mascotaId))
+                .filter(mascota -> mascota.esDisponible())
+                .limit(limite)
+                .toList();
+    }
+
+    /**
      * Obtener estadísticas generales
      */
     public java.util.Map<String, Long> obtenerEstadisticas() {
@@ -180,4 +275,3 @@ public class MascotaService {
         return stats;
     }
 }
-

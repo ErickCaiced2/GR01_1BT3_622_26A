@@ -92,6 +92,50 @@
                 </div>
 
                 <div class="info-section">
+                    <h5><i class="fas fa-stethoscope"></i> Diagnósticos Previos</h5>
+                    <p>${mascota.diagnosticosPrevios != null && mascota.diagnosticosPrevios.trim().length() > 0 ? mascota.diagnosticosPrevios : 'Sin diagnósticos previos'}</p>
+                </div>
+
+                <div class="info-section">
+                    <h5><i class="fas fa-camera"></i> Fotografías</h5>
+                    <c:choose>
+                        <c:when test="${not empty fotos}">
+                            <div class="row">
+                                <c:forEach var="foto" items="${fotos}">
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card">
+                                            <img src="${foto.rutaFoto}" class="card-img-top" alt="Foto de ${mascota.nombre}" style="height: 200px; object-fit: cover;">
+                                            <c:if test="${foto.esPrincipal}">
+                                                <div class="card-body p-2">
+                                                    <span class="badge bg-primary"><i class="fas fa-star"></i> Foto Principal</span>
+                                                </div>
+                                            </c:if>
+                                        </div>
+                                    </div>
+                                </c:forEach>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> No hay fotografías disponibles para esta mascota
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
+                </div>
+
+                <div class="info-section">
+                    <h5><i class="fas fa-upload"></i> Cargar Nueva Fotografía</h5>
+                    <form method="POST" action="/mascotas/cargarFoto/${mascota.id}" enctype="multipart/form-data" class="row g-3">
+                        <div class="col-md-9">
+                            <input type="file" name="foto" class="form-control" accept="image/*" required>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-upload"></i> Cargar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="info-section">
                     <h5>Información del Registro</h5>
                     <p><strong><i class="fas fa-calendar"></i> Fecha de Registro:</strong> <fmt:formatDate value="${mascota.fechaRegistro}" pattern="dd/MM/yyyy"/></p>
                     <p><strong><i class="fas fa-info-circle"></i> ID:</strong> #${mascota.id}</p>
@@ -105,6 +149,25 @@
                         </a>
                     </c:if>
                 </div>
+
+                <c:if test="${not empty mascotasRelacionadas}">
+                    <div class="info-section mt-3">
+                        <h5><i class="fas fa-paw"></i> Tambien te puede interesar</h5>
+                        <div class="row">
+                            <c:forEach var="relacionada" items="${mascotasRelacionadas}">
+                                <div class="col-md-6 mb-2">
+                                    <div class="border rounded p-2 d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>${relacionada.nombre}</strong>
+                                            <div class="text-muted small">${relacionada.tipo} - ${relacionada.raza}</div>
+                                        </div>
+                                        <a href="/mascotas/detalle/${relacionada.id}" class="btn btn-sm btn-outline-primary">Ver</a>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </div>
+                </c:if>
             </div>
         </div>
     </div>

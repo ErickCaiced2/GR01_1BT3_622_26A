@@ -13,6 +13,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>GR01_1BT3_622_26A</name>
     <description>GR01_1BT3_622_26A</description>
+    <packaging>war</packaging>
     <url/>
     <licenses>
         <license/>
@@ -75,7 +76,6 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-jasper</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet.jsp.jstl</groupId>
