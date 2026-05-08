@@ -137,6 +137,56 @@ public class AuthInterceptor implements HandlerInterceptor {
                 .anyMatch(uri::startsWith);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // CONSTANTES PARA VALIDACIONES
+    // ─────────────────────────────────────────────────────────────────────────
+    private static final Long ID_MINIMO_VALIDO = 0L;
+    private static final String ROL_ADMIN = "ADMIN";
+
+    /**
+     * 🔵 REFACTOR: Validar si un ID de usuario es válido
+     *
+     * Lógica PURA sin dependencias externas
+     * - Mejoras en esta fase:
+     *   ✓ Constante para ID_MINIMO_VALIDO
+     *   ✓ Documentación clara del comportamiento
+     *   ✓ Legibilidad mejorada
+     *
+     * Criterios de validez:
+     * - ID != null
+     * - ID > 0 (mayor que ID_MINIMO_VALIDO)
+     *
+     * @param usuarioId ID del usuario a validar
+     * @return true si ID es válido (> 0 y no null), false en caso contrario
+     */
+    public boolean isValidUsuarioId(Long usuarioId) {
+        if (usuarioId == null) {
+            return false;
+        }
+        return usuarioId > ID_MINIMO_VALIDO;
+    }
+
+    /**
+     * 🔵 REFACTOR: Validar si un rol es ADMIN
+     *
+     * Lógica PURA sin dependencias externas
+     * - Mejoras en esta fase:
+     *   ✓ Constante para ROL_ADMIN
+     *   ✓ Validación null-safe mejorada
+     *   ✓ Documentación clara
+     *
+     * Solo acepta exactamente "ADMIN" (case-sensitive)
+     *
+     * @param rol Rol a validar (case-sensitive)
+     * @return true si rol es exactamente "ADMIN", false en caso contrario
+     */
+    public boolean isRolAdmin(String rol) {
+        if (rol == null) {
+            return false;
+        }
+        return ROL_ADMIN.equals(rol);
+    }
+
     @Override
     public void afterCompletion(HttpServletRequest request,
                                 HttpServletResponse response,
