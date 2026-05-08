@@ -165,13 +165,14 @@
                         <a class="nav-link active" href="/">Inicio</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/mascotas/lista">Mascotas</a>
+                        <a class="nav-link btn btn-outline-light" href="/login" style="margin: 5px;">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/mascotas/disponibles">Disponibles</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/mascotas/registrar">Registrar Mascota</a>
+                        <a class="nav-link btn btn-light text-primary" href="/login/admin" style="margin: 5px;">
+                            <i class="fas fa-lock"></i> Admin
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -187,11 +188,11 @@
             <h1>Encuentra tu Mascota Ideal</h1>
             <p>Conectamos personas amorosas con mascotas que necesitan un hogar. Cada adopción es un segundo comienzo.</p>
             <div>
-                <a href="/mascotas/disponibles" class="btn btn-light btn-hero">
-                    <i class="fas fa-search"></i> Ver Disponibles
+                <a href="/login" class="btn btn-light btn-hero">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
                 </a>
-                <a href="/mascotas/registrar" class="btn btn-outline-light btn-hero">
-                    <i class="fas fa-plus"></i> Registrar Mascota
+                <a href="/login/admin" class="btn btn-outline-light btn-hero">
+                    <i class="fas fa-lock"></i> Admin
                 </a>
             </div>
         </div>
@@ -280,10 +281,10 @@
         <div class="container">
             <h2 class="cta-title">¿Listo para Cambiar una Vida?</h2>
             <p style="font-size: 1.2rem; margin-bottom: 30px;">
-                Explora nuestro catálogo de mascotas maravillosas que están esperando un hogar amoroso.
+                Inicia sesión para explorar nuestro catálogo de mascotas maravillosas que están esperando un hogar amoroso.
             </p>
-            <a href="/mascotas/disponibles" class="btn btn-light btn-lg">
-                <i class="fas fa-arrow-right"></i> Comenzar Ahora
+            <a href="/login" class="btn btn-light btn-lg">
+                <i class="fas fa-arrow-right"></i> Inicia Sesión Ahora
             </a>
         </div>
     </section>
@@ -299,9 +300,9 @@
                 <div class="col-md-4">
                     <h5>Enlaces Rápidos</h5>
                     <ul style="list-style: none; padding: 0;">
-                        <li><a href="/mascotas/lista" style="color: white; text-decoration: none;">Todas las Mascotas</a></li>
-                        <li><a href="/mascotas/disponibles" style="color: white; text-decoration: none;">Disponibles</a></li>
-                        <li><a href="/mascotas/registrar" style="color: white; text-decoration: none;">Registrar Mascota</a></li>
+                        <li><a href="/login" style="color: white; text-decoration: none;">Iniciar Sesión</a></li>
+                        <li><a href="/login/admin" style="color: white; text-decoration: none;">Panel Admin</a></li>
+                        <li><a href="/" style="color: white; text-decoration: none;">Volver al Inicio</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">

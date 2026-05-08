@@ -36,14 +36,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             "/login/procesar",
             "/login/admin/procesar",
             "/logout",
-            "/acceso",
-            "/solicitantes/registro",
-            "/solicitantes/registrar",
-            "/usuarios/registro",
-            "/usuarios/crear",
-            "/mascotas",
-            "/mascotas/disponibles",
-            "/mascotas/buscar"
+            "/acceso"
     ));
 
     // Rutas que requieren rol ADMIN
