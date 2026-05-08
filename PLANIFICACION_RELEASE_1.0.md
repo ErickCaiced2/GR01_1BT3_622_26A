@@ -48,6 +48,7 @@ Profesionalizar el proceso de adopción mediante la **formalización legal de co
 
 | Componente | Prioridad | Iteración |
 |-----------|-----------|-----------|
+| **Sistema de Login y Sesiones** | 🔴 Alta | Iteración 1 (Fundamental) |
 | **Generación de Contratos PDF** | 🔴 Alta | Iteración 1 |
 | **Subida y Validación de Documentos** | 🔴 Alta | Iteración 1 |
 | **Filtros de Compatibilidad Avanzados** | 🟡 Media | Iteración 1 |
@@ -64,6 +65,151 @@ Profesionalizar el proceso de adopción mediante la **formalización legal de co
 **Lograr que un proceso de interés se convierta en un compromiso legal formal y seguro**, minimizando riesgos de fraude y asegurando trazabilidad legal completa.
 
 ### 📋 User Stories
+
+---
+
+### 📌 US.0 - Sistema de Login y Gestión de Sesiones (24 horas) ⭐ FUNDAMENTAL
+
+**Descripción:**  
+Como usuario (solicitante o administrador), quiero autenticarme con email y contraseña para acceder a mi área personal manteniendo una sesión segura sin necesidad de logearme repetidamente.
+
+**Valor Comercial:** Fundamental - Sin login, el sistema no es usable. Asegura seguridad y validación de identidad.
+
+#### 🔧 Desglose de Tareas Técnicas
+
+**T.0.1 - Crear Controlador de Login y Endpoints de Autenticación (6 horas)**
+
+- **Objetivo:** Exponer endpoints para login, logout y gestión de sesiones HTTP
+
+- **Tareas Técnicas:**
+  - Crear `LoginController.java` con endpoints:
+    ```java
+    @GetMapping("/login") → Mostrar formulario login solicitante
+    @GetMapping("/login/admin") → Mostrar formulario login admin
+    @GetMapping("/acceso") → Página de selección (solicitante vs admin)
+    @PostMapping("/login/procesar") → Procesar credenciales (solicitante)
+    @PostMapping("/login/admin/procesar") → Procesar credenciales (admin)
+    @GetMapping("/logout") → Cerrar sesión e invalidar sesión HTTP
+    ```
+  - Invocar `UsuarioService.iniciarSesion(email, password)` para validar credenciales
+  - Crear sesión HTTP con `session.setAttribute()` almacenando: `usuarioId`, `email`, `nombre`, `rol`
+  - Configurar tiempo de expiración: 30 minutos de inactividad
+  - Manejar excepciones con `@ExceptionHandler` para credenciales inválidas
+  - Redirigir según rol: `/admin/dashboard` (ADMIN) vs `/solicitudes/mis-solicitudes` (SOLICITANTE)
+
+- **Criterios de Aceptación:**
+  - ✅ GET `/login` retorna formulario de solicitante
+  - ✅ GET `/login/admin` retorna formulario de admin
+  - ✅ POST `/login/procesar` con credenciales válidas crea sesión y redirige a `/solicitudes/mis-solicitudes`
+  - ✅ POST con credenciales inválidas redirige a `/login` con mensaje de error flash
+  - ✅ Usuario con rol SOLICITANTE no puede acceder a `/login/admin`
+  - ✅ GET `/logout` invalida sesión e redirige a `/acceso`
+  - ✅ Sesión expira después de 30 minutos sin actividad
+
+---
+
+**T.0.2 - Crear Formularios JSP de Login (8 horas)**
+
+- **Objetivo:** Proporcionar UI atractiva y responsive para autenticación
+
+- **Tareas Técnicas:**
+  - Crear `src/main/webapp/WEB-INF/jsp/login/acceso.jsp` (página de selección):
+    - Card para "Soy Solicitante" con link a `/login`
+    - Card para "Soy Administrador" con link a `/login/admin`
+    - Diseño responsive CSS (móvil, tablet, desktop)
+    - Colores corporativos gradientes
+  
+  - Crear `src/main/webapp/WEB-INF/jsp/login/loginSolicitante.jsp`:
+    - Formulario con campos: email, password
+    - Botón "Iniciar Sesión" con ícono
+    - Link a registro (`/solicitantes/registro`)
+    - Bootstrap/CSS personalizado
+    - Mostrar mensajes de error con color rojo
+    - Campo email con autofocus
+  
+  - Crear `src/main/webapp/WEB-INF/jsp/login/loginAdmin.jsp`:
+    - Formulario idéntico a solicitante pero con estilos rojos (ADMIN)
+    - Badge "🔒 Acceso Restringido"
+    - Cuadro de seguridad informando que se registran accesos
+    - Link de regreso (`/acceso`)
+
+- **Criterios de Aceptación:**
+  - ✅ Formularios validan que email no sea vacío
+  - ✅ Formularios validan que contraseña no sea vacía
+  - ✅ Mensaje de error se muestra en rojo si credenciales fallan
+  - ✅ Diseño responsive en móvil (max-width: 600px)
+  - ✅ POST form action apunta a endpoint correcto
+  - ✅ Todos los links funcionan correctamente
+
+---
+
+**T.0.3 - Crear Interceptor de Autenticación y Protección de Rutas (6 horas)**
+
+- **Objetivo:** Proteger automáticamente rutas que requieren autenticación
+
+- **Tareas Técnicas:**
+  - Crear `AuthInterceptor.java` implementando `HandlerInterceptor`:
+    - Implementar `preHandle()` para verificar sesión en cada request
+    - Definir rutas públicas (sin sesión):
+      ```
+      /, /login, /login/admin, /acceso, /solicitantes/registro, /mascotas, etc.
+      ```
+    - Definir rutas de admin (requieren rol ADMIN):
+      ```
+      /admin/**
+      ```
+    - Definir rutas autenticadas (requieren cualquier rol):
+      ```
+      /solicitudes/**, /adopciones/**, /solicitantes/{id}/editar**
+      ```
+    - Si no hay sesión: redirigir a `/login` (o `/login/admin` si intenta `/admin`)
+    - Si hay sesión pero no tiene rol correcto: redirigir a `/acceso`
+    - Validar: `Long usuarioId = (Long) session.getAttribute("usuarioId")`
+
+  - Crear `WebMvcConfiguration.java` implementando `WebMvcConfigurer`:
+    - Registrar interceptor en `addInterceptors()` para todas las rutas
+    - Excluir rutas estáticas (`/static/**`, `/css/**`, `/js/**`, `/actuator/**`)
+
+- **Criterios de Aceptación:**
+  - ✅ GET `/solicitudes/mis-solicitudes` sin sesión redirige a `/login`
+  - ✅ GET `/admin/dashboard` sin sesión redirige a `/login/admin`
+  - ✅ Solicitante intentando `/admin/dashboard` redirige a `/acceso`
+  - ✅ Usuario autenticado puede acceder a su área privada
+  - ✅ Rotas públicas (`/`, `/mascotas`) accesibles sin sesión
+  - ✅ Logging registra cada intento de acceso (debug level)
+
+---
+
+**T.0.4 - Tests Unitarios para Login y Sesiones (4 horas)**
+
+- **Objetivo:** Asegurar que autenticación funciona correctamente
+
+- **Tareas Técnicas:**
+  - Crear `LoginControllerTest.java`:
+    ```java
+    testLoginExitoso() → Usuario válido crea sesión
+    testLoginConEmailInvalido() → Error 400 con mensaje
+    testLoginConContraInvalida() → Incrementa intentos fallidos
+    testLogout() → Invalida sesión HTTP
+    testRedirectSegunRol() → Admin va a /admin/dashboard, solicitante a /solicitudes
+    ```
+  
+  - Crear `AuthInterceptorTest.java`:
+    ```java
+    testRutaPublicaSinSesion() → Permite acceso
+    testRutaPrivadaSinSesion() → Redirige a login
+    testAdminSinRol() → Redirige a acceso
+    testSesionValida() → Permite acceso a ruta protegida
+    ```
+  
+  - Usar `@WebMvcTest` para pruebas de controlador
+  - Usar `MockHttpSession` para simular sesión
+  - Coverage mínimo 80%
+
+- **Criterios de Aceptación:**
+  - ✅ Todos los tests pasan sin errores
+  - ✅ Coverage de LoginController > 80%
+  - ✅ Coverage de AuthInterceptor > 80%
 
 ---
 
