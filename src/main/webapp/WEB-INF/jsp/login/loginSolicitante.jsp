@@ -85,7 +85,6 @@
             border: 1px solid #e74c3c;
             border-radius: 5px;
             margin-bottom: 20px;
-            display: ${not empty param.error ? 'block' : 'none'};
         }
 
         .mensaje {
@@ -96,7 +95,6 @@
             border: 1px solid #27ae60;
             border-radius: 5px;
             margin-bottom: 20px;
-            display: ${not empty param.mensaje ? 'block' : 'none'};
         }
 
         button {
@@ -193,7 +191,7 @@
     </form>
 
     <div class="links">
-        <p>¿No tienes cuenta? <a href="/solicitantes/registro">Regístrate aquí</a></p>
+        <p>¿No tienes cuenta? <a href="/usuarios/registro">Regístrate aquí</a></p>
         <p class="divider">•</p>
         <p><a href="/acceso">Volver</a></p>
     </div>

@@ -86,6 +86,20 @@
                             </div>
                         </div>
 
+                        <hr class="my-4">
+                        <h5 class="mb-3">Credenciales de Acceso</h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">Contraseña *</label>
+                                <input type="password" class="form-control" id="password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="confirmPassword" class="form-label">Confirmar Contraseña *</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required minlength="6" placeholder="Repite tu contraseña">
+                            </div>
+                        </div>
+
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fas fa-user-plus"></i> Registrarse
@@ -99,6 +113,23 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    <script>
+        // Validar que las contraseñas coincidan
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Las contraseñas no coinciden');
+                return false;
+            }
+
+            if (password.length < 6) {
+                e.preventDefault();
+                alert('La contraseña debe tener al menos 6 caracteres');
+                return false;
+            }
+        });
+    </script>
 

@@ -70,6 +70,27 @@ public class UsuarioService {
     }
 
     /**
+     * Guardar un usuario en la base de datos
+     * Método simple sin validaciones (para uso en registro desde formulario)
+     *
+     * @param usuario Usuario a guardar
+     * @return Usuario guardado con ID asignado
+     */
+    public Usuario guardarUsuario(Usuario usuario) {
+        log.info("💾 [GUARDAR] Guardando usuario: {}", usuario.getEmail());
+
+        if (usuario == null) {
+            log.error("❌ Intento de guardar usuario null");
+            throw new IllegalArgumentException("Usuario no puede ser null");
+        }
+
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+        log.info("✅ [GUARDAR] Usuario guardado exitosamente con ID: {}", usuarioGuardado.getId());
+
+        return usuarioGuardado;
+    }
+
+    /**
      * Validar formato de email
      */
     private void validarEmail(String email) {

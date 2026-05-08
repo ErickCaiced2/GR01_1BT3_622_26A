@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -420,10 +421,28 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="/">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/mascotas/lista">Todas</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/mascotas/disponibles">Disponibles</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/mascotas/registrar">Registrar</a></li>
+                    <c:choose>
+                        <c:when test="${not empty sessionScope.usuarioId}">
+                            <!-- Usuario autenticado -->
+                            <li class="nav-item"><a class="nav-link" href="/mascotas/disponibles"><i class="fas fa-heart"></i> Mascotas Disponibles</a></li>
+                            <li class="nav-item"><a class="nav-link" href="/solicitudes/mis-solicitudes"><i class="fas fa-file-alt"></i> Mis Solicitudes</a></li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-circle"></i> ${sessionScope.nombre}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" href="/solicitudes/mis-solicitudes"><i class="fas fa-list"></i> Mis Solicitudes</a></li>
+                                    <li><a class="dropdown-item" href="/mascotas/disponibles"><i class="fas fa-heart"></i> Mascotas</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                                </ul>
+                            </li>
+                        </c:when>
+                        <c:otherwise>
+                            <!-- Usuario no autenticado -->
+                            <li class="nav-item"><a class="nav-link btn btn-light text-primary" href="/login" style="margin: 5px; font-weight: 700;"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
+                        </c:otherwise>
+                    </c:choose>
                 </ul>
             </div>
         </div>
@@ -436,11 +455,8 @@
             <h1>Encuentra tu Mascota Ideal 🐾</h1>
             <p>Conectamos personas amorosas con mascotas que necesitan un hogar. Cada adopción es una segunda oportunidad.</p>
             <div>
-                <a href="/mascotas/disponibles" class="btn btn-light btn-hero">
-                    <i class="fas fa-search"></i> Explorar Mascotas
-                </a>
-                <a href="/mascotas/registrar" class="btn btn-outline-light btn-hero">
-                    <i class="fas fa-plus"></i> Registrar Mascota
+                <a href="/login" class="btn btn-light btn-hero">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
                 </a>
             </div>
         </div>
@@ -574,10 +590,10 @@
         <div class="container">
             <h2 class="cta-title">¿Listo para Cambiar una Vida? 💙</h2>
             <p class="cta-description">
-                Explora nuestro catálogo de mascotas maravillosas que están esperando un hogar amoroso.
+                Inicia sesión para explorar nuestro catálogo de mascotas maravillosas y realizar tu solicitud de adopción.
             </p>
-            <a href="/mascotas/disponibles" class="btn btn-light btn-lg" style="padding: 15px 50px; font-weight: 700;">
-                <i class="fas fa-arrow-right"></i> Comenzar Ahora
+            <a href="/login" class="btn btn-light btn-lg" style="padding: 15px 50px; font-weight: 700;">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
             </a>
         </div>
     </section>
@@ -602,10 +618,10 @@
                     <div class="footer-section">
                         <h5>Enlaces Rápidos</h5>
                         <ul style="list-style: none; padding: 0;">
-                            <li><a href="/mascotas/lista"><i class="fas fa-paw"></i> Todas las Mascotas</a></li>
-                            <li><a href="/mascotas/disponibles"><i class="fas fa-check-circle"></i> Disponibles</a></li>
-                            <li><a href="/mascotas/registrar"><i class="fas fa-plus"></i> Registrar Mascota</a></li>
+                            <li><a href="/login"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</a></li>
+                            <li><a href="/"><i class="fas fa-home"></i> Volver al Inicio</a></li>
                             <li><a href="/"><i class="fas fa-question-circle"></i> Preguntas Frecuentes</a></li>
+                            <li><a href="/"><i class="fas fa-file-contract"></i> Términos y Condiciones</a></li>
                         </ul>
                     </div>
                 </div>

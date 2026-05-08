@@ -52,7 +52,28 @@ public class Mascota {
     @NotBlank(message = "El estado es requerido")
     @Column(nullable = false)
     private String estado; // Disponible, Adoptado, En proceso, etc.
-    
+
+    /**
+     * Estado de mascota para control de adopción (T.1.5)
+     *
+     * Estados válidos:
+     * 🟢 "Disponible" → Mascota lista para ser adoptada
+     * 🟡 "En evaluación" → Hay solicitud siendo evaluada
+     * 🚫 "Bloqueada para adopción" → Solicitud aprobada, se bloquea para otros solicitantes
+     * ✅ "Adoptada" → Adopción completada
+     *
+     * Transiciones (T.1.5):
+     * - Disponible → En evaluación (cuando hay solicitud en revisión)
+     * - En evaluación → Bloqueada para adopción (cuando se aprueba solicitud)
+     * - Bloqueada para adopción → Adoptada (cuando se completa la adopción)
+     * - Cualquier estado → Disponible (cuando se rechaza la solicitud)
+     *
+     * @see com.example.gr01_1bt3_622_26a.service.MascotaService#bloquearMascota
+     */
+    @Column(name = "estado_mascota", nullable = false)
+    @Builder.Default
+    private String estadoMascota = "Disponible";
+
     @Size(max = 255, message = "El color no debe exceder 255 caracteres")
     private String color;
     

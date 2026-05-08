@@ -1,7 +1,9 @@
 package com.example.gr01_1bt3_622_26a.controller;
 
 import com.example.gr01_1bt3_622_26a.entity.Usuario;
+import com.example.gr01_1bt3_622_26a.entity.Solicitante;
 import com.example.gr01_1bt3_622_26a.service.UsuarioService;
+import com.example.gr01_1bt3_622_26a.service.SolicitanteService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class LoginController {
 
     private final UsuarioService usuarioService;
+    private final SolicitanteService solicitanteService;
 
     // ========== CONSTANTES DE CONFIGURACIÓN ==========
     private static final int SESSION_TIMEOUT_MINUTES = 30;
@@ -128,7 +131,7 @@ public class LoginController {
             crearSesion(session, usuario);
 
             log.info("✅ [LOGIN] Sesión iniciada para solicitante: {} (ID: {})", email, usuario.getId());
-            return "redirect:/solicitudes/mis-solicitudes";
+            return "redirect:/";
 
         } catch (IllegalArgumentException e) {
             log.warn("⚠️ [LOGIN] Error de autenticación para {}: {}", email, e.getMessage());
@@ -368,6 +371,18 @@ public class LoginController {
             log.trace("✓ Atributo documentoIdentidad guardado");
         } else {
             log.debug("ℹ️ Usuario sin documento de identidad registrado");
+        }
+
+        // 🆕 Si es SOLICITANTE, obtener y guardar el solicitanteId
+        if (usuario.getRol().equals(Usuario.RolUsuario.SOLICITANTE)) {
+            var solicitanteOpt = solicitanteService.obtenerPorEmail(usuario.getEmail());
+            if (solicitanteOpt.isPresent()) {
+                Long solicitanteId = solicitanteOpt.get().getId();
+                session.setAttribute("solicitanteId", solicitanteId);
+                log.trace("✓ Atributo solicitanteId guardado: {}", solicitanteId);
+            } else {
+                log.warn("⚠️ Solicitante no encontrado para email: {}", usuario.getEmail());
+            }
         }
     }
 }

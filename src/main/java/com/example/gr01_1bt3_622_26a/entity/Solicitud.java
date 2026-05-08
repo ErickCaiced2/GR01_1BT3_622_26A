@@ -31,10 +31,28 @@ public class Solicitud {
     @Column(name = "fecha_solicitud")
     private LocalDateTime fechaSolicitud;
     
+    /**
+     * Estado de la solicitud de adopción
+     *
+     * Estados válidos (T.1.2 - Máquina de Estados):
+     * 🔵 "Pendiente" → Estado inicial cuando se crea la solicitud
+     * 🟡 "En revisión" → Admin está evaluando la solicitud
+     * ✅ "Aprobada" → Solicitud fue aceptada, mascota se bloquea (T.1.5)
+     * ❌ "Rechazada" → Solicitud fue denegada con raza_rechazo
+     * 🚫 "Cancelada" → Solicitud cancelada por solicitante o admin
+     *
+     * Transiciones válidas (según SolicitudEstadoValidator):
+     * - En revisión → Aprobada
+     * - En revisión → Rechazada
+     * - Aprobada → Cancelada
+     * - Rechazada → Cancelada
+     *
+     * @see com.example.gr01_1bt3_622_26a.validation.SolicitudEstadoValidator
+     */
     @NotBlank(message = "El estado es requerido")
     @Column(nullable = false)
-    private String estado; // Pendiente, Aprobada, Rechazada, Cancelada
-    
+    private String estado;
+
     @Size(max = 1000, message = "El motivo no debe exceder 1000 caracteres")
     @Column(length = 1000)
     private String motivo; // Razón por la cual solicita la adopción

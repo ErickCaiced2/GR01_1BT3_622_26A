@@ -1,6 +1,8 @@
 package com.example.gr01_1bt3_622_26a.controller;
 
 import com.example.gr01_1bt3_622_26a.entity.Usuario;
+import com.example.gr01_1bt3_622_26a.service.UsuarioService;
+import com.example.gr01_1bt3_622_26a.service.SolicitanteService;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +33,7 @@ class LoginControllerUnitTest {
 
     @BeforeEach
     void setUp() {
-        loginController = new LoginController(null); // null porque queremos probar SOLO la lógica del controller
+        loginController = new LoginController(null, null); // null porque queremos probar SOLO la lógica del controller
 
         // Usuario de prueba - SIN mocks
         usuarioTest = Usuario.builder()

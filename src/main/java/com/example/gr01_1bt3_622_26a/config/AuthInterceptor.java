@@ -20,7 +20,8 @@ import java.util.*;
  *
  * Rutas Protegidas:
  * - /admin/** → Requiere rol ADMIN
- * - /solicitudes/** → Requiere autenticació (SOLICITANTE)
+ * - /mascotas/** → Requiere autenticación (SOLICITANTE)
+ * - /solicitudes/** → Requiere autenticación (SOLICITANTE)
  * - /solicitantes/** (excepto registro) → Requiere autenticación
  * - /adopciones/** → Puede requerir autenticación según contexto
  */
@@ -46,6 +47,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     // Rutas que requieren autenticación (cualquier rol)
     private static final Set<String> RUTAS_AUTENTICADAS = new HashSet<>(Arrays.asList(
+            "/mascotas",
             "/solicitudes",
             "/adopciones"
     ));
