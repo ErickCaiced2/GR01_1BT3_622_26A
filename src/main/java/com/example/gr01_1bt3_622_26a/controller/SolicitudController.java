@@ -190,8 +190,10 @@ public class SolicitudController {
     }
     
     @PostMapping("/{id}/aprobar")
-    public String aprobarSolicitud(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        Solicitud solicitud = solicitudService.aprobarSolicitud(id);
+    public String aprobarSolicitud(@PathVariable Long id,
+                                   @RequestParam(required = false) String observaciones,
+                                   RedirectAttributes redirectAttributes) {
+        Solicitud solicitud = solicitudService.aprobarSolicitud(id, observaciones != null ? observaciones : "");
         if (solicitud != null) {
             redirectAttributes.addFlashAttribute("mensaje", "Solicitud aprobada exitosamente");
         }

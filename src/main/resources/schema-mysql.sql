@@ -22,7 +22,6 @@ CREATE TABLE IF NOT EXISTS mascotas (
     descripcion VARCHAR(500),
     fecha_registro DATE,
     estado VARCHAR(50) NOT NULL DEFAULT 'Disponible',
-    estado_mascota VARCHAR(50) NOT NULL DEFAULT 'Disponible',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_estado (estado),

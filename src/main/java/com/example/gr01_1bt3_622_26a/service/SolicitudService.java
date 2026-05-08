@@ -131,11 +131,22 @@ public class SolicitudService {
         return solicitudRepository.findByEstadoOrderByFecha(estado);
     }
 
-    public Solicitud aprobarSolicitud(Long id) {
+    /**
+     * 🟢 GREEN: Aprobar solicitud (T.1.3)
+     *
+     * @param id ID de la solicitud
+     * @param observaciones Observaciones opcionales
+     * @return Solicitud aprobada
+     */
+    public Solicitud aprobarSolicitud(Long id, String observaciones) {
         log.info("Aprobando solicitud con ID: {}", id);
         return solicitudRepository.findById(id)
                 .map(s -> {
                     s.setEstado(ESTADO_APROBADA);
+                    s.setFechaRespuesta(java.time.LocalDateTime.now());
+                    if (observaciones != null && !observaciones.isBlank()) {
+                        s.setObservaciones(observaciones);
+                    }
                     Solicitud actualizada = solicitudRepository.save(s);
                     log.info("Solicitud {} aprobada exitosamente", id);
                     return actualizada;
@@ -248,6 +259,7 @@ public class SolicitudService {
         return solicitud;
     }
     
+
     public void eliminarSolicitud(Long id) {
         solicitudRepository.deleteById(id);
     }
