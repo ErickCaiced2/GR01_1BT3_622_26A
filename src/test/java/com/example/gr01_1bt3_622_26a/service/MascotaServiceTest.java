@@ -16,10 +16,13 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import com.example.gr01_1bt3_622_26a.entity.Solicitud;
+import com.example.gr01_1bt3_622_26a.repository.SolicitudRepository;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TAREA 2: Consultar Detalle Completo de Mascota")
@@ -30,6 +33,9 @@ public class MascotaServiceTest {
 
     @Mock
     private FotoRepository fotoRepository;
+
+    @Mock
+    private SolicitudRepository solicitudRepository;
 
     @InjectMocks
     private MascotaService mascotaService;
@@ -224,5 +230,46 @@ public class MascotaServiceTest {
 
         verify(mascotaRepository).findById(99L);
         verify(mascotaRepository, never()).findByTipo(anyString());
+    }
+
+    // ===== TESTS TAREA 1.5: Lógica de Bloqueo de Mascota en Transición de Estado =====
+
+    @Test
+    @DisplayName("🔵 REFACTOR - bloquearMascota cambia estado a 'Bloqueada para adopción' y rechaza otras solicitudes")
+    void refactor_bloquearMascota_cambiaEstadoYRechazaOtrasSolicitudes() {
+        // ARRANGE
+        Long solicitudAprobadaId = 1L;
+        
+        Solicitud otraSolicitud1 = new Solicitud();
+        otraSolicitud1.setId(2L);
+        otraSolicitud1.setEstado("En revisión");
+        
+        Solicitud otraSolicitud2 = new Solicitud();
+        otraSolicitud2.setId(3L);
+        otraSolicitud2.setEstado("Pendiente");
+
+        when(mascotaRepository.findById(ID_MASCOTA_1))
+                .thenReturn(Optional.of(mascota1));
+        
+        when(solicitudRepository.findByMascotaId(ID_MASCOTA_1))
+                .thenReturn(Arrays.asList(otraSolicitud1, otraSolicitud2));
+
+        // ACT
+        mascotaService.bloquearMascota(ID_MASCOTA_1, solicitudAprobadaId);
+
+        // ASSERT
+        // Verificar que el estado de la mascota cambió
+        assertThat(mascota1.getEstadoMascota()).isEqualTo("Bloqueada para adopción");
+        verify(mascotaRepository).save(mascota1);
+
+        // Verificar que se rechazaron las demás solicitudes
+        assertThat(otraSolicitud1.getEstado()).isEqualTo("Rechazada");
+        assertThat(otraSolicitud1.getRazonRechazo()).isEqualTo("Mascota asignada a otro solicitante");
+        
+        assertThat(otraSolicitud2.getEstado()).isEqualTo("Rechazada");
+        assertThat(otraSolicitud2.getRazonRechazo()).isEqualTo("Mascota asignada a otro solicitante");
+        
+        verify(solicitudRepository).save(otraSolicitud1);
+        verify(solicitudRepository).save(otraSolicitud2);
     }
 }

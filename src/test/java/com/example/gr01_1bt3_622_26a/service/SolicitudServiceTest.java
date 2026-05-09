@@ -35,6 +35,9 @@ public class SolicitudServiceTest {
     @Mock
     private SolicitudRepository solicitudRepository;
 
+    @Mock
+    private MascotaService mascotaService;
+
     @InjectMocks
     private SolicitudService solicitudService;
 
@@ -149,6 +152,31 @@ public class SolicitudServiceTest {
         verify(solicitudRepository).findById(idSolicitud);
         verify(solicitudRepository).save(solicitudPendiente);
         verifyNoMoreInteractions(solicitudRepository);
+    }
+
+    // ===== TAREA 1.5: Integración de Bloqueo de Mascota =====
+
+    @Test
+    @DisplayName("🔵 REFACTOR - aprobarSolicitud debe llamar a bloquearMascota")
+    void refactor_aprobarSolicitud_debeLlamarABloquearMascota() {
+        // ARRANGE
+        Long idSolicitud = 1L;
+        Long idMascota = 99L;
+        
+        Solicitud solicitud = crearSolicitudPendiente(idSolicitud);
+        com.example.gr01_1bt3_622_26a.entity.Mascota mascota = new com.example.gr01_1bt3_622_26a.entity.Mascota();
+        mascota.setId(idMascota);
+        solicitud.setMascota(mascota);
+
+        when(solicitudRepository.findById(idSolicitud)).thenReturn(Optional.of(solicitud));
+        when(solicitudRepository.save(any(Solicitud.class))).thenAnswer(i -> i.getArgument(0));
+
+        // ACT
+        solicitudService.aprobarSolicitud(idSolicitud, "");
+
+        // ASSERT
+        // Esta línea fallará en la fase RED porque el servicio aún no llama a bloquearMascota
+        verify(mascotaService, times(1)).bloquearMascota(idMascota, idSolicitud);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

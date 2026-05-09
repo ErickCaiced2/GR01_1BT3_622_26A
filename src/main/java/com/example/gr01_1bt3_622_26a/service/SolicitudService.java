@@ -17,6 +17,7 @@ import java.util.Optional;
 public class SolicitudService {
     
     private final SolicitudRepository solicitudRepository;
+    private final MascotaService mascotaService;
     
     // Constantes de estado para evitar hardcoding
     private static final String ESTADO_EN_REVISION = "En revisión";
@@ -148,6 +149,12 @@ public class SolicitudService {
                         s.setObservaciones(observaciones);
                     }
                     Solicitud actualizada = solicitudRepository.save(s);
+                    
+                    // T1.5: Bloquear mascota y rechazar otras solicitudes
+                    if (s.getMascota() != null && s.getMascota().getId() != null) {
+                        mascotaService.bloquearMascota(s.getMascota().getId(), s.getId());
+                    }
+                    
                     log.info("Solicitud {} aprobada exitosamente", id);
                     return actualizada;
                 })
