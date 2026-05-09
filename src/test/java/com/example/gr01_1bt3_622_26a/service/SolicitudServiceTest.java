@@ -77,7 +77,7 @@ public class SolicitudServiceTest {
                 .thenReturn(solicitudPrueba);
 
         //ACT (Actuar): Llamar al método que queremos probar
-        Solicitud resultado = solicitudService.aprobarSolicitud(ID_SOLICITUD_EXISTENTE);
+        Solicitud resultado = solicitudService.aprobarSolicitud(ID_SOLICITUD_EXISTENTE, "");
 
         // ASSERT (Verificar): El test fallaría aquí si el método no estuviera implementado correctamente
         assertThat(resultado)
@@ -108,7 +108,7 @@ public class SolicitudServiceTest {
                 .thenReturn(solicitudPrueba);
 
         // ACT (Actuar)
-        Solicitud resultado = solicitudService.aprobarSolicitud(ID_SOLICITUD_EXISTENTE);
+        Solicitud resultado = solicitudService.aprobarSolicitud(ID_SOLICITUD_EXISTENTE, "");
 
         // ASSERT (Verificar)
         // ✅ EN LA FASE GREEN, estas aserciones PASAN
@@ -139,7 +139,7 @@ public class SolicitudServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // ACT: Ejecutar el método a probar
-        Solicitud solicitudAprobada = solicitudService.aprobarSolicitud(idSolicitud);
+        Solicitud solicitudAprobada = solicitudService.aprobarSolicitud(idSolicitud, "");
 
         // ASSERT: Verificar resultados e interacciones
         assertThat(solicitudAprobada).isNotNull();

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -68,7 +68,8 @@ class SolicitudControllerUnitTest {
                 .nombre("Juan Pérez")
                 .apellido("García")
                 .email("juan@example.com")
-                .telefonoContacto("3001234567")
+                .telefono("3001234567")
+                .direccion("Calle 123 #45-67")
                 .documentoIdentidad("1234567890")
                 .build();
         Solicitante solicitanteGuardado = solicitanteRepository.save(solicitante);
@@ -76,9 +77,11 @@ class SolicitudControllerUnitTest {
         // Crear mascota real en BD
         Mascota mascota = Mascota.builder()
                 .nombre("Luna")
+                .tipo("Perro")
                 .raza("Labrador")
                 .edad(3)
                 .genero("Hembra")
+                .estado("Disponible")
                 .estadoMascota("Disponible")
                 .build();
         Mascota mascotaGuardada = mascotaRepository.save(mascota);
@@ -113,18 +116,17 @@ class SolicitudControllerUnitTest {
      * 3. REFACTOR: Mejorar respuesta
      */
     @Test
-    @DisplayName("T.1.3-TEST1: POST /solicitudes/{id}/aprobar retorna 200 con estado Aprobada")
+    @DisplayName("T.1.3-TEST1: POST /solicitudes/{id}/aprobar retorna redirect con estado Aprobada")
     void testAprobarSolicitudViaEndpoint() throws Exception {
-        // Act & Assert: Ejecutar POST y verificar respuesta
+        // Act & Assert: Ejecutar POST y verificar respuesta (el controller hace redirect)
         mockMvc.perform(
                 post("/solicitudes/" + solicitudId + "/aprobar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("observaciones", "Aprobado. Mascota lista para entregar")
         )
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.estado").value("Aprobada"))
-        .andExpect(jsonPath("$.id").value(solicitudId))
-        .andExpect(jsonPath("$.fechaRespuesta").isNotEmpty());
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrl("/solicitudes/" + solicitudId))
+        .andExpect(flash().attribute("mensaje", "Solicitud aprobada exitosamente"));
     }
 
     // ==================== TEST 2: Rechazar sin Razón ====================
