@@ -46,4 +46,15 @@ public interface DocumentoSolicitanteRepository extends JpaRepository<DocumentoS
             Long solicitanteId,
             String tipoDocumento
     );
+
+    /**
+     * Obtiene todos los documentos
+     * pertenecientes a un solicitante.
+     *
+     * @param solicitanteId ID solicitante
+     * @return Lista documentos
+     */
+    List<DocumentoSolicitante> findBySolicitanteId(
+            Long solicitanteId
+    );
 }

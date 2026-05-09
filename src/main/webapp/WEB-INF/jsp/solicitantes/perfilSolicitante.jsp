@@ -68,17 +68,42 @@
                     <p><span class="info-label">Fecha de Registro:</span> <fmt:formatDate value="${solicitante.fechaRegistro}" pattern="dd/MM/yyyy HH:mm"/></p>
                 </div>
 
-                <div class="mt-4">
-                    <a href="/solicitantes/${solicitante.id}/editar" class="btn btn-primary btn-action">
-                        <i class="fas fa-edit"></i> Editar Información
-                    </a>
-                    <a href="/solicitudes/formulario" class="btn btn-success btn-action">
-                        <i class="fas fa-paw"></i> Ver Mascotas para Adoptar
-                    </a>
-                    <a href="/" class="btn btn-secondary btn-action">
-                        <i class="fas fa-home"></i> Volver al Inicio
-                    </a>
-                </div>
+               <div class="mt-4">
+
+                   <a href="/solicitantes/${solicitante.id}/editar"
+                      class="btn btn-primary btn-action">
+
+                       <i class="fas fa-edit"></i>
+
+                       Editar Información
+                   </a>
+
+                   <a href="/solicitudes/formulario"
+                      class="btn btn-success btn-action">
+
+                       <i class="fas fa-paw"></i>
+
+                       Ver Mascotas para Adoptar
+                   </a>
+
+                   <!-- 🔵 NUEVO BOTÓN — T.2.5 -->
+                   <a href="/solicitantes/documentos"
+                      class="btn btn-warning btn-action">
+
+                       <i class="fas fa-file-upload"></i>
+
+                       Subir Documentos
+                   </a>
+
+                   <a href="/"
+                      class="btn btn-secondary btn-action">
+
+                       <i class="fas fa-home"></i>
+
+                       Volver al Inicio
+                   </a>
+
+               </div>
             </div>
 
             <div class="col-md-4">

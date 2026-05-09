@@ -7,27 +7,21 @@ import com.example.gr01_1bt3_622_26a.repository.SolicitanteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.util.List;
 import java.util.UUID;
 
-/**
- * 🔵 REFACTOR — T.2.3
- * Servicio completo de carga de documentos según PLANIFICACION_RELEASE_1.0.md:
- *
- *   - @Value para configuración externa (ruta y tamaño max)
- *   - @Transactional para garantizar atomicidad
- *   - @Slf4j para trazabilidad
- *   - Detección de duplicados por hash SHA-256
- *   - DocumentoDuplicadoException personalizada
- *   - Creación de directorios si no existen
- */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -43,73 +37,163 @@ public class DocumentoService {
     private final DocumentoSolicitanteRepository documentoRepository;
     private final SolicitanteRepository solicitanteRepository;
 
+    // =========================
+    // 🔵 CASO: CARGA DOCUMENTO
+    // =========================
     public DocumentoSolicitante cargarDocumento(Long solicitanteId,
                                                 String tipoDocumento,
                                                 MultipartFile archivo) throws IOException {
-        log.info("Iniciando carga de documento tipo '{}' para solicitante ID: {}", tipoDocumento, solicitanteId);
 
-        // Criterio 3: validar MIME type
-        if (!isAllowedMimeType(archivo.getContentType())) {
-            log.warn("Tipo de archivo no permitido: {}", archivo.getContentType());
-            throw new IllegalArgumentException("Tipo de archivo no permitido: " + archivo.getContentType());
-        }
+        validarArchivo(archivo);
 
-        // Criterio 4: validar tamaño
-        validarTamanoArchivo(archivo.getSize());
-
-        // Criterio 5: calcular hash y detectar duplicados
         String hash = calcularHash(archivo.getBytes());
-        log.debug("Hash SHA-256 calculado: {}", hash);
 
-        // Detectar documento duplicado por tipo para el mismo solicitante
-        documentoRepository.findBySolicitanteIdAndTipoDocumento(solicitanteId, tipoDocumento)
-                .ifPresent(doc -> { throw new DocumentoDuplicadoException(tipoDocumento, solicitanteId); });
+        validarDuplicado(solicitanteId, tipoDocumento);
 
-        // Criterio 2: nombre único con UUID
-        String nombreUnico = UUID.randomUUID() + "_" + archivo.getOriginalFilename();
+        String nombreUnico = generarNombreUnico(archivo.getOriginalFilename());
+        Path ruta = construirRuta(solicitanteId, nombreUnico);
 
-        // Criterio 1: ruta con ID del solicitante y crear directorios
-        Path rutaCompleta = Path.of(uploadPath, solicitanteId.toString(), nombreUnico);
-        Files.createDirectories(rutaCompleta.getParent());
-
-        // Criterio 6: persistir en BD
-        Solicitante solicitante = solicitanteRepository.findById(solicitanteId)
-                .orElseThrow(() -> new IllegalArgumentException("Solicitante no encontrado: " + solicitanteId));
+        Solicitante solicitante = obtenerSolicitante(solicitanteId);
 
         DocumentoSolicitante documento = DocumentoSolicitante.builder()
                 .solicitante(solicitante)
                 .tipoDocumento(tipoDocumento)
-                .rutaArchivo(rutaCompleta.toString())
+                .rutaArchivo(ruta.toString())
                 .nombreArchivo(nombreUnico)
                 .hashDocumento(hash)
                 .build();
 
+        crearDirectorioSiNoExiste(ruta);
+
         DocumentoSolicitante guardado = documentoRepository.save(documento);
-        log.info("Documento guardado con ID: {} para solicitante ID: {}", guardado.getId(), solicitanteId);
+
+        log.info("Documento guardado ID={} solicitante={}", guardado.getId(), solicitanteId);
+
         return guardado;
     }
 
-    public boolean isAllowedMimeType(String contentType) {
-        if (contentType == null) return false;
-        return contentType.matches("^image/(png|jpeg)$|^application/pdf$");
+    // =========================
+    // 🔵 CASO: DESCARGA SEGURA
+    // =========================
+    public byte[] descargarDocumento(Long documentoId, Long solicitanteId)
+            throws IOException {
+
+        DocumentoSolicitante documento = obtenerDocumento(documentoId);
+
+        validarPropietario(documento, solicitanteId);
+
+        Path ruta = Path.of(documento.getRutaArchivo());
+
+        log.info("Descarga documento ID={} por solicitante={}", documentoId, solicitanteId);
+
+        return Files.readAllBytes(ruta);
     }
 
-    public void validarTamanoArchivo(long tamanoBytes) {
-        if (tamanoBytes > maxFileSize) {
-            throw new IllegalArgumentException(
-                "Archivo excede el tamaño máximo permitido de 5MB. Tamaño: " + tamanoBytes + " bytes");
+    // =========================
+    // 🔵 CASO: VISUALIZACIÓN
+    // =========================
+    public Resource visualizarDocumento(Long documentoId)
+            throws FileNotFoundException {
+
+        DocumentoSolicitante documento = obtenerDocumento(documentoId);
+
+        Path ruta = Path.of(documento.getRutaArchivo());
+
+        return new FileSystemResource(ruta);
+    }
+
+    // ======================================================
+    // 🔧 MÉTODOS EXTRAÍDOS (REFACTOR CLAVE)
+    // ======================================================
+
+    private DocumentoSolicitante obtenerDocumento(Long id) throws FileNotFoundException {
+        return documentoRepository.findById(id)
+                .orElseThrow(() -> new FileNotFoundException("Documento no encontrado"));
+    }
+
+    private Solicitante obtenerSolicitante(Long id) {
+        return solicitanteRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Solicitante no encontrado"));
+    }
+
+    private void validarPropietario(DocumentoSolicitante doc, Long solicitanteId)
+            throws AccessDeniedException {
+
+        if (!doc.getSolicitante().getId().equals(solicitanteId)) {
+            log.warn("Acceso denegado doc={} solicitante={}", doc.getId(), solicitanteId);
+            throw new AccessDeniedException("No tienes permiso para este documento");
         }
+    }
+
+    private void validarArchivo(MultipartFile archivo) {
+
+        if (!isAllowedMimeType(archivo.getContentType())) {
+            throw new IllegalArgumentException("MIME no permitido: " + archivo.getContentType());
+        }
+
+        if (archivo.getSize() > maxFileSize) {
+            throw new IllegalArgumentException("Archivo excede 5MB");
+        }
+    }
+
+    private void validarDuplicado(Long solicitanteId, String tipoDocumento) {
+        documentoRepository.findBySolicitanteIdAndTipoDocumento(solicitanteId, tipoDocumento)
+                .ifPresent(d -> {
+                    throw new DocumentoDuplicadoException(tipoDocumento, solicitanteId);
+                });
+    }
+
+    private String generarNombreUnico(String originalName) {
+        return UUID.randomUUID() + "_" + originalName;
+    }
+
+    private Path construirRuta(Long solicitanteId, String nombre) {
+        return Path.of(uploadPath, solicitanteId.toString(), nombre);
+    }
+
+    private void crearDirectorioSiNoExiste(Path ruta) throws IOException {
+        Files.createDirectories(ruta.getParent());
+    }
+
+    // =========================
+    // UTILIDADES
+    // =========================
+
+    public boolean isAllowedMimeType(String contentType) {
+        return contentType != null &&
+                (contentType.equals("application/pdf") ||
+                        contentType.equals("image/png") ||
+                        contentType.equals("image/jpeg"));
     }
 
     private String calcularHash(byte[] contenido) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(contenido);
+
             StringBuilder sb = new StringBuilder();
             for (byte b : hash) sb.append(String.format("%02x", b));
+
             return sb.toString();
+
         } catch (Exception e) {
-            throw new RuntimeException("Error calculando hash SHA-256", e);
+            throw new RuntimeException("Error hash SHA-256", e);
         }
+    }
+
+    // =========================
+    // OTROS MÉTODOS (SIN CAMBIO)
+    // =========================
+
+    public List<DocumentoSolicitante> obtenerPorSolicitante(Long solicitanteId) {
+        return documentoRepository.findBySolicitanteId(solicitanteId);
+    }
+
+    public void verificarDocumento(Long id, String estado, String comentarios) {
+        DocumentoSolicitante documento = documentoRepository.findById(id)
+                .orElseThrow();
+
+        documento.setEstadoVerificacion(estado);
+        documentoRepository.save(documento);
     }
 }

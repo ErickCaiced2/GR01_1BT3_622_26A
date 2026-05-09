@@ -140,4 +140,102 @@ class DocumentoServiceTest {
                 () -> documentoService.cargarDocumento(solicitanteId, "Cédula", archivoGrande),
                 "Criterio 4: archivo > 5MB debe lanzar IllegalArgumentException");
     }
+
+    /**
+     * 🔴 RED — T.2.6
+     *
+     * Objetivo:
+     * Verificar seguridad de descarga
+     * y visualización de documentos.
+     *
+     * Criterios validados:
+     *
+     * ✅ Solo propietario puede descargar
+     * ✅ Documento inexistente lanza excepción
+     * ✅ Streaming seguro desde ruta persistida
+     */
+    @Test
+    @DisplayName("TEST 2: descargarDocumento valida seguridad y propiedad")
+    void testDescargarDocumento_ValidacionesSeguridad()
+            throws Exception {
+
+        // ── Arrange ─────────────────────────────────────────
+
+        Long solicitanteId = 1L;
+
+        Solicitante solicitante = Solicitante.builder()
+                .id(solicitanteId)
+                .nombre("Juan")
+                .build();
+
+        DocumentoSolicitante documento = DocumentoSolicitante.builder()
+                .id(10L)
+                .rutaArchivo(tempDir + "/archivo.pdf")
+                .nombreArchivo("archivo.pdf")
+                .solicitante(solicitante)
+                .build();
+
+        // Crear archivo físico temporal
+        java.nio.file.Files.write(
+                Path.of(documento.getRutaArchivo()),
+                "PDF TEST".getBytes()
+        );
+
+        when(documentoRepository.findById(10L))
+                .thenReturn(Optional.of(documento));
+
+        when(documentoRepository.findById(999L))
+                .thenReturn(Optional.empty());
+
+        // ── Act: propietario válido ────────────────────────
+
+        byte[] archivoDescargado = documentoService
+                .descargarDocumento(
+                        10L,
+                        1L
+                );
+
+        // ── Assert descarga correcta ───────────────────────
+
+        assertNotNull(
+                archivoDescargado,
+                "Debe retornar bytes del archivo"
+        );
+
+        assertTrue(
+                archivoDescargado.length > 0,
+                "Archivo descargado no debe estar vacío"
+        );
+
+        // ── Assert acceso inválido ─────────────────────────
+
+        assertThrows(
+
+                java.nio.file.AccessDeniedException.class,
+
+                () -> documentoService.descargarDocumento(
+                        10L,
+                        99L
+                ),
+
+                "Debe bloquear descarga de otro solicitante"
+        );
+
+        // ── Assert documento inexistente ───────────────────
+
+        assertThrows(
+
+                java.io.FileNotFoundException.class,
+
+                () -> documentoService.descargarDocumento(
+                        999L,
+                        1L
+                ),
+
+                "Debe lanzar excepción si documento no existe"
+        );
+    }
+
+
+
 }
