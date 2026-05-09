@@ -375,6 +375,11 @@ public class LoginController {
 
         // 🆕 Si es SOLICITANTE, obtener y guardar el solicitanteId
         if (usuario.getRol().equals(Usuario.RolUsuario.SOLICITANTE)) {
+            if (solicitanteService == null) {
+                log.debug("Servicio de solicitantes no disponible; se omite solicitanteId en sesión");
+                return;
+            }
+
             var solicitanteOpt = solicitanteService.obtenerPorEmail(usuario.getEmail());
             if (solicitanteOpt.isPresent()) {
                 Long solicitanteId = solicitanteOpt.get().getId();
