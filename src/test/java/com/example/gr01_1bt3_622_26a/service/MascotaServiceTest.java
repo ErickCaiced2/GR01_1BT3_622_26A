@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.gr01_1bt3_622_26a.dto.FiltroCompatibilidadDTO;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import com.example.gr01_1bt3_622_26a.entity.Solicitud;
@@ -271,5 +273,53 @@ public class MascotaServiceTest {
         
         verify(solicitudRepository).save(otraSolicitud1);
         verify(solicitudRepository).save(otraSolicitud2);
+    }
+
+    // ===== TESTS TAREA 4.3: Filtros de Compatibilidad =====
+
+    @Test
+    @DisplayName("🔴 RED - filtrarPorCompatibilidad usa los parámetros del DTO para consultar el repositorio")
+    void red_filtrarPorCompatibilidad_usaParametrosDelDto() {
+        // ARRANGE
+        // La clase FiltroCompatibilidadDTO aún no existe
+        com.example.gr01_1bt3_622_26a.dto.FiltroCompatibilidadDTO filtro = new com.example.gr01_1bt3_622_26a.dto.FiltroCompatibilidadDTO();
+        filtro.setTieneNinos(true);
+        filtro.setNivelEnergia("Media");
+        
+        List<Mascota> mascotasFiltradas = Arrays.asList(mascota1);
+
+        // El método en el repositorio aún no existe
+        when(mascotaRepository.filtrarPorCompatibilidad(
+            true, null, null, "Media", null, null
+        )).thenReturn(mascotasFiltradas);
+
+        // ACT
+        // El método en el servicio aún no existe
+        List<Mascota> resultado = mascotaService.filtrarPorCompatibilidad(filtro);
+
+        // ASSERT
+        assertThat(resultado).isEqualTo(mascotasFiltradas);
+        verify(mascotaRepository).filtrarPorCompatibilidad(
+            true, null, null, "Media", null, null
+        );
+    }
+
+    @Test
+    @DisplayName("🔵 REFACTOR - filtrarPorCompatibilidad maneja un DTO nulo sin lanzar NullPointerException")
+    void refactor_filtrarPorCompatibilidad_manejaNulo() {
+        // ARRANGE
+        List<Mascota> disponibles = Arrays.asList(mascota1);
+        when(mascotaRepository.filtrarPorCompatibilidad(
+            null, null, null, null, null, null
+        )).thenReturn(disponibles);
+
+        // ACT
+        List<Mascota> resultado = mascotaService.filtrarPorCompatibilidad(null);
+
+        // ASSERT
+        assertThat(resultado).isEqualTo(disponibles);
+        verify(mascotaRepository).filtrarPorCompatibilidad(
+            null, null, null, null, null, null
+        );
     }
 }

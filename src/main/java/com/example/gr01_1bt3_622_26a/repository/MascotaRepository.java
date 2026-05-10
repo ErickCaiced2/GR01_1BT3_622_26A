@@ -50,5 +50,27 @@ public interface MascotaRepository extends JpaRepository<Mascota, Long> {
      * Contar mascotas por estado
      */
     long countByEstado(String estado);
+
+    /**
+     * Filtrar mascotas por compatibilidad (T.4.3)
+     */
+    @Query("""
+        SELECT m FROM Mascota m WHERE 
+        m.estado = 'Disponible'
+        AND (:tieneNinos IS NULL OR m.compatibleNinos = :tieneNinos)
+        AND (:tieneGatos IS NULL OR m.compatibleGatos = :tieneGatos)
+        AND (:tienePerros IS NULL OR m.compatiblePerros = :tienePerros)
+        AND (:nivelEnergia IS NULL OR m.nivelEnergia = :nivelEnergia)
+        AND (:tamañoPreferido IS NULL OR m.tamañoRequerido = :tamañoPreferido)
+        AND (:esHipoalergenico IS NULL OR m.esHipoalergenico = :esHipoalergenico)
+        """)
+    List<Mascota> filtrarPorCompatibilidad(
+        @Param("tieneNinos") Boolean tieneNinos,
+        @Param("tieneGatos") Boolean tieneGatos,
+        @Param("tienePerros") Boolean tienePerros,
+        @Param("nivelEnergia") String nivelEnergia,
+        @Param("tamañoPreferido") String tamañoPreferido,
+        @Param("esHipoalergenico") Boolean esHipoalergenico
+    );
 }
 

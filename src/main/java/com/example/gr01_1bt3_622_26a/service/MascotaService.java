@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import com.example.gr01_1bt3_622_26a.dto.FiltroCompatibilidadDTO;
 
 /**
  * Servicio para gestionar mascotas
@@ -298,5 +299,26 @@ public class MascotaService {
         stats.put("adoptados", contarPorEstado("Adoptado"));
         stats.put("en_proceso", contarPorEstado("En proceso"));
         return stats;
+    }
+
+    /**
+     * Filtrar mascotas por compatibilidad (T.4.3)
+     */
+    public List<Mascota> filtrarPorCompatibilidad(FiltroCompatibilidadDTO filtro) {
+        log.info("Filtrando mascotas por compatibilidad: {}", filtro);
+        
+        // REFACTOR: Evitar NullPointerException si no se envían filtros
+        if (filtro == null) {
+            return mascotaRepository.filtrarPorCompatibilidad(null, null, null, null, null, null);
+        }
+        
+        return mascotaRepository.filtrarPorCompatibilidad(
+            filtro.getTieneNinos(),
+            filtro.getTieneGatos(),
+            filtro.getTienePerros(),
+            filtro.getNivelEnergia(),
+            filtro.getTamañoPreferido(),
+            filtro.getEsHipoalergenico()
+        );
     }
 }
