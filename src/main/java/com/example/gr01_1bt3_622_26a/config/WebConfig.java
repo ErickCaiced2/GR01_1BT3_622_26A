@@ -2,8 +2,9 @@ package com.example.gr01_1bt3_622_26a.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.web.filter.CharacterEncodingFilter;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.messageresolver.StandardMessageResolver;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -32,9 +33,11 @@ public class WebConfig implements WebMvcConfigurer {
     /**
      * Filtro de codificación de caracteres UTF-8 para soportar español (tildes, ñ)
      * Asegura que todas las peticiones y respuestas usen UTF-8
+     * @ConditionalOnMissingBean: Solo se crea si Spring Boot no lo ha creado ya
      */
     @Bean
-    public FilterRegistrationBean<CharacterEncodingFilter> characterEncodingFilter() {
+    @ConditionalOnMissingBean
+    public FilterRegistrationBean<CharacterEncodingFilter> customCharacterEncodingFilter() {
         FilterRegistrationBean<CharacterEncodingFilter> bean = new FilterRegistrationBean<>();
         CharacterEncodingFilter filter = new CharacterEncodingFilter();
         filter.setEncoding("UTF-8");
