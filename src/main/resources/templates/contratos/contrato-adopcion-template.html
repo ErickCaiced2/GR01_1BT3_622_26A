@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>CONTRATO DE ADOPCIÓN DE MASCOTA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .page {
+            background-color: white;
+            max-width: 210mm;
+            height: 297mm;
+            margin: 0 auto;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            page-break-after: always;
+        }
+
+        /* HEADER - ENCABEZADO */
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #1a5490;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        }
+
+        .logo-section {
+            margin-bottom: 15px;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1a5490;
+            letter-spacing: 2px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a5490;
+            margin: 15px 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-subtitle {
+            font-size: 12px;
+            color: #666;
+            margin: 8px 0;
+            font-style: italic;
+        }
+
+        .header-date {
+            font-size: 11px;
+            color: #666;
+            margin-top: 10px;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+
+        /* SECCIONES PRINCIPALES */
+        .section {
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #1a5490;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 3px;
+        }
+
+        .section-number {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            background-color: #ff6b35;
+            color: white;
+            text-align: center;
+            line-height: 25px;
+            margin-right: 10px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* TABLAS DE INFORMACIÓN */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 11px;
+        }
+
+        .info-table tr {
+            border-bottom: 1px solid #ddd;
+        }
+
+        .info-table td {
+            padding: 10px 12px;
+            vertical-align: middle;
+        }
+
+        .info-table td:first-child {
+            font-weight: bold;
+            background-color: #f0f4f8;
+            width: 35%;
+            color: #1a5490;
+        }
+
+        .info-table td:last-child {
+            text-align: left;
+            background-color: #fafbfc;
+        }
+
+        /* CONTENIDO DE TEXTO */
+        .content {
+            font-size: 11px;
+            line-height: 1.8;
+            text-align: justify;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .content p {
+            margin-bottom: 10px;
+            text-indent: 20px;
+        }
+
+        .content ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .content li {
+            margin-bottom: 8px;
+            list-style-type: disc;
+        }
+
+        .content strong {
+            color: #1a5490;
+        }
+
+        /* ACUERDOS Y CLAUSULAS */
+        .clause-box {
+            background-color: #f0f4f8;
+            border-left: 4px solid #ff6b35;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .clause-title {
+            font-weight: bold;
+            color: #1a5490;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+
+        /* LAYOUT DE DOS COLUMNAS PARA FIRMAS */
+        .signature-section {
+            margin-top: 40px;
+            page-break-inside: avoid;
+        }
+
+        .signature-container {
+            display: table;
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        .signature-column {
+            display: table-cell;
+            width: 48%;
+            padding: 0 10px;
+            text-align: center;
+            vertical-align: bottom;
+        }
+
+        .signature-column:first-child {
+            padding-left: 0;
+        }
+
+        .signature-column:last-child {
+            padding-right: 0;
+        }
+
+        .signature-line {
+            border-top: 2px solid #333;
+            margin: 50px auto 5px auto;
+            width: 85%;
+            min-height: 50px;
+            position: relative;
+        }
+
+        .signature-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .signature-name {
+            font-size: 10px;
+            color: #666;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        .signature-date {
+            font-size: 10px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .date-placeholder {
+            display: inline-block;
+            border-bottom: 1px solid #333;
+            padding: 0 30px;
+            margin: 0 5px;
+        }
+
+        /* PÁGINA DE FIRMAS */
+        .page-break {
+            page-break-after: always;
+            margin-bottom: 50px;
+        }
+
+        /* NUMERACIÓN DE PÁGINA */
+        .page-number {
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+
+        /* RESPONSABILIDADES */
+        .responsibilities-list {
+            font-size: 11px;
+            margin: 10px 0;
+        }
+
+        .responsibilities-list li {
+            margin-bottom: 8px;
+            padding-left: 5px;
+        }
+
+        .responsibilities-list strong {
+            color: #ff6b35;
+        }
+
+        /* FOOTER */
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            font-size: 9px;
+            color: #999;
+            text-align: center;
+        }
+
+        /* IMPRESO - PARA PDF */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .page {
+                max-width: 100%;
+                height: auto;
+                box-shadow: none;
+                margin: 0;
+                padding: 40px;
+                page-break-after: always;
+            }
+
+            .page-break {
+                page-break-after: always;
+            }
+        }
+
+        /* ESTILOS ADICIONALES PARA ÉNFASIS */
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+
+        .important-notice {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 10px 12px;
+            margin: 15px 0;
+            font-size: 10px;
+            color: #721c24;
+        }
+
+        .clause-number {
+            font-weight: bold;
+            color: #1a5490;
+            font-size: 12px;
+        }
+
+        /* ALINEACIÓN */
+        .center {
+            text-align: center;
+        }
+
+        .justify {
+            text-align: justify;
+        }
+
+        .right {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <!-- PÁGINA 1: INFORMACIÓN Y ACUERDO -->
+    <div class="page">
+        <!-- ENCABEZADO -->
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo-text">🐾 PAWS & HOME SANCTUARY 🐾</div>
+            </div>
+            <h1>CONTRATO DE ADOPCIÓN</h1>
+            <h1>DE MASCOTA</h1>
+            <p class="header-subtitle">Sistema de Adopciones Responsables</p>
+            <div class="header-date">
+                <strong>Número de Contrato:</strong> [[numeroContrato]]<br>
+                <strong>Fecha de Generación:</strong> [[fechaGeneracion]]
+            </div>
+        </div>
+
+        <!-- SECCIÓN 1: PARTES INVOLUCRADAS -->
+        <div class="section">
+            <div class="section-title">
+                <span class="section-number">1</span>PARTES INVOLUCRADAS
+            </div>
+
+            <table class="info-table">
+                <tr>
+                    <td><strong>Refugio/Organización:</strong></td>
+                    <td>[[nombreRefugio]]</td>
+                </tr>
+                <tr>
+                    <td><strong>Representante Legal:</strong></td>
+                    <td>[[representanteLegal]]</td>
+                </tr>
+                <tr>
+                    <td><strong>Adoptante (Nombre Completo):</strong></td>
+                    <td>[[nombreAdoptante]]</td>
+                </tr>
+                <tr>
+                    <td><strong>Documento de Identidad:</strong></td>
+                    <td>[[cedulaAdoptante]]</td>
+                </tr>
+                <tr>
+                    <td><strong>Email del Adoptante:</strong></td>
+                    <td>[[emailAdoptante]]</td>
+                </tr>
+                <tr>
+                    <td><strong>Teléfono del Adoptante:</strong></td>
+                    <td>[[telefonoAdoptante]]</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- SECCIÓN 2: INFORMACIÓN DE LA MASCOTA -->
+        <div class="section">
+            <div class="section-title">
+                <span class="section-number">2</span>INFORMACIÓN DE LA MASCOTA
+            </div>
+
+            <table class="info-table">
+                <tr>
+                    <td><strong>Nombre de la Mascota:</strong></td>
+                    <td>[[nombreMascota]]</td>
+                </tr>
+                <tr>
+                    <td><strong>Tipo de Animal:</strong></td>
+                    <td>[[tipoMascota]]</td>
+                </tr>
+                <tr>
+                    <td><strong>Raza:</strong></td>
+                    <td>[[razaMascota]]</td>
+                </tr>
+                <tr>
+                    <td><strong>Edad Aproximada:</strong></td>
+                    <td>[[edadMascota]] años</td>
+                </tr>
+                <tr>
+                    <td><strong>Descripción Física:</strong></td>
+                    <td>[[descripcionMascota]]</td>
+                </tr>
+                <tr>
+                    <td><strong>Número de Microchip:</strong></td>
+                    <td>[[microchipMascota]]</td>
+                </tr>
+                <tr>
+                    <td><strong>Historial de Vacunas:</strong></td>
+                    <td>[[vacunasMascota]]</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- PÁGINA 1 FOOTER -->
+        <div class="page-number">Página 1 de 2</div>
+    </div>
+
+    <!-- PÁGINA 2: TÉRMINOS Y CONDICIONES + FIRMAS -->
+    <div class="page">
+        <!-- SECCIÓN 3: TÉRMINOS Y CONDICIONES -->
+        <div class="section">
+            <div class="section-title">
+                <span class="section-number">3</span>TÉRMINOS Y CONDICIONES
+            </div>
+
+            <div class="clause-box">
+                <div class="clause-title">Responsabilidades del Adoptante</div>
+                <p>El adoptante se compromete solemnemente a:</p>
+                <ul class="responsibilities-list">
+                    <li><strong>Hogar Seguro:</strong> Proporcionar un hogar seguro, limpio y adecuado para el bienestar de la mascota, con acceso a agua potable fresca en todo momento.</li>
+                    <li><strong>Cuidado Veterinario:</strong> Mantener las vacunas, desparasitaciones y revisiones veterinarias al día, y proporcionar atención médica inmediata en caso de emergencia.</li>
+                    <li><strong>Alimentación Adecuada:</strong> Suministrar alimento de calidad y apropiado para la especie y edad de la mascota.</li>
+                    <li><strong>Identificación:</strong> Mantener el microchip actualizado y llevar collar con identificación en todo momento cuando sea apropiado.</li>
+                    <li><strong>Prohibición de Reventa o Transferencia:</strong> No revender, transferir, ceder o entregar la mascota a terceros sin consentimiento previo escrito del refugio.</li>
+                    <li><strong>Reporte de Cambios:</strong> Notificar inmediatamente al refugio de cualquier cambio de domicilio o situación que afecte el cuidado de la mascota.</li>
+                    <li><strong>Contacto en Emergencia:</strong> Mantener los datos de contacto actualizados y responder a comunicaciones del refugio.</li>
+                    <li><strong>Devolución Voluntaria:</strong> En caso de no poder continuar con el cuidado, devolver la mascota al refugio en lugar de abandonarla.</li>
+                </ul>
+            </div>
+
+            <div class="clause-box">
+                <div class="clause-title">Responsabilidades del Refugio</div>
+                <ul class="responsibilities-list">
+                    <li>Garantizar que la mascota ha sido evaluada médicamente y socialmente.</li>
+                    <li>Proporcionar información completa sobre el comportamiento and historial de la mascota.</li>
+                    <li>Estar disponible para consultas y asesoramiento post-adopción.</li>
+                    <li>Aceptar la devolución de la mascota en caso de incompatibilidad, sin costo adicional.</li>
+                </ul>
+            </div>
+
+            <div class="important-notice">
+                <strong>⚠️ AVISO LEGAL:</strong> El adoptante es responsable por cualquier daño, lesión o acto de la mascota hacia terceros. El refugio no se responsabiliza por actos de la mascota após la adopción. Se recomienda mantener un seguro de responsabilidad civil.
+            </div>
+        </div>
+
+        <!-- SECCIÓN 4: POLÍTICA DE DEVOLUCIÓN -->
+        <div class="section">
+            <div class="section-title">
+                <span class="section-number">4</span>POLÍTICA DE DEVOLUCIÓN Y SEGUIMIENTO
+            </div>
+
+            <div class="content">
+                <p>
+                    Si el adoptante determina que no puede continuar cuidando la mascota, tiene la obligación de
+                    <strong>contactar inmediatamente al refugio</strong> antes de considerar otras opciones. El refugio
+                    aceptará la devolución de la mascota dentro de los <strong>30 días posteriores a la adopción</strong>
+                    sin penalización. Después de este período, se aplicarán términos negociados mutuamente.
+                </p>
+                <p>
+                    El refugio se reserva el derecho de hacer seguimiento post-adopción a través de llamadas, correos
+                    electrónicos o visitas domiciliarias para asegurar el bienestar continuo de la mascota.
+                </p>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 5: FIRMA Y ACUERDOS FINALES -->
+        <div class="signature-section">
+            <div class="section-title">
+                <span class="section-number">5</span>FIRMAS Y ACEPTACIÓN
+            </div>
+
+            <p class="content" style="margin-bottom: 30px;">
+                Por este medio, ambas partes confirman haber leído y aceptado todos los términos y condiciones
+                establecidos en este contrato. El adoptante declara que posee la capacidad legal para adoptar una mascota
+                y acepta toda la responsabilidad derivada de esta adopción.
+            </p>
+
+            <!-- FIRMAS -->
+            <div class="signature-container">
+                <!-- COLUMNA 1: ADOPTANTE -->
+                <div class="signature-column">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Firma del Adoptante</div>
+                    <div class="signature-name">[[nombreAdoptante]]</div>
+                    <div class="signature-date">
+                        Fecha: <span class="date-placeholder">______________</span>
+                    </div>
+                </div>
+
+                <!-- COLUMNA 2: REFUGIO -->
+                <div class="signature-column">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Firma del Refugio</div>
+                    <div class="signature-name">[[representanteLegal]]</div>
+                    <div class="signature-date">
+                        Fecha: <span class="date-placeholder">______________</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FIRMA DE TESTIGO -->
+            <div style="margin-top: 50px; text-align: center; page-break-inside: avoid;">
+                <div style="font-size: 11px; font-weight: bold; margin-bottom: 30px; color: #1a5490;">
+                    TESTIGO (OPCIONAL)
+                </div>
+                <div class="signature-container">
+                    <div class="signature-column">
+                        <div class="signature-line"></div>
+                        <div class="signature-label">Firma del Testigo</div>
+                        <div class="signature-date">
+                            Fecha: <span class="date-placeholder">______________</span>
+                        </div>
+                    </div>
+                    <div class="signature-column">
+                        <div style="font-size: 10px; color: #666; margin-top: 60px;">
+                            Nombre (Imprenta): _______________
+                        </div>
+                        <div style="font-size: 10px; color: #666; margin-top: 10px;">
+                            Cédula: _______________
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p>Este contrato ha sido generado por el Sistema de Gestión de Adopciones "Paws & Home"</p>
+            <p>© 2026 - Todos los derechos reservados. Este documento es de carácter legal y vinculante.</p>
+            <p style="margin-top: 10px; border-top: 1px solid #ddd; padding-top: 10px;">
+                Conserve una copia de este contrato para sus registros.
+            </p>
+        </div>
+
+        <div class="page-number">Página 2 de 2</div>
+    </div>
+</body>
+</html>
+
