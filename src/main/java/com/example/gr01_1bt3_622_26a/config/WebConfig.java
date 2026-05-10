@@ -2,6 +2,8 @@ package com.example.gr01_1bt3_622_26a.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.messageresolver.StandardMessageResolver;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -16,6 +18,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * 1. JSP ViewResolver: Para todas las vistas web desde src/main/webapp/WEB-INF/jsp/
  * 2. Thymeleaf TemplateEngine: Para renderizado de plantillas HTML en generación de PDFs
  *    (NO se usa como ViewResolver, evitando auto-configuración problemática)
+ * 3. CharacterEncodingFilter: Para soportar correctamente tildes y caracteres españoles (UTF-8)
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -24,6 +27,22 @@ public class WebConfig implements WebMvcConfigurer {
     public void configureViewResolvers(ViewResolverRegistry registry) {
         // Configura el ViewResolver ÚNICO para JSP - todas las vistas web usan JSP
         registry.jsp("/WEB-INF/jsp/", ".jsp");
+    }
+
+    /**
+     * Filtro de codificación de caracteres UTF-8 para soportar español (tildes, ñ)
+     * Asegura que todas las peticiones y respuestas usen UTF-8
+     */
+    @Bean
+    public FilterRegistrationBean<CharacterEncodingFilter> characterEncodingFilter() {
+        FilterRegistrationBean<CharacterEncodingFilter> bean = new FilterRegistrationBean<>();
+        CharacterEncodingFilter filter = new CharacterEncodingFilter();
+        filter.setEncoding("UTF-8");
+        filter.setForceEncoding(true);
+        bean.setFilter(filter);
+        bean.addUrlPatterns("/*");
+        bean.setOrder(1);
+        return bean;
     }
 
     /**
