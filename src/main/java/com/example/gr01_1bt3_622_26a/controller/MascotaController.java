@@ -184,6 +184,16 @@ public class MascotaController {
         }
     }
 
+
+    /**
+     * T.4.5 - Mostrar formulario de búsqueda por compatibilidad
+     */
+    @GetMapping("/buscar-compatible")
+    public String mostrarFormularioFiltros() {
+        log.info("Accediendo al formulario de búsqueda por compatibilidad");
+        return "mascotas/filtrar";
+    }
+
     /**
      * Buscar mascotas por nombre
      */
