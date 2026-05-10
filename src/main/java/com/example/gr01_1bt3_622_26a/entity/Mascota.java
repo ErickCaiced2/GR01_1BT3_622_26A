@@ -88,6 +88,45 @@ public class Mascota {
     @Column(name = "diagnosticos_previos", length = 500, nullable = true)
     private String diagnosticosPrevios;
 
+    // Campos de Compatibilidad (T.4.2)
+    @Column(name = "compatible_ninos")
+    @Builder.Default
+    private Boolean compatibleNinos = true;
+    
+    @Column(name = "compatible_gatos")
+    @Builder.Default
+    private Boolean compatibleGatos = true;
+    
+    @Column(name = "compatible_perros")
+    @Builder.Default
+    private Boolean compatiblePerros = true;
+    
+    @Column(name = "energia_nivel")
+    @Builder.Default
+    @Size(max = 20, message = "El nivel de energía no debe exceder 20 caracteres")
+    private String nivelEnergia = "Media";
+    
+    @Column(name = "tamaño_requerido")
+    @Builder.Default
+    @Size(max = 20, message = "El tamaño no debe exceder 20 caracteres")
+    private String tamañoRequerido = "Mediano";
+    
+    @Column(name = "requisitos_especiales")
+    @Size(max = 500, message = "Los requisitos no deben exceder 500 caracteres")
+    private String requisitosEspeciales;
+    
+    @Column(name = "edad_minima_ninos")
+    @Min(value = 0, message = "La edad mínima no puede ser negativa")
+    private Integer edadMinimaNinos;
+    
+    @Column(name = "es_hipoalergenico")
+    @Builder.Default
+    private Boolean esHipoalergenico = false;
+    
+    @Column(name = "necesita_patio")
+    @Builder.Default
+    private Boolean necesitaPatio = false;
+
     // ...existing code...
     @OneToMany(mappedBy = "mascota", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Foto> fotos;
