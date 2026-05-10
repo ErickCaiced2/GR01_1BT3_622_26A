@@ -11,6 +11,11 @@ services:
       - '3306:3306'
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./src/main/resources/schema-mysql.sql:/docker-entrypoint-initdb.d/01-schema-mysql.sql
+      - ./src/main/resources/init-database.sql:/docker-entrypoint-initdb.d/02-init-database.sql
+      - ./src/main/resources/db/migration/V2__SolicitudEstados.sql:/docker-entrypoint-initdb.d/03-V2-SolicitudEstados.sql
+      - ./src/main/resources/db/migration/V3__MascotaCompatibilidad.sql:/docker-entrypoint-initdb.d/04-V3-MascotaCompatibilidad.sql
+      - ./src/main/resources/db/migration/V4__Usuarios.sql:/docker-entrypoint-initdb.d/05-V4-Usuarios.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
