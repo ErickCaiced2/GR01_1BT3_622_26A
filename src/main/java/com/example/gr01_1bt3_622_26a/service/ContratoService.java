@@ -3,9 +3,9 @@ package com.example.gr01_1bt3_622_26a.service;
 import com.example.gr01_1bt3_622_26a.dto.ContratoDTO;
 import com.example.gr01_1bt3_622_26a.entity.Adopcion;
 import com.example.gr01_1bt3_622_26a.repository.AdopcionRepository;
+import com.example.gr01_1bt3_622_26a.service.mapper.AdopcionContratoMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
@@ -33,12 +33,7 @@ public class ContratoService {
 
     private final AdopcionRepository adopcionRepository;
     private final TemplateEngine templateEngine;
-
-    @Value("${app.refugio.nombre:Paws & Home Sanctuary}")
-    private String nombreRefugio;
-
-    @Value("${app.refugio.representante:Administración Refugio}")
-    private String representanteLegal;
+    private final AdopcionContratoMapper adopcionContratoMapper;
 
     /**
      * Genera un PDF de contrato de adopción a partir de los datos de una adopción
@@ -58,8 +53,8 @@ public class ContratoService {
                 });
 
         try {
-            // Mapear entidades a DTO
-            ContratoDTO contratoDTO = mapearAdopcionAContrato(adopcion);
+            // Mapear entidades a DTO usando el mapper
+            ContratoDTO contratoDTO = adopcionContratoMapper.toContratoDTO(adopcion);
 
             // Preparar contexto de Thymeleaf
             Context context = new Context();
@@ -133,28 +128,11 @@ public class ContratoService {
      *
      * @param adopcion Entidad de adopción con sus relaciones cargadas
      * @return DTO con datos mappeados para la plantilla de contrato
+     * @deprecated Usar {@link AdopcionContratoMapper#toContratoDTO(Adopcion)} en su lugar
      */
+    @Deprecated(since = "1.0", forRemoval = true)
     private ContratoDTO mapearAdopcionAContrato(Adopcion adopcion) {
-        log.debug("Mapeando adopción ID: {} a ContratoDTO", adopcion.getId());
-
-        return ContratoDTO.builder()
-                .adopcionId(adopcion.getId())
-                .nombreRefugio(nombreRefugio)
-                .representanteLegal(representanteLegal)
-                .nombreAdoptante(adopcion.getSolicitante().getNombre())
-                .cedulaAdoptante(adopcion.getSolicitante().getDocumentoIdentidad())
-                .emailAdoptante(adopcion.getSolicitante().getEmail())
-                .telefonoAdoptante(adopcion.getSolicitante().getTelefono())
-                .nombreMascota(adopcion.getMascota().getNombre())
-                .tipoMascota(adopcion.getMascota().getTipo())
-                .razaMascota(adopcion.getMascota().getRaza())
-                .edadMascota(adopcion.getMascota().getEdad())
-                .descripcionMascota(adopcion.getMascota().getDescripcion())
-                .colorMascota(adopcion.getMascota().getColor())
-                .vacunasMascota(generarResumenVacunas(adopcion))
-                .fechaGeneracion(LocalDate.now())
-                .numeroContrato(generarNumeroContrato(adopcion.getId()))
-                .build();
+        return adopcionContratoMapper.toContratoDTO(adopcion);
     }
 
     /**
@@ -162,7 +140,9 @@ public class ContratoService {
      *
      * @param adopcionId ID de la adopción
      * @return Número de contrato formateado (ej: CONTRATO-1-1715429200000)
+     * @deprecated Usar {@link AdopcionContratoMapper} en su lugar
      */
+    @Deprecated(since = "1.0", forRemoval = true)
     private String generarNumeroContrato(Long adopcionId) {
         // Formato: CONTRATO-{adopcionId}-{timestamp}
         String numeroContrato = String.format(
@@ -179,7 +159,9 @@ public class ContratoService {
      *
      * @param adopcion Entidad de adopción
      * @return String con resumen de vacunas ("Aplicadas" o "Pendientes")
+     * @deprecated Usar {@link AdopcionContratoMapper} en su lugar
      */
+    @Deprecated(since = "1.0", forRemoval = true)
     private String generarResumenVacunas(Adopcion adopcion) {
         if (adopcion.getVacunasAplicadas() != null && adopcion.getVacunasAplicadas()) {
             return "Vacunas aplicadas y registradas";
