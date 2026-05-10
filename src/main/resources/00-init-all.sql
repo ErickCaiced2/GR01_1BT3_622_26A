@@ -23,11 +23,14 @@ CREATE TABLE IF NOT EXISTS mascotas (
     descripcion VARCHAR(500),
     fecha_registro DATE,
     estado VARCHAR(50) NOT NULL DEFAULT 'Disponible',
+    estado_mascota VARCHAR(50) DEFAULT 'Disponible',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_estado (estado),
     INDEX idx_tipo (tipo),
-    INDEX idx_genero (genero)
+    INDEX idx_genero (genero),
+    INDEX idx_mascota_estado_mascota (estado_mascota),
+    INDEX idx_mascota_tipo_estado_mascota (tipo, estado_mascota)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS fotos (
@@ -130,17 +133,17 @@ CREATE TABLE IF NOT EXISTS documentos_solicitante (
 -- PARTE 2: INSERTAR DATOS DE EJEMPLO (init-database.sql)
 -- ============================================
 
-INSERT INTO mascotas (nombre, tipo, raza, edad, genero, color, peso_kg, descripcion, estado) VALUES
-('Buddy', 'Perro', 'Golden Retriever', 3, 'Macho', 'Dorado', 32.5, 'Perro muy sociable y cariñoso, perfecto para familias con niños. Le encanta jugar y es muy inteligente.', 'Disponible'),
-('Luna', 'Gato', 'Persa', 2, 'Hembra', 'Blanco', 4.2, 'Gata elegante y tranquila. Ama las caricias y es muy independiente. Ideal para apartamentos.', 'Disponible'),
-('Max', 'Perro', 'Pastor Alemán', 5, 'Macho', 'Negro y Marrón', 35.0, 'Perro obediente y leal. Requiere actividad física regular. Excelente como mascota de familia.', 'Disponible'),
-('Mimi', 'Gato', 'Siamés', 1, 'Hembra', 'Blanco y Marrón', 3.5, 'Gatita juguetona y curiosa. Muy vocal y expresiva. Le encanta interactuar con sus dueños.', 'Disponible'),
-('Charlie', 'Perro', 'Bulldog Francés', 4, 'Macho', 'Atigrado', 13.0, 'Pequeño pero con mucha personalidad. Cariñoso y divertido. Perfecto para espacios pequeños.', 'Disponible'),
-('Bella', 'Perro', 'Labrador Retriever', 6, 'Hembra', 'Negro', 32.0, 'Perra tranquila y afectuosa. Adora a los niños. Excelente temperamento.', 'En proceso'),
-('Tiger', 'Gato', 'Atigrado', 3, 'Macho', 'Naranja y Negro', 5.0, 'Gato activo y cazador. Muy ágil. Necesita espacio para moverse.', 'Disponible'),
-('Daisy', 'Conejo', 'Orejas Caídas', 2, 'Hembra', 'Blanco', 2.0, 'Coneja dulce y sociable. Se lleva bien con otros animales.', 'Disponible'),
-('Oscar', 'Perro', 'Cocker Spaniel', 4, 'Macho', 'Marrón', 28.0, 'Perro energético y amigable. Adora el agua. Requiere ejercicio regular.', 'Disponible'),
-('Whiskers', 'Gato', 'Mestizo', 7, 'Macho', 'Gris', 4.8, 'Gato adulto, tranquilo y cariñoso. Perfecto para jubilados o personas sedentarias.', 'Adoptado');
+INSERT INTO mascotas (nombre, tipo, raza, edad, genero, color, peso_kg, descripcion, estado, estado_mascota) VALUES
+('Buddy', 'Perro', 'Golden Retriever', 3, 'Macho', 'Dorado', 32.5, 'Perro muy sociable y cariñoso, perfecto para familias con niños. Le encanta jugar y es muy inteligente.', 'Disponible', 'Disponible'),
+('Luna', 'Gato', 'Persa', 2, 'Hembra', 'Blanco', 4.2, 'Gata elegante y tranquila. Ama las caricias y es muy independiente. Ideal para apartamentos.', 'Disponible', 'Disponible'),
+('Max', 'Perro', 'Pastor Alemán', 5, 'Macho', 'Negro y Marrón', 35.0, 'Perro obediente y leal. Requiere actividad física regular. Excelente como mascota de familia.', 'Disponible', 'Disponible'),
+('Mimi', 'Gato', 'Siamés', 1, 'Hembra', 'Blanco y Marrón', 3.5, 'Gatita juguetona y curiosa. Muy vocal y expresiva. Le encanta interactuar con sus dueños.', 'Disponible', 'Disponible'),
+('Charlie', 'Perro', 'Bulldog Francés', 4, 'Macho', 'Atigrado', 13.0, 'Pequeño pero con mucha personalidad. Cariñoso y divertido. Perfecto para espacios pequeños.', 'Disponible', 'Disponible'),
+('Bella', 'Perro', 'Labrador Retriever', 6, 'Hembra', 'Negro', 32.0, 'Perra tranquila y afectuosa. Adora a los niños. Excelente temperamento.', 'En proceso', 'Disponible'),
+('Tiger', 'Gato', 'Atigrado', 3, 'Macho', 'Naranja y Negro', 5.0, 'Gato activo y cazador. Muy ágil. Necesita espacio para moverse.', 'Disponible', 'Disponible'),
+('Daisy', 'Conejo', 'Orejas Caídas', 2, 'Hembra', 'Blanco', 2.0, 'Coneja dulce y sociable. Se lleva bien con otros animales.', 'Disponible', 'Disponible'),
+('Oscar', 'Perro', 'Cocker Spaniel', 4, 'Macho', 'Marrón', 28.0, 'Perro energético y amigable. Adora el agua. Requiere ejercicio regular.', 'Disponible', 'Disponible'),
+('Whiskers', 'Gato', 'Mestizo', 7, 'Macho', 'Gris', 4.8, 'Gato adulto, tranquilo y cariñoso. Perfecto para jubilados o personas sedentarias.', 'Adoptado', 'Disponible');
 
 INSERT INTO solicitantes (nombre, apellido, email, telefono, direccion, ciudad, documento_identidad, tipo_documento, fecha_nacimiento, estado) VALUES
 ('Carlos', 'García', 'carlos.garcia@email.com', '3001234567', 'Calle 10 #45-67', 'Bogotá', '1234567890', 'CC', '1985-03-15', 'Activo'),
@@ -173,32 +176,25 @@ UPDATE solicitudes
 SET estado = 'En revisión'
 WHERE estado = 'Pendiente' AND fecha_solicitud > DATE_SUB(NOW(), INTERVAL 7 DAY);
 
-CREATE INDEX IF NOT EXISTS idx_solicitud_solicitante_estado_fecha
-ON solicitudes(solicitante_id, estado, fecha_solicitud DESC);
+CREATE INDEX idx_solicitud_solicitante_estado_fecha
+ON solicitudes(solicitante_id, estado, fecha_solicitud);
 
-ALTER TABLE mascotas
-ADD COLUMN IF NOT EXISTS estado_mascota VARCHAR(50) DEFAULT 'Disponible';
-
-CREATE INDEX IF NOT EXISTS idx_mascota_estado_mascota
-ON mascotas(estado_mascota);
-
-CREATE INDEX IF NOT EXISTS idx_mascota_tipo_estado_mascota
-ON mascotas(tipo, estado_mascota);
+-- estado_mascota ya fue agregado durante la creación de la tabla mascotas
 
 -- V3: Compatibilidad de Mascotas
-ALTER TABLE mascotas ADD COLUMN IF NOT EXISTS compatible_ninos BOOLEAN DEFAULT true;
-ALTER TABLE mascotas ADD COLUMN IF NOT EXISTS compatible_gatos BOOLEAN DEFAULT true;
-ALTER TABLE mascotas ADD COLUMN IF NOT EXISTS compatible_perros BOOLEAN DEFAULT true;
-ALTER TABLE mascotas ADD COLUMN IF NOT EXISTS energia_nivel VARCHAR(20) DEFAULT 'Media';
-ALTER TABLE mascotas ADD COLUMN IF NOT EXISTS tamaño_requerido VARCHAR(20) DEFAULT 'Mediano';
-ALTER TABLE mascotas ADD COLUMN IF NOT EXISTS requisitos_especiales VARCHAR(500);
-ALTER TABLE mascotas ADD COLUMN IF NOT EXISTS edad_minima_ninos INT DEFAULT 5;
-ALTER TABLE mascotas ADD COLUMN IF NOT EXISTS es_hipoalergenico BOOLEAN DEFAULT false;
-ALTER TABLE mascotas ADD COLUMN IF NOT EXISTS necesita_patio BOOLEAN DEFAULT false;
+ALTER TABLE mascotas ADD COLUMN compatible_ninos BOOLEAN DEFAULT true;
+ALTER TABLE mascotas ADD COLUMN compatible_gatos BOOLEAN DEFAULT true;
+ALTER TABLE mascotas ADD COLUMN compatible_perros BOOLEAN DEFAULT true;
+ALTER TABLE mascotas ADD COLUMN energia_nivel VARCHAR(20) DEFAULT 'Media';
+ALTER TABLE mascotas ADD COLUMN tamano_requerido VARCHAR(20) DEFAULT 'Mediano';
+ALTER TABLE mascotas ADD COLUMN requisitos_especiales VARCHAR(500);
+ALTER TABLE mascotas ADD COLUMN edad_minima_ninos INT DEFAULT 5;
+ALTER TABLE mascotas ADD COLUMN es_hipoalergenico BOOLEAN DEFAULT false;
+ALTER TABLE mascotas ADD COLUMN necesita_patio BOOLEAN DEFAULT false;
 
-CREATE INDEX IF NOT EXISTS idx_compatibilidad ON mascotas(compatible_ninos, compatible_gatos, compatible_perros);
-CREATE INDEX IF NOT EXISTS idx_energia ON mascotas(energia_nivel);
-CREATE INDEX IF NOT EXISTS idx_tamaño ON mascotas(tamaño_requerido);
+CREATE INDEX idx_compatibilidad ON mascotas(compatible_ninos, compatible_gatos, compatible_perros);
+CREATE INDEX idx_energia ON mascotas(energia_nivel);
+CREATE INDEX idx_tamano ON mascotas(tamano_requerido);
 
 -- V4: Tabla de Usuarios
 CREATE TABLE IF NOT EXISTS usuarios (
@@ -209,7 +205,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     estado VARCHAR(50) NOT NULL DEFAULT 'ACTIVO',
     rol VARCHAR(50) NOT NULL DEFAULT 'SOLICITANTE',
     documento_identidad VARCHAR(20) UNIQUE,
-    fecha_creacion DATE DEFAULT CURRENT_DATE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_ultimo_login DATETIME,
     token_recuperacion VARCHAR(255),
     fecha_expiracion_token DATE,
@@ -224,25 +220,25 @@ CREATE TABLE IF NOT EXISTS usuarios (
     INDEX idx_documento (documento_identidad)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO usuarios (email, password, nombre, estado, rol, documento_identidad, fecha_creacion)
-VALUES ('admin@pawshome.com', 'admin123', 'Administrador Sistema', 'ACTIVO', 'ADMIN', '0000000001', CURDATE())
+INSERT INTO usuarios (email, password, nombre, estado, rol, documento_identidad)
+VALUES ('admin@pawshome.com', 'admin123', 'Administrador Sistema', 'ACTIVO', 'ADMIN', '0000000001')
 ON DUPLICATE KEY UPDATE email=VALUES(email);
 
-INSERT INTO usuarios (email, password, nombre, estado, rol, documento_identidad, fecha_creacion)
+INSERT INTO usuarios (email, password, nombre, estado, rol, documento_identidad)
 VALUES
-('carlos.garcia@email.com', 'password123', 'Carlos García', 'ACTIVO', 'SOLICITANTE', '1234567890', CURDATE()),
-('maria.lopez@email.com', 'password123', 'María López', 'ACTIVO', 'SOLICITANTE', '9876543210', CURDATE()),
-('juan.rodriguez@email.com', 'password123', 'Juan Rodríguez', 'ACTIVO', 'SOLICITANTE', '5555666677', CURDATE()),
-('ana.martinez@email.com', 'password123', 'Ana Martínez', 'ACTIVO', 'SOLICITANTE', '1111222233', CURDATE()),
-('pedro.sanchez@email.com', 'password123', 'Pedro Sánchez', 'ACTIVO', 'SOLICITANTE', '4444555566', CURDATE())
+('carlos.garcia@email.com', 'password123', 'Carlos García', 'ACTIVO', 'SOLICITANTE', '1234567890'),
+('maria.lopez@email.com', 'password123', 'María López', 'ACTIVO', 'SOLICITANTE', '9876543210'),
+('juan.rodriguez@email.com', 'password123', 'Juan Rodríguez', 'ACTIVO', 'SOLICITANTE', '5555666677'),
+('ana.martinez@email.com', 'password123', 'Ana Martínez', 'ACTIVO', 'SOLICITANTE', '1111222233'),
+('pedro.sanchez@email.com', 'password123', 'Pedro Sánchez', 'ACTIVO', 'SOLICITANTE', '4444555566')
 ON DUPLICATE KEY UPDATE email=VALUES(email);
 
-INSERT INTO usuarios (email, password, nombre, estado, rol, documento_identidad, fecha_creacion)
-VALUES ('staff@pawshome.com', 'staff123', 'Personal Refugio', 'ACTIVO', 'STAFF', '0000000002', CURDATE())
+INSERT INTO usuarios (email, password, nombre, estado, rol, documento_identidad)
+VALUES ('staff@pawshome.com', 'staff123', 'Personal Refugio', 'ACTIVO', 'STAFF', '0000000002')
 ON DUPLICATE KEY UPDATE email=VALUES(email);
 
-CREATE INDEX IF NOT EXISTS idx_usuario_estado_rol ON usuarios(estado, rol);
-CREATE INDEX IF NOT EXISTS idx_usuario_fecha_creacion ON usuarios(fecha_creacion DESC);
+CREATE INDEX idx_usuario_estado_rol ON usuarios(estado, rol);
+CREATE INDEX idx_usuario_fecha_creacion ON usuarios(fecha_creacion);
 
 -- ============================================
 -- FINAL: Verificación

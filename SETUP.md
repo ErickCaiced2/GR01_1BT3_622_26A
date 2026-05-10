@@ -78,14 +78,24 @@ docker run -d \
   jenkins/jenkins:lts
 ```
 
-### 4.2 Instalar Docker CLI dentro de Jenkins
+### 4.2 Instalar Docker CLI + Docker Compose en Jenkins
 
 ```bash
+# Actualizar repositorios
 docker exec -u root jenkins apt-get update
+
+# Instalar Docker CLI (sin daemon)
 docker exec -u root jenkins apt-get install -y docker.io
-docker exec -u root jenkins apt-get install -y docker-compose-plugin
+
+# Descargar Docker Compose v2 binario (más confiable que plugin)
+docker exec -u root jenkins sh -c 'curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose'
+
+# Hacer ejecutable
+docker exec -u root jenkins chmod +x /usr/local/bin/docker-compose
+
+# Verificar instalación
 docker exec jenkins docker --version
-docker exec jenkins docker compose version
+docker exec jenkins docker-compose --version
 ```
 
 ### 4.3 Configurar Permisos (con persistencia)
@@ -172,55 +182,37 @@ docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 1. **Pasos de construcción** → **Agregar paso** → **Ejecutar shell**
 2. Pega el script completo abajo:
 
-> 🔧 **Nota:** El script usa comandos `docker` directos (sin Docker Compose) ya que el plugin  
-> `docker-compose-plugin` no está disponible en los repositorios APT de la imagen `jenkins:lts` (Debian trixie).  
-> Se instala Compose v2 manualmente si se desea, pero este script funciona solo con `docker.io`.
+> ✅ **Nota:** El script usa `docker-compose` (binario descargado en 4.2) para orquestar todos los servicios  
+> definidos en `compose.yaml`. Esto automatiza completamente la inicialización de base de datos  
+> con todos los scripts SQL ejecutados por Docker al levantar MySQL.
 
 ```bash
 #!/bin/bash
 set -e
 
-echo "=== [1/5] Compilar WAR ==="
+echo "=== [1/4] Compilar WAR ==="
 bash mvnw clean package
 test -f target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war
 
-echo "=== [2/5] Red Docker ==="
-docker network create adopciones-network 2>/dev/null || true
+echo "=== [2/4] Detener contenedores anteriores ==="
+docker-compose down 2>/dev/null || true
+docker rm -f adopciones-mysql adopciones-app 2>/dev/null || true
 
-echo "=== [3/5] Levantar MySQL ==="
-if [ "$(docker inspect -f '{{.State.Running}}' adopciones-mysql 2>/dev/null)" != "true" ]; then
-  docker rm -f adopciones-mysql 2>/dev/null || true
-  docker run -d \
-    --name adopciones-mysql \
-    --network adopciones-network \
-    -e MYSQL_DATABASE=adopciones_db \
-    -e MYSQL_USER=myuser \
-    -e MYSQL_PASSWORD=secret \
-    -e MYSQL_ROOT_PASSWORD=1234 \
-    -p 3306:3306 \
-    mysql:8.0
-  echo "Esperando MySQL..."
-  sleep 30
-else
-  echo "MySQL ya corriendo."
-fi
+echo "=== [3/4] Levantar stack completo (MySQL + App) ==="
+docker-compose up -d
 
-echo "=== [4/5] Build imagen + levantar app ==="
-docker rm -f adopciones-app 2>/dev/null || true
-docker build -t adopciones-sistema:latest .
-docker run -d \
-  --name adopciones-app \
-  --network adopciones-network \
-  -p 8090:8090 \
-  -e SPRING_DATASOURCE_URL="jdbc:mysql://adopciones-mysql:3306/adopciones_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true" \
-  -e SPRING_DATASOURCE_USERNAME=myuser \
-  -e SPRING_DATASOURCE_PASSWORD=secret \
-  -e SERVER_PORT=8090 \
-  adopciones-sistema:latest
+echo "=== [4/4] Esperar a que servicios estén listos ==="
+sleep 15
+docker-compose exec -T mysql mysqladmin ping -h localhost -u root -p1234 || sleep 20
 
-echo "=== [5/5] Estado ==="
-docker ps --filter name=adopciones-mysql --filter name=adopciones-app
-echo "App: http://localhost:8090"
+echo "=== Estado de servicios ==="
+docker-compose ps
+echo ""
+echo "📊 Dashboard: http://localhost:8080"
+echo "🐾 Aplicación:  http://localhost:8090"
+echo "💾 MySQL:      localhost:3306"
+echo ""
+echo "✅ Despliegue completado"
 ```
 
 3. **Guardar**
@@ -258,28 +250,44 @@ Debería retornar:
 
 ---
 
-## 9️⃣ Estructura de Contenedores
+## 9️⃣ Estructura de Contenedores (Docker Compose)
 
 ```
-adopciones-network (Red compartida)
+adopciones-network (Red automática de compose)
 │
 ├── adopciones-mysql (mysql:8.0)
 │   ├── Puerto: 3306
 │   ├── Base de datos: adopciones_db
 │   ├── Usuario app: myuser
-│   └── Contraseñas: myuser/secret, root/1234
+│   ├── Contraseñas: myuser/secret, root/1234
+│   ├── Volúmenes SQL (auto-ejecutados):
+│   │   ├── 01-schema-mysql.sql
+│   │   ├── 02-init-database.sql
+│   │   ├── 03-V2-SolicitudEstados.sql
+│   │   ├── 04-V3-MascotaCompatibilidad.sql
+│   │   └── 05-V4-Usuarios.sql
+│   └── Healthcheck: mysqladmin ping
 │
-├── jenkins (jenkins:lts con DinD)
-│   ├── Puerto: 8080
-│   ├── Puerto agentes: 50000
-│   ├── Volumen: jenkins_home
-│   └── Docker Socket: /var/run/docker.sock
+├── adopciones-app (Spring Boot War)
+│   ├── Puerto: 8090
+│   ├── Conecta a: adopciones-mysql:3306
+│   ├── Depende de: MySQL (service_healthy)
+│   └── Reinicio automático
 │
-└── adopciones-app (Creado automáticamente por Jenkins + Compose)
-    ├── Puerto: 8090
-    ├── Conecta a: adopciones-mysql:3306
-    └── Deploy: Automático con cada build
+└── jenkins (jenkins:lts con DinD)
+    ├── Puerto: 8080
+    ├── Puerto agentes: 50000
+    ├── Volumen: jenkins_home (persistente)
+    └── Socket Docker: /var/run/docker.sock (para ejecutar compose)
 ```
+
+**Ventajas de Docker Compose:**
+- ✅ Levanta todos los servicios en orden correcto
+- ✅ Ejecuta scripts SQL automáticamente al iniciar MySQL
+- ✅ Maneja dependencias entre servicios (healthcheck)
+- ✅ Red compartida creada automáticamente
+- ✅ Variables de entorno centralizadas en `compose.yaml`
+- ✅ Comandos `docker compose down` limpian todo
 
 ---
 
@@ -291,17 +299,30 @@ adopciones-network (Red compartida)
 2. Jenkins detecta cambios (cada 5 min)
            ↓
 3. Jenkins ejecuta automáticamente:
-   ✓ Maven compila código
-   ✓ Genera WAR
-   ✓ Construye imagen Docker desde Dockerfile
-   ✓ Levanta mysql + app con Docker Compose
+   ✓ Maven compila código (mvnw clean package)
+   ✓ Genera WAR empaquetado
+   ✓ Ejecuta docker-compose down (limpia previos)
+   ✓ Ejecuta docker-compose up -d (levanta stack)
            ↓
-4. Aplicación actualizada en http://localhost:8090
-   ✓ Conectada a MySQL
-   ✓ Con últimos cambios
+4. Docker Compose orquesta:
+   ✓ Crea red automática
+   ✓ Levanta MySQL con scripts SQL auto-ejecutados
+   ✓ Construye imagen Docker de la app
+   ✓ Conecta app a MySQL cuando está listo
+           ↓
+5. Aplicación actualizada en http://localhost:8090
+   ✓ Conectada a MySQL con datos inicializados
+   ✓ Con últimos cambios del código
+   ✓ Base de datos completamente configurada
 ```
 
-**Tiempo total:** 1-2 minutos desde push hasta producción
+**Tiempo total:** 2-3 minutos desde push hasta producción con BD lista
+
+**Datos inicializados automáticamente:**
+- ✅ Tablas creadas (schema-mysql.sql)
+- ✅ Migrations ejecutadas (V2, V3, V4)
+- ✅ Usuarios de ejemplo insertados
+- ✅ Datos de ejemplo para mascotas, solicitantes, etc.
 
 ---
 
@@ -411,19 +432,35 @@ docker image prune -a
 
 ### ✅ Lo que cambió
 
-- Deploy con comandos `docker` directos (sin Docker Compose) desde Jenkins
+- Deploy con **`docker-compose` orchestration** desde Jenkins (bin en `/usr/local/bin/docker-compose`)
+- Script SQL ejecutado automáticamente al iniciar MySQL:
+  - `schema-mysql.sql` → Define tablas
+  - `init-database.sql` → Datos de ejemplo
+  - `V2__SolicitudEstados.sql` → Migrations
+  - `V3__MascotaCompatibilidad.sql` → Migrations
+  - `V4__Usuarios.sql` → Tabla usuarios con datos
+- Archivo `compose.yaml` en raíz del proyecto orquesta MySQL + App
 - MySQL container: `adopciones-mysql`
 - Base de datos por defecto: `adopciones_db`
 - Usuario app por defecto: `myuser/secret`
-- Script de Jenkins (tarea libre): compilación WAR + despliegue automático
-- Permisos Docker socket configurados con persistencia via `usermod -aG docker jenkins`
+- Permisos Docker socket: `docker exec -u root jenkins usermod -aG docker jenkins`
+- Jenkins puede ejecutar `docker` y `docker-compose` correctamente
+
+### 📝 Ventajas de esta configuración
+
+1. **Reproducibilidad**: El mismo `compose.yaml` funciona en cualquier máquina
+2. **Inicialización automática**: No necesitas ejecutar scripts SQL manualmente
+3. **Dependencias**: Compose espera a que MySQL esté listo antes de levantar la app
+4. **Escalabilidad**: Fácil agregar más servicios al `compose.yaml`
+5. **Limpieza**: `docker compose down` elimina todo correctamente
 
 ### ⚠️ Para Producción
 
-- Cambiar credenciales MySQL
-- No pasar ENV variables sensibles (usar secrets de Docker)
+- Cambiar credenciales MySQL (en `.env` en lugar de valores por defecto)
+- No pasar ENV variables sensibles (usar Docker Secrets o Vault)
 - Usar HTTPS en lugar de HTTP
-- Configurar backups de volumen jenkins_home
+- Configurar backups de volumen `jenkins_home`
+- Usar base de datos RDS/managed en lugar de contenedor
 
 ---
 
