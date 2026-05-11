@@ -47,91 +47,85 @@ public class LoginController {
     // ========== FORMULARIOS DE LOGIN ==========
 
     /**
-     * Mostrar formulario de login para solicitantes
+     * 🆕 FLUJO UNIFICADO: Mostrar formulario único de login
+     *
+     * El formulario es el mismo para todos los roles.
+     * Al ingresar credenciales, el sistema automáticamente:
+     * - SOLICITANTE → `/solicitudes/mis-solicitudes`
+     * - ADMIN → `/admin/dashboard`
+     * - STAFF → `/admin/solicitudes/gestionar`
      */
     @GetMapping("/login")
-    public String mostrarLoginSolicitante(HttpSession session) {
-        log.info("📄 Accediendo a formulario de login de solicitante");
+    public String mostrarLogin(HttpSession session) {
+        log.info("📄 Accediendo a formulario de login unificado");
 
-        // Si ya hay sesión activa, redirigir al dashboard
+        // Si ya hay sesión activa, redirigir según rol
         if (haySessionActiva(session)) {
             String rol = (String) session.getAttribute(SESSION_ATTR_ROL);
             log.info("✓ Usuario ya autenticado con rol: {}", rol);
-            return rol != null && rol.equals(ROL_ADMIN)
-                    ? "redirect:/admin/dashboard"
-                    : "redirect:/solicitudes/mis-solicitudes";
+            return redirigirSegunRol(rol);
         }
 
-        return "login/loginSolicitante";
+        return "login/login";
     }
 
     /**
-     * Mostrar formulario de login para administradores
+     * @deprecated Redirige a /login (flujo unificado)
      */
     @GetMapping("/login/admin")
     public String mostrarLoginAdmin(HttpSession session) {
-        log.info("📄 Accediendo a formulario de login de administrador");
-
-        // Si hay sesión admin, redirigir al dashboard
-        if (haySessionActiva(session)) {
-            String rol = (String) session.getAttribute(SESSION_ATTR_ROL);
-            if (ROL_ADMIN.equals(rol)) {
-                log.info("✓ Admin ya autenticado");
-                return "redirect:/admin/dashboard";
-            }
-        }
-
-        return "login/loginAdmin";
+        log.warn("⚠️ /login/admin está deprecado, redirigiendo a /login");
+        return "redirect:/login";
     }
 
     /**
-     * Mostrar formulario de acceso público
+     * @deprecated Redirige a /login (flujo unificado)
      */
     @GetMapping("/acceso")
     public String mostrarAcceso() {
-        log.info("📄 Accediendo a página de selección de acceso");
-        return "login/acceso";
+        log.warn("⚠️ /acceso está deprecado, redirigiendo a /login");
+        return "redirect:/login";
     }
 
     // ========== PROCESAMIENTO DE LOGIN ==========
 
     /**
-     * Procesar login de solicitante
+     * 🆕 FLUJO UNIFICADO: Procesar login para TODOS los roles
      *
-     * @param email Email del solicitante
+     * Valida credenciales y redirige automáticamente según el rol del usuario:
+     * - SOLICITANTE → `/solicitudes/mis-solicitudes`
+     * - ADMIN → `/admin/dashboard`
+     * - STAFF → `/admin/solicitudes/gestionar`
+     *
+     * @param email Email del usuario
      * @param password Contraseña
      * @param session Sesión HTTP para almacenar datos de usuario
-     * @param model Modelo para pasar datos a la vista
      * @param redirectAttributes Atributos para redireccionamiento con mensaje flash
-     * @return Redirección a dashboard o vuelta al login con error
+     * @return Redirección a dashboard según rol o vuelta al login con error
      */
     @PostMapping("/login/procesar")
-    public String procesarLoginSolicitante(
+    public String procesarLogin(
             @RequestParam String email,
             @RequestParam String password,
             HttpSession session,
-            Model model,
             RedirectAttributes redirectAttributes) {
 
-        log.info("🔐 [LOGIN] Intento de autenticación de solicitante: {}", email);
+        log.info("🔐 [LOGIN] Intento de autenticación unificado para: {}", email);
 
         try {
             // Validar credenciales
             Usuario usuario = usuarioService.iniciarSesion(email, password);
 
-            // Verificar rol
-            if (!usuario.getRol().equals(Usuario.RolUsuario.SOLICITANTE)) {
-                log.warn("⚠️ [LOGIN] Usuario con rol incorrecto intentando acceso solicitante: {}", email);
-                redirectAttributes.addFlashAttribute("error",
-                        "Este usuario no tiene permiso para acceso de solicitante. Use el login de administrador.");
-                return "redirect:/acceso";
-            }
-
             // Crear sesión
             crearSesion(session, usuario);
 
-            log.info("✅ [LOGIN] Sesión iniciada para solicitante: {} (ID: {})", email, usuario.getId());
-            return "redirect:/";
+            // Obtener rol y redirigir automáticamente
+            String rol = usuario.getRol().toString();
+            String redirectUrl = redirigirSegunRol(rol);
+
+            log.info("✅ [LOGIN] Autenticación exitosa para {} - Rol: {} - Redirigiendo a {}",
+                    email, rol, redirectUrl);
+            return redirectUrl;
 
         } catch (IllegalArgumentException e) {
             log.warn("⚠️ [LOGIN] Error de autenticación para {}: {}", email, e.getMessage());
@@ -145,13 +139,7 @@ public class LoginController {
     }
 
     /**
-     * Procesar login de administrador
-     *
-     * @param email Email del administrador
-     * @param password Contraseña
-     * @param session Sesión HTTP
-     * @param redirectAttributes Atributos para mensajes flash
-     * @return Redirección a dashboard admin o error
+     * @deprecated Redirige a /login/procesar (flujo unificado)
      */
     @PostMapping("/login/admin/procesar")
     public String procesarLoginAdmin(
@@ -159,56 +147,29 @@ public class LoginController {
             @RequestParam String password,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
-
-        log.info("🔐 [LOGIN] Intento de autenticación de administrador: {}", email);
-
-        try {
-            // Validar credenciales
-            Usuario usuario = usuarioService.iniciarSesion(email, password);
-
-            // Verificar rol
-            if (!usuario.getRol().equals(Usuario.RolUsuario.ADMIN)) {
-                log.warn("⚠️ [LOGIN] Usuario con rol incorrecto intentando acceso admin: {}", email);
-                redirectAttributes.addFlashAttribute("error",
-                        "Este usuario no tiene permisos de administrador. Use el login de solicitante.");
-                return "redirect:/acceso";
-            }
-
-            // Crear sesión
-            crearSesion(session, usuario);
-
-            log.info("✅ [LOGIN] Sesión iniciada para admin: {} (ID: {})", email, usuario.getId());
-            return "redirect:/admin/dashboard";
-
-        } catch (IllegalArgumentException e) {
-            log.warn("⚠️ [LOGIN] Error de autenticación para admin {}: {}", email, e.getMessage());
-            redirectAttributes.addFlashAttribute("error", "Email o contraseña incorrectos");
-            return "redirect:/login/admin";
-        } catch (Exception e) {
-            log.error("❌ [LOGIN] Error inesperado durante login admin: {}", e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("error", "Error al procesar login. Intente nuevamente.");
-            return "redirect:/login/admin";
-        }
+        log.warn("⚠️ /login/admin/procesar está deprecado, redirigiendo a /login/procesar");
+        return procesarLogin(email, password, session, redirectAttributes);
     }
 
     // ========== LOGOUT ==========
 
     /**
-     * Cerrar sesión del usuario
+     * 🆕 Cerrar sesión del usuario (redirige a /login)
      *
      * @param session Sesión HTTP a invalidar
      * @param redirectAttributes Atributos para mensajes flash
-     * @return Redirección a página de inicio
+     * @return Redirección a página de login
      */
     @GetMapping("/logout")
     public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
         Long usuarioId = (Long) session.getAttribute("usuarioId");
+        String email = (String) session.getAttribute("email");
 
         if (usuarioId != null) {
             try {
                 // Invocar servicio de logout en BD
                 usuarioService.cerrarSesion(usuarioId);
-                log.info("✅ [LOGOUT] Sesión cerrada para usuario ID: {}", usuarioId);
+                log.info("✅ [LOGOUT] Sesión cerrada para usuario ID: {} ({})", usuarioId, email);
             } catch (Exception e) {
                 log.warn("⚠️ [LOGOUT] Error al cerrar sesión en BD para ID {}: {}", usuarioId, e.getMessage());
             }
@@ -219,7 +180,7 @@ public class LoginController {
         log.info("✅ [LOGOUT] Sesión HTTP invalidada");
 
         redirectAttributes.addFlashAttribute("mensaje", "¡Has cerrado sesión exitosamente!");
-        return "redirect:/acceso";
+        return "redirect:/login";
     }
 
     // ========== MÉTODOS AUXILIARES ==========
@@ -300,6 +261,35 @@ public class LoginController {
 
         // Log de éxito
         log.debug("✓ [PERMISO CONCEDIDO] Usuario {} validado como ADMIN", usuario.getEmail());
+    }
+
+    /**
+     * 🆕 FLUJO UNIFICADO: Redirigir según el rol del usuario
+     *
+     * Implementa el redirecionamiento automático según rol:
+     * - SOLICITANTE → `/solicitudes/mis-solicitudes`
+     * - ADMIN → `/admin/dashboard`
+     * - STAFF → `/admin/solicitudes/gestionar`
+     * - Otro → `/` (inicio)
+     *
+     * @param rol Rol del usuario (ej: "ADMIN", "SOLICITANTE", "STAFF")
+     * @return URL a redirigir
+     */
+    private String redirigirSegunRol(String rol) {
+        if (rol == null) {
+            log.warn("⚠️ Rol null, redirigiendo a inicio");
+            return "redirect:/";
+        }
+
+        return switch (rol) {
+            case "ADMIN" -> "redirect:/admin/dashboard";
+            case "STAFF" -> "redirect:/admin/solicitudes/gestionar";
+            case "SOLICITANTE" -> "redirect:/solicitudes/mis-solicitudes";
+            default -> {
+                log.warn("⚠️ Rol desconocido: {}, redirigiendo a inicio", rol);
+                yield "redirect:/";
+            }
+        };
     }
 
     /**
