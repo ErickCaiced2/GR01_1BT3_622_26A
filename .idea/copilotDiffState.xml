@@ -39,6 +39,14 @@
             </PendingDiffInfo>
           </value>
         </entry>
+        <entry key="/SOLUCION_ERROR_500 (snapshot).md">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="/SOLUCION_ERROR_500 (snapshot).md" />
+              <option name="updatedContent" value="#  SOLUCIÓN - ERROR 500 EN `/solicitudes/mis-solicitudes`&#10;&#10;##  Problema Identificado&#10;&#10;El error ocurre por **desfase de datos entre tablas usuarios y solicitantes**.&#10;&#10;Cuando el usuario se loguea y accede a `/solicitudes/mis-solicitudes`, el sistema busca:&#10;```java&#10;Long solicitanteId = (Long) session.getAttribute(&quot;solicitanteId&quot;); // ← ES NULL = ERROR 500&#10;```&#10;&#10;##  Causa Raíz en LoginController (línea 366-381)&#10;&#10;```java&#10;if (usuario.getRol().equals(Usuario.RolUsuario.SOLICITANTE)) {&#10;    var solicitanteOpt = solicitanteService.obtenerPorEmail(usuario.getEmail());&#10;    if (solicitanteOpt.isPresent()) {&#10;        session.setAttribute(&quot;solicitanteId&quot;, solicitanteId); // ✅ OK&#10;    } else {&#10;        log.warn(&quot;⚠️ Solicitante no encontrado para email...&quot;);&#10;        // ❌ NO GUARDA solicitanteId - FALLA!&#10;    }&#10;}&#10;```&#10;&#10;## ✅ SOLUCIÓN IMPLEMENTADA&#10;&#10;### 1. Script SQL Nuevo Creado&#10;**Archivo:** `cleanup-database-complete.sql`&#10;&#10;Este script asegura:&#10;- ✅ Crea tabla `usuarios` ANTES de `solicitantes`&#10;- ✅ Inserta `usuarios` primero&#10;- ✅ Inserta `solicitantes` con emails que EXISTEN en `usuarios`&#10;- ✅ Usa `INSERT IGNORE` para evitar duplicados&#10;&#10;### 2. Comando para Ejecutar en Jenkins/LocalHost&#10;&#10;**En PowerShell:**&#10;```powershell&#10;$sqlPath = &quot;C:\Users\admin\IdeaProjects\GR01_1BT3_622_26A(2)\src\main\resources\cleanup-database-complete.sql&quot;&#10;Get-Content $sqlPath | docker exec -i adopciones-mysql mysql -u myuser -psecret adopciones_db&#10;```&#10;&#10;**En CMD:**&#10;```cmd&#10;type &quot;C:\Users\admin\IdeaProjects\GR01_1BT3_622_26A(2)\src\main\resources\cleanup-database-complete.sql&quot; | docker exec -i adopciones-mysql mysql -u myuser -psecret adopciones_db&#10;```&#10;&#10;### 3. Reiniciar Aplicación&#10;&#10;```bash&#10;mvn clean install&#10;mvn spring-boot:run&#10;```&#10;&#10;Luego usa credenciales:&#10;```&#10;Email: carlos.garcia@email.com&#10;Contraseña: password123&#10;```&#10;&#10;##  Verificación&#10;&#10;Query para confirmar que los datos están correctos:&#10;```sql&#10;SELECT u.email, u.rol, COUNT(s.id) as tiene_solicitante&#10;FROM usuarios u&#10;LEFT JOIN solicitantes s ON u.email = s.email&#10;GROUP BY u.email, u.rol;&#10;```&#10;&#10;Debe mostrar `tiene_solicitante = 1` para todos los SOLICITANTES." />
+            </PendingDiffInfo>
+          </value>
+        </entry>
         <entry key="/SolicitudService (snapshot).java">
           <value>
             <PendingDiffInfo>

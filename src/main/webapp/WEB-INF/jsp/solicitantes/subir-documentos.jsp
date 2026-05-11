@@ -48,27 +48,9 @@
          */
         body {
 
-            background:
-                    linear-gradient(
-                            135deg,
-                            var(--primary-color) 0%,
-                            var(--secondary-color) 100%
-                    );
+            background-color: #f7f7f7;
 
             min-height: 100vh;
-        }
-
-        /*
-         * Navbar sistema
-         */
-        .navbar {
-
-            background:
-                    linear-gradient(
-                            135deg,
-                            var(--primary-color) 0%,
-                            var(--secondary-color) 100%
-                    );
         }
 
         /*
@@ -229,20 +211,7 @@
 <body>
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark">
-
-    <div class="container">
-
-        <a class="navbar-brand" href="/">
-
-            <i class="fas fa-paw"></i>
-
-            Sistema de Adopciones
-        </a>
-
-    </div>
-
-</nav>
+<jsp:include page="/WEB-INF/jsp/navbar.jsp" />
 
 <!-- Contenido -->
 <div class="container my-5">

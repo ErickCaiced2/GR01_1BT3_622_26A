@@ -10,16 +10,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary-color: #FF6B6B; --secondary-color: #4ECDC4; }
-        .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); }
         table { border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/"><i class="fas fa-paw"></i> Sistema de Adopciones</a>
-        </div>
-    </nav>
+    <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
 
     <div class="container my-5">
         <h2>${titulo != null ? titulo : 'Lista de Solicitudes'}</h2>

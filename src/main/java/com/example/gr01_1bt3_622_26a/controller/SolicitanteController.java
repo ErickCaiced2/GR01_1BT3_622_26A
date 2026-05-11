@@ -54,6 +54,16 @@ public class SolicitanteController {
         return "redirect:/solicitantes/" + solicitanteRegistrado.getId();
     }
 
+    @GetMapping("/perfil")
+    public String verPerfilActual(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        Long solicitanteId = (Long) session.getAttribute("solicitanteId");
+        if (solicitanteId == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para acceder a tu perfil");
+            return "redirect:/login";
+        }
+        return verPerfil(solicitanteId, model);
+    }
+
     @GetMapping("/{id}")
     public String verPerfil(@PathVariable Long id, Model model) {
         Optional<Solicitante> solicitante = solicitanteService.obtenerPorId(id);
@@ -88,6 +98,19 @@ public class SolicitanteController {
         solicitanteService.actualizarSolicitante(solicitante);
         redirectAttributes.addFlashAttribute("mensaje", "Datos actualizados exitosamente");
         return "redirect:/solicitantes/" + id;
+    }
+
+    /**
+     * T.2.5 - Mostrar página de carga de documentos del usuario actual
+     */
+    @GetMapping("/documentos")
+    public String mostrarVistaDocumentosActual(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        Long solicitanteId = (Long) session.getAttribute("solicitanteId");
+        if (solicitanteId == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión para subir documentos");
+            return "redirect:/login";
+        }
+        return mostrarVistaDocumentos(solicitanteId, session, model, redirectAttributes);
     }
 
     /**
