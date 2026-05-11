@@ -193,20 +193,40 @@ public class SolicitudController {
     public String aprobarSolicitud(@PathVariable Long id,
                                    @RequestParam(required = false) String observaciones,
                                    RedirectAttributes redirectAttributes) {
-        Solicitud solicitud = solicitudService.aprobarSolicitud(id, observaciones != null ? observaciones : "");
-        if (solicitud != null) {
-            redirectAttributes.addFlashAttribute("mensaje", "Solicitud aprobada exitosamente");
+        try {
+            Solicitud solicitud = solicitudService.aprobarSolicitud(id, observaciones != null ? observaciones : "");
+            if (solicitud != null) {
+                log.info("Solicitud {} aprobada exitosamente", id);
+                redirectAttributes.addFlashAttribute("mensaje", "Solicitud aprobada exitosamente");
+            }
+        } catch (Exception e) {
+            log.error("Error al aprobar solicitud {}: {}", id, e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error al aprobar solicitud");
         }
-        return "redirect:/solicitudes/" + id;
+        return "redirect:/admin/solicitudes/gestionar";
     }
     
     @PostMapping("/{id}/rechazar")
-    public String rechazarSolicitud(@PathVariable Long id, @RequestParam String razon, RedirectAttributes redirectAttributes) {
-        Solicitud solicitud = solicitudService.rechazarSolicitud(id, razon);
-        if (solicitud != null) {
-            redirectAttributes.addFlashAttribute("mensaje", "Solicitud rechazada");
+    public String rechazarSolicitud(@PathVariable Long id,
+                                   @RequestParam String razon,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            if (razon == null || razon.trim().isEmpty()) {
+                log.warn("Intento de rechazar solicitud {} sin razón", id);
+                redirectAttributes.addFlashAttribute("error", "Debes proporcionar una razón para rechazar");
+                return "redirect:/admin/solicitudes/gestionar";
+            }
+
+            Solicitud solicitud = solicitudService.rechazarSolicitud(id, razon);
+            if (solicitud != null) {
+                log.info("Solicitud {} rechazada exitosamente", id);
+                redirectAttributes.addFlashAttribute("mensaje", "Solicitud rechazada exitosamente");
+            }
+        } catch (Exception e) {
+            log.error("Error al rechazar solicitud {}: {}", id, e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error al rechazar solicitud");
         }
-        return "redirect:/solicitudes/" + id;
+        return "redirect:/admin/solicitudes/gestionar";
     }
 }
 

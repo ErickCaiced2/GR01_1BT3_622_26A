@@ -5,6 +5,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Token CSRF para peticiones POST -->
+    <meta name="_csrf" content="${_csrf.token}">
+    <meta name="_csrf_header" content="${_csrf.headerName}">
     <title>Gestionar Estados - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -207,6 +210,18 @@
     const toast = new bootstrap.Toast(document.getElementById('estadoToast'));
     let solicitudActual = null;
 
+    // Obtener token CSRF del meta tag
+    function getCsrfToken() {
+        const token = document.querySelector('meta[name="_csrf"]');
+        return token ? token.getAttribute('content') : '';
+    }
+
+    // Obtener header CSRF del meta tag
+    function getCsrfHeader() {
+        const header = document.querySelector('meta[name="_csrf_header"]');
+        return header ? header.getAttribute('content') : 'X-CSRF-TOKEN';
+    }
+
     aprobarModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         solicitudActual = button.getAttribute('data-solicitud-id');
@@ -227,41 +242,62 @@
             body.append('observaciones', observaciones);
         }
 
-        await enviarCambioEstado(`/solicitudes/${solicitudActual}/aprobar`, body);
-        document.getElementById('estadoToastBody').textContent = 'Solicitud aprobada exitosamente.';
-        toast.show();
-        bootstrap.Modal.getInstance(aprobarModal).hide();
-        setTimeout(() => window.location.reload(), 700);
+        try {
+            await enviarCambioEstado(`/solicitudes/${solicitudActual}/aprobar`, body);
+            document.getElementById('estadoToastBody').textContent = 'Solicitud aprobada exitosamente.';
+            toast.show();
+            bootstrap.Modal.getInstance(aprobarModal).hide();
+            setTimeout(() => window.location.reload(), 700);
+        } catch (error) {
+            document.getElementById('estadoToastBody').textContent = 'Error: ' + error.message;
+            toast.show();
+        }
     });
 
     rechazarForm.addEventListener('submit', async function (event) {
         event.preventDefault();
         const razon = document.getElementById('razonRechazo').value.trim();
         if (!razon) {
+            alert('Debes ingresar una razón para rechazar la solicitud');
             return;
         }
 
         const body = new URLSearchParams();
         body.append('razon', razon);
 
-        await enviarCambioEstado(`/solicitudes/${solicitudActual}/rechazar`, body);
-        document.getElementById('estadoToastBody').textContent = 'Solicitud rechazada exitosamente.';
-        toast.show();
-        bootstrap.Modal.getInstance(rechazarModal).hide();
-        setTimeout(() => window.location.reload(), 700);
+        try {
+            await enviarCambioEstado(`/solicitudes/${solicitudActual}/rechazar`, body);
+            document.getElementById('estadoToastBody').textContent = 'Solicitud rechazada exitosamente.';
+            toast.show();
+            bootstrap.Modal.getInstance(rechazarModal).hide();
+            setTimeout(() => window.location.reload(), 700);
+        } catch (error) {
+            document.getElementById('estadoToastBody').textContent = 'Error: ' + error.message;
+            toast.show();
+        }
     });
 
     async function enviarCambioEstado(url, body) {
+        const csrfToken = getCsrfToken();
+        const csrfHeader = getCsrfHeader();
+        const headers = {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        };
+
+        // Agregar token CSRF si existe
+        if (csrfToken) {
+            headers[csrfHeader] = csrfToken;
+        }
+
         const response = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-            },
+            headers: headers,
             body: body.toString()
         });
 
         if (!response.ok) {
-            throw new Error('No fue posible actualizar el estado');
+            const errorMsg = await response.text();
+            throw new Error(errorMsg || 'No fue posible actualizar el estado');
         }
     }
 </script>
