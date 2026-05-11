@@ -228,5 +228,36 @@ public class SolicitudController {
         }
         return "redirect:/admin/solicitudes/gestionar";
     }
-}
+
+    @PostMapping("/{id}/enviar-a-revision")
+    public String enviarARevision(@PathVariable Long id,
+                                 @RequestParam(required = false) String observaciones,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            log.info("Enviando solicitud {} a revisión", id);
+
+            // Obtener la solicitud actual
+            Optional<Solicitud> solicitudOpt = solicitudService.obtenerPorId(id);
+            if (solicitudOpt.isEmpty()) {
+                log.warn("Solicitud {} no encontrada", id);
+                redirectAttributes.addFlashAttribute("error", "Solicitud no encontrada");
+                return "redirect:/admin/solicitudes/gestionar";
+            }
+
+            Solicitud solicitud = solicitudOpt.get();
+            solicitud.setEstado("En revisión");
+            if (observaciones != null && !observaciones.trim().isEmpty()) {
+                solicitud.setObservaciones(observaciones);
+            }
+
+            solicitudService.actualizarSolicitud(solicitud);
+            log.info("Solicitud {} enviada a revisión exitosamente", id);
+            redirectAttributes.addFlashAttribute("mensaje", "Solicitud enviada a revisión");
+
+        } catch (Exception e) {
+            log.error("Error al enviar solicitud {} a revisión: {}", id, e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error al enviar a revisión");
+        }
+        return "redirect:/admin/solicitudes/gestionar";
+    }
 

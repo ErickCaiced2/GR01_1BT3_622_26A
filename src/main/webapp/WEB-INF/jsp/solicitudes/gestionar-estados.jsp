@@ -110,6 +110,15 @@
                                 <td class="text-end">
                                     <div class="action-group justify-content-end">
                                         <button type="button"
+                                                class="btn btn-primary btn-sm"
+                                                data-solicitud-id="${solicitud.id}"
+                                                data-solicitante="${solicitud.solicitante.nombre}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#revisionModal"
+                                                <c:if test="${solicitud.estado == 'En revisión'}">disabled</c:if>>
+                                            <i class="fas fa-sync-alt"></i> A Revisión
+                                        </button>
+                                        <button type="button"
                                                 class="btn btn-success btn-sm"
                                                 data-solicitud-id="${solicitud.id}"
                                                 data-solicitante="${solicitud.solicitante.nombre}"
@@ -149,6 +158,30 @@
         <div class="d-flex">
             <div class="toast-body" id="estadoToastBody">Estado actualizado correctamente.</div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="revisionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #e3f2fd;">
+                <h5 class="modal-title"><i class="fas fa-sync-alt text-primary"></i> Enviar a Revisión</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form id="revisionForm">
+                <div class="modal-body">
+                    <p class="mb-3">Enviarás a revisión la solicitud de <strong id="revisionSolicitante"></strong>.</p>
+                    <div class="mb-3">
+                        <label for="observacionesRevision" class="form-label">Observaciones (opcional)</label>
+                        <textarea class="form-control" id="observacionesRevision" rows="3" placeholder="Agrega observaciones sobre la revisión"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Enviar a revisión</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -203,8 +236,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    const revisionModal = document.getElementById('revisionModal');
     const aprobarModal = document.getElementById('aprobarModal');
     const rechazarModal = document.getElementById('rechazarModal');
+    const revisionForm = document.getElementById('revisionForm');
     const aprobarForm = document.getElementById('aprobarForm');
     const rechazarForm = document.getElementById('rechazarForm');
     const toast = new bootstrap.Toast(document.getElementById('estadoToast'));
@@ -222,6 +257,12 @@
         return header ? header.getAttribute('content') : 'X-CSRF-TOKEN';
     }
 
+    revisionModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        solicitudActual = button.getAttribute('data-solicitud-id');
+        document.getElementById('revisionSolicitante').textContent = button.getAttribute('data-solicitante');
+    });
+
     aprobarModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         solicitudActual = button.getAttribute('data-solicitud-id');
@@ -232,6 +273,26 @@
         const button = event.relatedTarget;
         solicitudActual = button.getAttribute('data-solicitud-id');
         document.getElementById('rechazarSolicitante').textContent = button.getAttribute('data-solicitante');
+    });
+
+    revisionForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const observaciones = document.getElementById('observacionesRevision').value.trim();
+        const body = new URLSearchParams();
+        if (observaciones) {
+            body.append('observaciones', observaciones);
+        }
+
+        try {
+            await enviarCambioEstado(`/solicitudes/${solicitudActual}/enviar-a-revision`, body);
+            document.getElementById('estadoToastBody').textContent = 'Solicitud enviada a revisión exitosamente.';
+            toast.show();
+            bootstrap.Modal.getInstance(revisionModal).hide();
+            setTimeout(() => window.location.reload(), 700);
+        } catch (error) {
+            document.getElementById('estadoToastBody').textContent = 'Error: ' + error.message;
+            toast.show();
+        }
     });
 
     aprobarForm.addEventListener('submit', async function (event) {
