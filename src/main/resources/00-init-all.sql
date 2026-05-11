@@ -145,7 +145,9 @@ INSERT INTO mascotas (nombre, tipo, raza, edad, genero, color, peso_kg, descripc
 ('Oscar', 'Perro', 'Cocker Spaniel', 4, 'Macho', 'Marrón', 28.0, 'Perro energético y amigable. Adora el agua. Requiere ejercicio regular.', 'Disponible', 'Disponible'),
 ('Whiskers', 'Gato', 'Mestizo', 7, 'Macho', 'Gris', 4.8, 'Gato adulto, tranquilo y cariñoso. Perfecto para jubilados o personas sedentarias.', 'Adoptado', 'Disponible');
 
-INSERT INTO solicitantes (nombre, apellido, email, telefono, direccion, ciudad, documento_identidad, tipo_documento, fecha_nacimiento, estado) VALUES
+-- ⚠️ IMPORTANTE: Crear solicitantes DESPUÉS de usuarios
+-- Los emails deben coincidir exactamente con la tabla usuarios
+INSERT IGNORE INTO solicitantes (nombre, apellido, email, telefono, direccion, ciudad, documento_identidad, tipo_documento, fecha_nacimiento, estado) VALUES
 ('Carlos', 'García', 'carlos.garcia@email.com', '3001234567', 'Calle 10 #45-67', 'Bogotá', '1234567890', 'CC', '1985-03-15', 'Activo'),
 ('María', 'López', 'maria.lopez@email.com', '3107654321', 'Carrera 5 #78-90', 'Medellín', '9876543210', 'CC', '1990-07-22', 'Activo'),
 ('Juan', 'Rodríguez', 'juan.rodriguez@email.com', '3152468135', 'Avenida Central #123', 'Cali', '5555666677', 'CC', '1980-11-10', 'Activo'),
