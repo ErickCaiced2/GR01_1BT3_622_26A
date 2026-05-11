@@ -125,7 +125,7 @@ class SolicitudControllerUnitTest {
                         .param("observaciones", "Aprobado. Mascota lista para entregar")
         )
         .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrl("/solicitudes/" + solicitudId))
+        .andExpect(redirectedUrl("/admin/solicitudes/gestionar"))
         .andExpect(flash().attribute("mensaje", "Solicitud aprobada exitosamente"));
     }
 
