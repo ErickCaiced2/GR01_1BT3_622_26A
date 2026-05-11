@@ -28,9 +28,6 @@ public class MascotaService {
     @Autowired
     private FotoRepository fotoRepository;
 
-    @Autowired
-    private com.example.gr01_1bt3_622_26a.repository.SolicitudRepository solicitudRepository;
-
     /**
      * Registrar una nueva mascota
      */
@@ -267,24 +264,15 @@ public class MascotaService {
     }
 
     /**
-     * Bloquear mascota y rechazar otras solicitudes (T1.5)
+     * Bloquear mascota (T1.5)
      */
-    public void bloquearMascota(Long mascotaId, Long solicitudIdAprobada) {
-        log.info("Bloqueando mascota con ID: {} por solicitud aprobada: {}", mascotaId, solicitudIdAprobada);
+    public void bloquearMascota(Long mascotaId) {
+        log.info("Bloqueando mascota con ID: {}", mascotaId);
         
         mascotaRepository.findById(mascotaId).ifPresent(mascota -> {
             // 1. Cambiar estado de la mascota
             mascota.setEstadoMascota("Bloqueada para adopción");
             mascotaRepository.save(mascota);
-            
-            // 2. Buscar y rechazar otras solicitudes
-            solicitudRepository.findByMascotaId(mascotaId).stream()
-                .filter(s -> !s.getId().equals(solicitudIdAprobada))
-                .forEach(s -> {
-                    s.setEstado("Rechazada");
-                    s.setRazonRechazo("Mascota asignada a otro solicitante");
-                    solicitudRepository.save(s);
-                });
         });
     }
 
