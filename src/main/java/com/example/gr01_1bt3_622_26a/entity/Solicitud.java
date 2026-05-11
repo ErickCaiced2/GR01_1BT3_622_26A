@@ -20,11 +20,11 @@ public class Solicitud {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "solicitante_id", nullable = false)
     private Solicitante solicitante;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "mascota_id", nullable = false)
     private Mascota mascota;
     
