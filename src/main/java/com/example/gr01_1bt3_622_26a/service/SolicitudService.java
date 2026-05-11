@@ -61,20 +61,20 @@ public class SolicitudService {
             Solicitud solicitudGuardada = solicitudRepository.save(solicitud);
 
             // Logging: auditoría de creación
-            Long solicitanteId = solicitudGuardada.getSolicitante() != null ?
-                    solicitudGuardada.getSolicitante().getId() : null;
             log.info("Solicitud creada exitosamente con ID: {} para solicitante: {}",
-                    solicitudGuardada.getId(), solicitanteId);
+                    solicitudGuardada.getId(), obtenerIdSolicitanteSeguro(solicitudGuardada));
 
             return solicitudGuardada;
 
         } catch (Exception e) {
-            Long solicitanteId = solicitud.getSolicitante() != null ?
-                    solicitud.getSolicitante().getId() : null;
             log.error("Error al crear solicitud para solicitante: {}",
-                    solicitanteId, e);
+                    obtenerIdSolicitanteSeguro(solicitud), e);
             throw new RuntimeException("No fue posible crear la solicitud. Por favor intente nuevamente.", e);
         }
+    }
+
+    private Long obtenerIdSolicitanteSeguro(Solicitud solicitud) {
+        return solicitud.getSolicitante() != null ? solicitud.getSolicitante().getId() : null;
     }
     
     @Transactional(readOnly = true)
@@ -141,27 +141,41 @@ public class SolicitudService {
      */
     public Solicitud aprobarSolicitud(Long id, String observaciones) {
         log.info("Aprobando solicitud con ID: {}", id);
-        return solicitudRepository.findById(id)
-                .map(s -> {
-                    s.setEstado(ESTADO_APROBADA);
-                    s.setFechaRespuesta(java.time.LocalDateTime.now());
-                    if (observaciones != null && !observaciones.isBlank()) {
-                        s.setObservaciones(observaciones);
-                    }
-                    Solicitud actualizada = solicitudRepository.save(s);
-                    
-                    // T1.5: Bloquear mascota y rechazar otras solicitudes
-                    if (s.getMascota() != null && s.getMascota().getId() != null) {
-                        mascotaService.bloquearMascota(s.getMascota().getId(), s.getId());
-                    }
-                    
-                    log.info("Solicitud {} aprobada exitosamente", id);
-                    return actualizada;
-                })
-                .orElseGet(() -> {
-                    log.warn("Intento de aprobar solicitud no existente con ID: {}", id);
-                    return null;
-                });
+        Optional<Solicitud> optionalSolicitud = solicitudRepository.findById(id);
+        
+        if (optionalSolicitud.isEmpty()) {
+            log.warn("Intento de aprobar solicitud no existente con ID: {}", id);
+            return null;
+        }
+
+        Solicitud s = optionalSolicitud.get();
+        s.setEstado(ESTADO_APROBADA);
+        s.setFechaRespuesta(java.time.LocalDateTime.now());
+        if (observaciones != null && !observaciones.isBlank()) {
+            s.setObservaciones(observaciones);
+        }
+        
+        Solicitud actualizada = solicitudRepository.save(s);
+        
+        // T1.5: Bloquear mascota y rechazar otras solicitudes
+        if (s.getMascota() != null && s.getMascota().getId() != null) {
+            mascotaService.bloquearMascota(s.getMascota().getId()); // Firma cambiada
+            rechazarOtrasSolicitudes(s.getMascota().getId(), s.getId()); // Llamada local
+        }
+        
+        log.info("Solicitud {} aprobada exitosamente", id);
+        return actualizada;
+    }
+
+    private void rechazarOtrasSolicitudes(Long mascotaId, Long solicitudIdAprobada) {
+        log.info("Rechazando otras solicitudes para la mascota {}", mascotaId);
+        solicitudRepository.findByMascotaId(mascotaId).stream()
+            .filter(sol -> !sol.getId().equals(solicitudIdAprobada))
+            .forEach(sol -> {
+                sol.setEstado(ESTADO_RECHAZADA);
+                sol.setRazonRechazo("Mascota asignada a otro solicitante");
+                solicitudRepository.save(sol);
+            });
     }
 
     public Solicitud rechazarSolicitud(Long id, String razon) {

@@ -176,7 +176,7 @@ public class SolicitudServiceTest {
 
         // ASSERT
         // Esta línea fallará en la fase RED porque el servicio aún no llama a bloquearMascota
-        verify(mascotaService, times(1)).bloquearMascota(idMascota, idSolicitud);
+        verify(mascotaService, times(1)).bloquearMascota(idMascota);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
