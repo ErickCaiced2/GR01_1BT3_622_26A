@@ -190,20 +190,23 @@ docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 #!/bin/bash
 set -e
 
-echo "=== [1/4] Compilar WAR ==="
+echo "=== [1/5] Compilar WAR ==="
 bash mvnw clean package
 test -f target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war
 
-echo "=== [2/4] Detener contenedores anteriores ==="
+echo "=== [2/5] Detener contenedores anteriores ==="
 docker-compose down 2>/dev/null || true
 docker rm -f adopciones-mysql adopciones-app 2>/dev/null || true
 
-echo "=== [3/4] Levantar stack completo (MySQL + App) ==="
+echo "=== [3/5] Levantar stack completo (MySQL + App) ==="
 docker-compose up -d
 
-echo "=== [4/4] Esperar a que servicios estén listos ==="
+echo "=== [4/5] Esperar a que servicios estén listos ==="
 sleep 15
-docker-compose exec -T mysql mysqladmin ping -h localhost -u root -p1234 || sleep 20
+docker-compose exec -T adopciones-mysql mysqladmin ping -h localhost -u root -p1234 || sleep 20
+
+echo "=== [5/5] Llenar datos de ejemplo ==="
+cat src/main/resources/02-data.sql | docker exec -i adopciones-mysql mysql -u myuser -psecret adopciones_db
 
 echo "=== Estado de servicios ==="
 docker-compose ps
@@ -260,12 +263,8 @@ adopciones-network (Red automática de compose)
 │   ├── Base de datos: adopciones_db
 │   ├── Usuario app: myuser
 │   ├── Contraseñas: myuser/secret, root/1234
-│   ├── Volúmenes SQL (auto-ejecutados):
-│   │   ├── 01-schema-mysql.sql
-│   │   ├── 02-init-database.sql
-│   │   ├── 03-V2-SolicitudEstados.sql
-│   │   ├── 04-V3-MascotaCompatibilidad.sql
-│   │   └── 05-V4-Usuarios.sql
+│   ├── Volúmenes SQL (auto-ejecutados al iniciar):
+│   │   └── 01-schema.sql (crea estructura/tablas)
 │   └── Healthcheck: mysqladmin ping
 │
 ├── adopciones-app (Spring Boot War)
@@ -274,6 +273,13 @@ adopciones-network (Red automática de compose)
 │   ├── Depende de: MySQL (service_healthy)
 │   └── Reinicio automático
 │
+├── 02-data.sql (ejecutado por Jenkins DESPUÉS de compose up)
+│   ├── Inserta 7 usuarios
+│   ├── Inserta 10 mascotas
+│   ├── Inserta 5 solicitantes
+│   ├── Inserta 5 solicitudes
+│   └── Inserta 2 adopciones
+│
 └── jenkins (jenkins:lts con DinD)
     ├── Puerto: 8080
     ├── Puerto agentes: 50000
@@ -281,13 +287,20 @@ adopciones-network (Red automática de compose)
     └── Socket Docker: /var/run/docker.sock (para ejecutar compose)
 ```
 
-**Ventajas de Docker Compose:**
-- ✅ Levanta todos los servicios en orden correcto
-- ✅ Ejecuta scripts SQL automáticamente al iniciar MySQL
-- ✅ Maneja dependencias entre servicios (healthcheck)
-- ✅ Red compartida creada automáticamente
-- ✅ Variables de entorno centralizadas en `compose.yaml`
-- ✅ Comandos `docker compose down` limpian todo
+**Flujo de inicialización de datos:**
+1. ✅ `docker-compose up -d` levanta MySQL
+2. ✅ MySQL auto-ejecuta `01-schema.sql` (estructura)
+3. ✅ Jenkins espera a que MySQL esté listo
+4. ✅ Jenkins ejecuta `02-data.sql` (datos)
+5. ✅ App conecta con BD completamente configurada
+
+**Ventajas de esta configuración:**
+- ✅ Reproducibilidad: El mismo `compose.yaml` funciona en cualquier máquina
+- ✅ Inicialización estructurada: Primero schema, luego datos
+- ✅ Dependencias: Compose espera a que MySQL esté listo antes de levantar la app
+- ✅ Escalabilidad: Fácil agregar más servicios al `compose.yaml`
+- ✅ Limpieza: `docker compose down` elimina todo correctamente
+- ✅ Automatización completa: Jenkins maneja todo sin intervención manual
 
 ---
 
@@ -303,26 +316,32 @@ adopciones-network (Red automática de compose)
    ✓ Genera WAR empaquetado
    ✓ Ejecuta docker-compose down (limpia previos)
    ✓ Ejecuta docker-compose up -d (levanta stack)
+   ✓ Ejecuta 02-data.sql (inserta datos)
            ↓
 4. Docker Compose orquesta:
    ✓ Crea red automática
-   ✓ Levanta MySQL con scripts SQL auto-ejecutados
+   ✓ Levanta MySQL con 01-schema.sql (estructura)
    ✓ Construye imagen Docker de la app
    ✓ Conecta app a MySQL cuando está listo
            ↓
-5. Aplicación actualizada en http://localhost:8090
+5. Jenkins ejecuta 02-data.sql:
+   ✓ 7 usuarios (admin + 5 solicitantes + staff)
+   ✓ 10 mascotas de ejemplo
+   ✓ 5 solicitudes
+   ✓ 2 adopciones
+           ↓
+6. Aplicación actualizada en http://localhost:8090
    ✓ Conectada a MySQL con datos inicializados
    ✓ Con últimos cambios del código
    ✓ Base de datos completamente configurada
 ```
 
-**Tiempo total:** 2-3 minutos desde push hasta producción con BD lista
+**Tiempo total:** 2-3 minutos desde push hasta producción con BD lista y datos
 
 **Datos inicializados automáticamente:**
-- ✅ Tablas creadas (schema-mysql.sql)
-- ✅ Migrations ejecutadas (V2, V3, V4)
+- ✅ Tablas creadas (01-schema.sql)
 - ✅ Usuarios de ejemplo insertados
-- ✅ Datos de ejemplo para mascotas, solicitantes, etc.
+- ✅ Datos de ejemplo para mascotas, solicitantes, solicitudes, adopciones
 
 ---
 
