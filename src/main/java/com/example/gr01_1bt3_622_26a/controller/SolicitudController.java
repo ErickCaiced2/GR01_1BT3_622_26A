@@ -260,4 +260,4 @@ public class SolicitudController {
         }
         return "redirect:/admin/solicitudes/gestionar";
     }
-
+}
