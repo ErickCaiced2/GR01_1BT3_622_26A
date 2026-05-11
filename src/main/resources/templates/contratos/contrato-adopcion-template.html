@@ -356,8 +356,8 @@
             <h1>DE MASCOTA</h1>
             <p class="header-subtitle">Sistema de Adopciones Responsables</p>
             <div class="header-date">
-                <strong>Número de Contrato:</strong> [[numeroContrato]]<br>
-                <strong>Fecha de Generación:</strong> [[fechaGeneracion]]
+                <strong>Número de Contrato:</strong> <span th:text="${numeroContrato}"></span><br>
+                <strong>Fecha de Generación:</strong> <span th:text="${fechaGeneracion}"></span>
             </div>
         </div>
 
@@ -370,27 +370,27 @@
             <table class="info-table">
                 <tr>
                     <td><strong>Refugio/Organización:</strong></td>
-                    <td>[[nombreRefugio]]</td>
+                    <td th:text="${nombreRefugio}">nombre del refugio</td>
                 </tr>
                 <tr>
                     <td><strong>Representante Legal:</strong></td>
-                    <td>[[representanteLegal]]</td>
+                    <td th:text="${representanteLegal}">representante</td>
                 </tr>
                 <tr>
                     <td><strong>Adoptante (Nombre Completo):</strong></td>
-                    <td>[[nombreAdoptante]]</td>
+                    <td th:text="${nombreAdoptante}">nombre adoptante</td>
                 </tr>
                 <tr>
                     <td><strong>Documento de Identidad:</strong></td>
-                    <td>[[cedulaAdoptante]]</td>
+                    <td th:text="${cedulaAdoptante}">cédula</td>
                 </tr>
                 <tr>
                     <td><strong>Email del Adoptante:</strong></td>
-                    <td>[[emailAdoptante]]</td>
+                    <td th:text="${emailAdoptante}">email</td>
                 </tr>
                 <tr>
                     <td><strong>Teléfono del Adoptante:</strong></td>
-                    <td>[[telefonoAdoptante]]</td>
+                    <td th:text="${telefonoAdoptante}">teléfono</td>
                 </tr>
             </table>
         </div>
@@ -404,31 +404,31 @@
             <table class="info-table">
                 <tr>
                     <td><strong>Nombre de la Mascota:</strong></td>
-                    <td>[[nombreMascota]]</td>
+                    <td th:text="${nombreMascota}">nombre mascota</td>
                 </tr>
                 <tr>
                     <td><strong>Tipo de Animal:</strong></td>
-                    <td>[[tipoMascota]]</td>
+                    <td th:text="${tipoMascota}">tipo</td>
                 </tr>
                 <tr>
                     <td><strong>Raza:</strong></td>
-                    <td>[[razaMascota]]</td>
+                    <td th:text="${razaMascota}">raza</td>
                 </tr>
                 <tr>
                     <td><strong>Edad Aproximada:</strong></td>
-                    <td>[[edadMascota]] años</td>
+                    <td><span th:text="${edadMascota}">edad</span> años</td>
                 </tr>
                 <tr>
                     <td><strong>Descripción Física:</strong></td>
-                    <td>[[descripcionMascota]]</td>
+                    <td th:text="${descripcionMascota}">descripción</td>
                 </tr>
                 <tr>
                     <td><strong>Color:</strong></td>
-                    <td>[[colorMascota]]</td>
+                    <td th:text="${colorMascota}">color</td>
                 </tr>
                 <tr>
                     <td><strong>Historial de Vacunas:</strong></td>
-                    <td>[[vacunasMascota]]</td>
+                    <td th:text="${vacunasMascota}">vacunas</td>
                 </tr>
             </table>
         </div>
@@ -513,7 +513,7 @@
                 <div class="signature-column">
                     <div class="signature-line"></div>
                     <div class="signature-label">Firma del Adoptante</div>
-                    <div class="signature-name">[[nombreAdoptante]]</div>
+                    <div class="signature-name" th:text="${nombreAdoptante}">nombre del adoptante</div>
                     <div class="signature-date">
                         Fecha: <span class="date-placeholder">______________</span>
                     </div>
@@ -523,7 +523,7 @@
                 <div class="signature-column">
                     <div class="signature-line"></div>
                     <div class="signature-label">Firma del Refugio</div>
-                    <div class="signature-name">[[representanteLegal]]</div>
+                    <div class="signature-name" th:text="${representanteLegal}">representante legal</div>
                     <div class="signature-date">
                         Fecha: <span class="date-placeholder">______________</span>
                     </div>
