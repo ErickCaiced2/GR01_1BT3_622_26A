@@ -11,7 +11,7 @@ services:
       - '3306:3306'
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./src/main/resources/00-init-all.sql:/docker-entrypoint-initdb.d/00-init-all.sql
+      - ./src/main/resources/01-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
