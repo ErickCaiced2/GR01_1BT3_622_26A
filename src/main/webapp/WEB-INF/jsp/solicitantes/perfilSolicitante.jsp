@@ -87,7 +87,7 @@
                    </a>
 
                    <!-- 🔵 NUEVO BOTÓN — T.2.5 -->
-                   <a href="/solicitantes/documentos"
+                   <a href="/solicitantes/${solicitante.id}/documentos"
                       class="btn btn-warning btn-action">
 
                        <i class="fas fa-file-upload"></i>

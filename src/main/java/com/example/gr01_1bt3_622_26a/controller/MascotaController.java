@@ -9,10 +9,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -59,27 +61,42 @@ public class MascotaController {
     }
 
     /**
-     * Mostrar formulario de registro de mascota
+     * Mostrar formulario de registro de mascota (Solo ADMIN)
      */
     @GetMapping("/registrar")
-    public String mostrarFormularioRegistro(Model model) {
+    public String mostrarFormularioRegistro(HttpSession session, RedirectAttributes redirectAttributes) {
+        // Proteger endpoint: solo administradores pueden registrar mascotas
+        String rol = (String) session.getAttribute("rol");
+        if (!"ADMIN".equals(rol)) {
+            log.warn("Intento de acceso no autorizado a registro de mascota, rol: {}", rol);
+            redirectAttributes.addFlashAttribute("error", "No tienes permiso para registrar mascotas");
+            return "redirect:/mascotas/disponibles";
+        }
         log.info("Mostrando formulario de registro de mascota");
-        model.addAttribute("mascota", new Mascota());
         return "mascotas/formularioRegistroMascota";
     }
 
     /**
-     * Registrar nueva mascota
+     * Registrar nueva mascota (Solo ADMIN)
      */
     @PostMapping("/registrar")
     public String registrarMascota(@Valid @ModelAttribute("mascota") Mascota mascota,
             BindingResult bindingResult,
+            HttpSession session,
+            RedirectAttributes redirectAttributes,
             Model model) {
+        // Proteger endpoint: solo administradores pueden registrar mascotas
+        String rol = (String) session.getAttribute("rol");
+        if (!"ADMIN".equals(rol)) {
+            log.warn("Intento de POST no autorizado a registro de mascota, rol: {}", rol);
+            redirectAttributes.addFlashAttribute("error", "No tienes permiso para registrar mascotas");
+            return "redirect:/mascotas/disponibles";
+        }
+
         log.info("Registrando nueva mascota: {}", mascota.getNombre());
 
         if (bindingResult.hasErrors()) {
             log.warn("Errores en la validación del formulario");
-            model.addAttribute("mascota", mascota);
             return "mascotas/formularioRegistroMascota";
         }
 
@@ -130,10 +147,21 @@ public class MascotaController {
     }
 
     /**
-     * Mostrar formulario de edición
+     * Mostrar formulario de edición (Solo ADMIN)
      */
     @GetMapping("/editar/{id}")
-    public String mostrarFormularioEdicion(@PathVariable Long id, Model model) {
+    public String mostrarFormularioEdicion(@PathVariable Long id,
+                                          HttpSession session,
+                                          RedirectAttributes redirectAttributes,
+                                          Model model) {
+        // Proteger endpoint: solo administradores pueden editar mascotas
+        String rol = (String) session.getAttribute("rol");
+        if (!"ADMIN".equals(rol)) {
+            log.warn("Intento de acceso no autorizado a edición de mascota, rol: {}", rol);
+            redirectAttributes.addFlashAttribute("error", "No tienes permiso para editar mascotas");
+            return "redirect:/mascotas/disponibles";
+        }
+
         log.info("Mostrando formulario de edición para mascota con ID: {}", id);
 
         Mascota mascota = mascotaService.obtenerMascotaPorId(id)
@@ -144,12 +172,21 @@ public class MascotaController {
     }
 
     /**
-     * Actualizar mascota
+     * Actualizar mascota (Solo ADMIN)
      */
     @PostMapping("/actualizar/{id}")
     public String actualizarMascota(@PathVariable Long id,
             @Valid @ModelAttribute("mascota") Mascota mascota,
-            BindingResult bindingResult) {
+            BindingResult bindingResult,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        // Proteger endpoint: solo administradores pueden actualizar mascotas
+        String rol = (String) session.getAttribute("rol");
+        if (!"ADMIN".equals(rol)) {
+            log.warn("Intento de POST no autorizado a actualización de mascota, rol: {}", rol);
+            redirectAttributes.addFlashAttribute("error", "No tienes permiso para editar mascotas");
+            return "redirect:/mascotas/disponibles";
+        }
         log.info("Actualizando mascota con ID: {}", id);
 
         if (bindingResult.hasErrors()) {
@@ -168,18 +205,30 @@ public class MascotaController {
     }
 
     /**
-     * Eliminar mascota
+     * Eliminar mascota (Solo ADMIN)
      */
     @PostMapping("/eliminar/{id}")
-    public String eliminarMascota(@PathVariable Long id) {
+    public String eliminarMascota(@PathVariable Long id,
+                                 HttpSession session,
+                                 RedirectAttributes redirectAttributes) {
+        // Proteger endpoint: solo administradores pueden eliminar mascotas
+        String rol = (String) session.getAttribute("rol");
+        if (!"ADMIN".equals(rol)) {
+            log.warn("Intento de POST no autorizado a eliminación de mascota, rol: {}", rol);
+            redirectAttributes.addFlashAttribute("error", "No tienes permiso para eliminar mascotas");
+            return "redirect:/mascotas/disponibles";
+        }
+
         log.info("Eliminando mascota con ID: {}", id);
 
         try {
             mascotaService.eliminarMascota(id);
             log.info("Mascota eliminada exitosamente");
+            redirectAttributes.addFlashAttribute("mensaje", "Mascota eliminada exitosamente");
             return "redirect:/mascotas/lista?exito=true";
         } catch (Exception e) {
             log.error("Error al eliminar mascota", e);
+            redirectAttributes.addFlashAttribute("error", "Error al eliminar mascota");
             return "redirect:/mascotas/lista?error=true";
         }
     }
@@ -212,16 +261,27 @@ public class MascotaController {
     }
 
     /**
-     * Cargar foto para mascota
+     * Cargar foto para mascota (Solo ADMIN)
      */
     @PostMapping("/cargarFoto/{mascotaId}")
     public String cargarFoto(@PathVariable Long mascotaId,
-            @RequestParam("foto") MultipartFile file) {
+            @RequestParam("foto") MultipartFile file,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        // Proteger endpoint: solo administradores pueden cargar fotos
+        String rol = (String) session.getAttribute("rol");
+        if (!"ADMIN".equals(rol)) {
+            log.warn("Intento de POST no autorizado a cargar foto de mascota, rol: {}", rol);
+            redirectAttributes.addFlashAttribute("error", "No tienes permiso para cargar fotos");
+            return "redirect:/mascotas/disponibles";
+        }
+
         log.info("Cargando foto para mascota con ID: {}", mascotaId);
 
         try {
             if (file.isEmpty()) {
                 log.warn("Archivo de foto vacío");
+                redirectAttributes.addFlashAttribute("error", "Archivo vacío");
                 return "redirect:/mascotas/detalle/" + mascotaId + "?error=archivo_vacio";
             }
 
@@ -232,9 +292,11 @@ public class MascotaController {
             guardarFotoMascota(mascotaId, nombreArchivo);
 
             log.info("Foto cargada exitosamente");
+            redirectAttributes.addFlashAttribute("mensaje", "Foto cargada exitosamente");
             return "redirect:/mascotas/detalle/" + mascotaId + "?exito=true";
         } catch (IOException e) {
             log.error("Error al cargar foto", e);
+            redirectAttributes.addFlashAttribute("error", "Error al cargar foto");
             return "redirect:/mascotas/detalle/" + mascotaId + "?error=true";
         }
     }
@@ -262,5 +324,71 @@ public class MascotaController {
         // Guardar archivo
         Files.write(rutaArchivo, file.getBytes());
         return nombreArchivo;
+    }
+
+    /**
+     * T.4 - Endpoint REST para filtrar mascotas por compatibilidad
+     *
+     * Parámetros opcionales:
+     * - tipo: Tipo de mascota (Perro, Gato, etc.)
+     * - edadMin: Edad mínima
+     * - edadMax: Edad máxima
+     * - tamano: Tamaño (pequeño, mediano, grande)
+     *
+     * Retorna: JSON Array de mascotas filtradas
+     */
+    @GetMapping("/filtrar")
+    public ResponseEntity<List<Mascota>> filtrarMascotas(
+            @RequestParam(required = false) String tipo,
+            @RequestParam(required = false) Integer edadMin,
+            @RequestParam(required = false) Integer edadMax,
+            @RequestParam(required = false) String tamano) {
+
+        log.info("Filtrando mascotas: tipo={}, edadMin={}, edadMax={}, tamano={}",
+                tipo, edadMin, edadMax, tamano);
+
+        // Obtener todas las mascotas disponibles
+        List<Mascota> mascotas = mascotaService.obtenerMascotasDisponibles();
+
+        // Filtrar por tipo
+        if (StringUtils.hasText(tipo)) {
+            mascotas = mascotas.stream()
+                    .filter(m -> m.getTipo().equalsIgnoreCase(tipo))
+                    .toList();
+        }
+
+        // Filtrar por edad mínima
+        if (edadMin != null) {
+            mascotas = mascotas.stream()
+                    .filter(m -> m.getEdad() >= edadMin)
+                    .toList();
+        }
+
+        // Filtrar por edad máxima
+        if (edadMax != null) {
+            mascotas = mascotas.stream()
+                    .filter(m -> m.getEdad() <= edadMax)
+                    .toList();
+        }
+
+        // Filtrar por tamaño (basado en peso)
+        if (StringUtils.hasText(tamano)) {
+            mascotas = mascotas.stream()
+                    .filter(m -> {
+                        if (m.getPesoKg() == null) return true; // Si no tiene peso, incluir
+
+                        return switch (tamano.toLowerCase()) {
+                            case "pequeño" -> m.getPesoKg() < 5;
+                            case "mediano" -> m.getPesoKg() >= 5 && m.getPesoKg() <= 20;
+                            case "grande" -> m.getPesoKg() > 20;
+                            default -> true;
+                        };
+                    })
+                    .toList();
+        }
+
+        log.info("Se encontraron {} mascotas después de filtrar", mascotas.size());
+
+        return ResponseEntity.ok(mascotas);
     }
 }

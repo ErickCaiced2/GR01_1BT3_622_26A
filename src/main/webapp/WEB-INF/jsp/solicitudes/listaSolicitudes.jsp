@@ -41,7 +41,7 @@
                         <c:forEach var="solicitud" items="${solicitudes}">
                             <tr>
                                 <td>#${solicitud.id}</td>
-                                <td>${solicitud.usuario.nombre} ${solicitud.usuario.apellido}</td>
+                                <td>${solicitud.solicitante.nombre} ${solicitud.solicitante.apellido}</td>
                                 <td>${solicitud.mascota.nombre}</td>
                                 <td>
                                     <c:choose>

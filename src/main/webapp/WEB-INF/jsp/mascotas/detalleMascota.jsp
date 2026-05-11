@@ -63,10 +63,13 @@
                         </c:choose>
                     </div>
                     <div>
-                        <a href="/mascotas/editar/${mascota.id}" class="btn btn-warning"><i class="fas fa-edit"></i> Editar</a>
-                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarModal">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </button>
+                        <!-- Solo administradores pueden editar y eliminar mascotas -->
+                        <c:if test="${sessionScope.rol == 'ADMIN'}">
+                            <a href="/mascotas/editar/${mascota.id}" class="btn btn-warning"><i class="fas fa-edit"></i> Editar</a>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarModal">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                        </c:if>
                     </div>
                 </div>
 
@@ -125,14 +128,22 @@
 
                 <div class="info-section">
                     <h5><i class="fas fa-upload"></i> Cargar Nueva Fotografía</h5>
-                    <form method="POST" action="/mascotas/cargarFoto/${mascota.id}" enctype="multipart/form-data" class="row g-3">
-                        <div class="col-md-9">
-                            <input type="file" name="foto" class="form-control" accept="image/*" required>
+                    <!-- Solo administradores pueden cargar fotos -->
+                    <c:if test="${sessionScope.rol == 'ADMIN'}">
+                        <form method="POST" action="/mascotas/cargarFoto/${mascota.id}" enctype="multipart/form-data" class="row g-3">
+                            <div class="col-md-9">
+                                <input type="file" name="foto" class="form-control" accept="image/*" required>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-upload"></i> Cargar</button>
+                            </div>
+                        </form>
+                    </c:if>
+                    <c:if test="${sessionScope.rol != 'ADMIN'}">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Solo los administradores pueden cargar fotos de mascotas
                         </div>
-                        <div class="col-md-3">
-                            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-upload"></i> Cargar</button>
-                        </div>
-                    </form>
+                    </c:if>
                 </div>
 
                 <div class="info-section">
