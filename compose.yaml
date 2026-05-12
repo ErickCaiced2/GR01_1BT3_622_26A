@@ -18,11 +18,6 @@ services:
       retries: 10
 
   adopciones-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        WAR_FILE: ${WAR_FILE:-target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war}
     image: adopciones-sistema:latest
     container_name: adopciones-app
     ports:
