@@ -47,9 +47,9 @@ public class Solicitud {
      * - Aprobada → Cancelada
      * - Rechazada → Cancelada
      *
+     * Nota: @NotBlank se remueve porque el estado se asigna automáticamente en @PrePersist
      * @see com.example.gr01_1bt3_622_26a.validation.SolicitudEstadoValidator
      */
-    @NotBlank(message = "El estado es requerido")
     @Column(nullable = false)
     private String estado;
 
@@ -89,11 +89,11 @@ public class Solicitud {
      *
      * Responsabilidades:
      * 1. Asigna automáticamente la fecha/hora actual si no fue especificada ({@code fechaSolicitud})
-     * 2. Establece el estado inicial "En revisión" si el estado es nulo
+     * 2. Establece el estado inicial "Pendiente" si el estado es nulo
      *
      * Comportamiento:
      * - {@code fechaSolicitud}: Se asigna {@link LocalDateTime#now()} si es null
-     * - {@code estado}: Se asigna "En revisión" si es null (primera instancia sin estado explícito)
+     * - {@code estado}: Se asigna "Pendiente" si es null (estado inicial según T.1.2)
      *
      * Auditoría: Se registra cuando una nueva solicitud es registrada en el sistema.
      *
@@ -107,11 +107,10 @@ public class Solicitud {
             log.debug("Fecha de solicitud asignada automáticamente: {}", fechaSolicitud);
         }
 
-        // Asignar estado inicial "En revisión" para nuevas solicitudes
+        // Asignar estado inicial "Pendiente" para nuevas solicitudes (T.1.2)
         if (estado == null) {
-            estado = "En revisión";
-            log.info("Solicitud con estado inicial 'En revisión' registrada");
+            estado = "Pendiente";
+            log.info("Solicitud con estado inicial 'Pendiente' registrada");
         }
     }
 }
-

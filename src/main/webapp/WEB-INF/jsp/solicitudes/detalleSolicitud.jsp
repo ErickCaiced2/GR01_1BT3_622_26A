@@ -48,11 +48,11 @@
                 </div>
 
                 <div class="info-section">
-                    <h5>Información del Usuario</h5>
-                    <p><strong>Nombre:</strong> ${solicitud.usuario.nombre} ${solicitud.usuario.apellido}</p>
-                    <p><strong>Email:</strong> ${solicitud.usuario.email}</p>
-                    <p><strong>Teléfono:</strong> ${solicitud.usuario.telefono}</p>
-                    <p><strong>Dirección:</strong> ${solicitud.usuario.direccion}, ${solicitud.usuario.ciudad}</p>
+                    <h5>Información del Solicitante</h5>
+                    <p><strong>Nombre:</strong> ${solicitud.solicitante.nombre} ${solicitud.solicitante.apellido}</p>
+                    <p><strong>Email:</strong> ${solicitud.solicitante.email}</p>
+                    <p><strong>Teléfono:</strong> ${solicitud.solicitante.telefono}</p>
+                    <p><strong>Dirección:</strong> ${solicitud.solicitante.direccion}, ${solicitud.solicitante.ciudad}</p>
                 </div>
 
                 <div class="info-section">
@@ -112,4 +112,3 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

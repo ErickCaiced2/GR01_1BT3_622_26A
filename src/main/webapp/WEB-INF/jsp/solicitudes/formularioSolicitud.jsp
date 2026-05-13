@@ -43,16 +43,51 @@
                     <form:form method="POST" action="/solicitudes/crear" modelAttribute="solicitud">
                         <!-- TAREA 5: Campo usuarioId eliminado (se obtiene de sesión en TAREA 3) -->
 
-                        <div class="mb-3">
-                            <form:label path="mascota.id" cssClass="form-label">Selecciona una Mascota *</form:label>
-                            <form:select path="mascota.id" cssClass="form-select ${solicitud.mascota.id == null ? 'error-field' : ''}" required="required">
-                                <form:option value="">-- Selecciona una mascota --</form:option>
-                                <c:forEach var="mascota" items="${mascotas}">
-                                    <form:option value="${mascota.id}">${mascota.nombre} - ${mascota.tipo}</form:option>
-                                </c:forEach>
-                            </form:select>
-                            <form:errors path="mascota.id" cssClass="error-text" element="div" />
-                        </div>
+                        <!-- Mostrar mascota pre-seleccionada o selector según corresponda -->
+                        <c:choose>
+                            <c:when test="${tieneMascotaPreSeleccionada}">
+                                <!-- Mostrar información de la mascota pre-seleccionada (read-only) -->
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Mascota Seleccionada</strong></label>
+                                    <div class="card p-3 bg-light">
+                                        <div class="row">
+                                            <div class="col-md-3 text-center">
+                                                <c:if test="${not empty mascotaPreSeleccionada.fotos and mascotaPreSeleccionada.fotos.size() > 0}">
+                                                    <img src="${mascotaPreSeleccionada.fotos[0].rutaFoto}" alt="${mascotaPreSeleccionada.nombre}" class="img-fluid rounded" style="max-height: 150px;">
+                                                </c:if>
+                                                <c:if test="${empty mascotaPreSeleccionada.fotos or mascotaPreSeleccionada.fotos.size() == 0}">
+                                                    <i class="fas fa-paw fa-4x text-secondary"></i>
+                                                </c:if>
+                                            </div>
+                                            <div class="col-md-9">
+                                                <h5>${mascotaPreSeleccionada.nombre}</h5>
+                                                <p class="mb-1"><strong>Tipo:</strong> ${mascotaPreSeleccionada.tipo}</p>
+                                                <p class="mb-1"><strong>Raza:</strong> ${mascotaPreSeleccionada.raza}</p>
+                                                <p class="mb-1"><strong>Edad:</strong> ${mascotaPreSeleccionada.edad} años</p>
+                                                <p class="mb-1"><strong>Sexo:</strong> ${mascotaPreSeleccionada.genero}</p>
+                                                <p class="mb-0"><strong>Descripción:</strong> ${mascotaPreSeleccionada.descripcion}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Campo oculto para enviar el ID de la mascota -->
+                                    <form:hidden path="mascota.id" value="${mascotaPreSeleccionada.id}" />
+                                </div>
+                                <hr>
+                            </c:when>
+                            <c:otherwise>
+                                <!-- Mostrar selector de mascotas -->
+                                <div class="mb-3">
+                                    <form:label path="mascota.id" cssClass="form-label">Selecciona una Mascota *</form:label>
+                                    <form:select path="mascota.id" cssClass="form-select ${solicitud.mascota.id == null ? 'error-field' : ''}" required="required">
+                                        <form:option value="">-- Selecciona una mascota --</form:option>
+                                        <c:forEach var="mascota" items="${mascotas}">
+                                            <form:option value="${mascota.id}">${mascota.nombre} - ${mascota.tipo}</form:option>
+                                        </c:forEach>
+                                    </form:select>
+                                    <form:errors path="mascota.id" cssClass="error-text" element="div" />
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
 
                         <div class="mb-3">
                             <form:label path="motivo" cssClass="form-label">¿Por qué quieres adoptar? *</form:label>

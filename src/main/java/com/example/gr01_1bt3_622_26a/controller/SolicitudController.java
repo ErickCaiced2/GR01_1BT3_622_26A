@@ -30,12 +30,41 @@ public class SolicitudController {
     private final MascotaService mascotaService;
     
     @GetMapping("/formulario")
-    public String mostrarFormulario(Model model) {
-        List<Mascota> mascotas = mascotaService.obtenerDisponibles();
-        model.addAttribute("mascotas", mascotas);
-        if (!model.containsAttribute("solicitud")) {
-            model.addAttribute("solicitud", new Solicitud());
+    public String mostrarFormulario(
+            @RequestParam(value = "mascotaId", required = false) Long mascotaId,
+            Model model) {
+
+        Mascota mascotaPreSeleccionada = null;
+
+        // Si viene mascotaId en la URL, pre-cargar la mascota
+        if (mascotaId != null) {
+            Optional<Mascota> mascotaOpt = mascotaService.obtenerPorId(mascotaId);
+            if (mascotaOpt.isPresent()) {
+                mascotaPreSeleccionada = mascotaOpt.get();
+                log.info("Mascota pre-seleccionada: {} (ID: {})", mascotaPreSeleccionada.getNombre(), mascotaId);
+            }
         }
+
+        // Crear una nueva solicitud con la mascota pre-seleccionada si es aplicable
+        Solicitud solicitud = new Solicitud();
+        if (mascotaPreSeleccionada != null) {
+            // Inicializar la mascota en la solicitud
+            solicitud.setMascota(mascotaPreSeleccionada);
+        }
+
+        // Agregar datos al modelo
+        if (mascotaPreSeleccionada != null) {
+            // Si hay mascota pre-seleccionada, NO incluir lista de mascotas
+            model.addAttribute("mascotaPreSeleccionada", mascotaPreSeleccionada);
+            model.addAttribute("tieneMascotaPreSeleccionada", true);
+        } else {
+            // Si no hay pre-selección, mostrar lista de mascotas disponibles
+            List<Mascota> mascotas = mascotaService.obtenerDisponibles();
+            model.addAttribute("mascotas", mascotas);
+            model.addAttribute("tieneMascotaPreSeleccionada", false);
+        }
+
+        model.addAttribute("solicitud", solicitud);
         return "solicitudes/formularioSolicitud";
     }
     

@@ -29,21 +29,21 @@ public class SolicitudService {
      *
      * Responsabilidades:
      * - Validar que la solicitud no sea nula
-     * - Asignar automáticamente el estado "En revisión" (regla de negocio)
+     * - El estado inicial se asigna automáticamente en @PrePersist de la entidad "Pendiente" (T.1.2)
      * - Registrar en logs la creación
      * - Guardar la solicitud en la BD
      * - Retornar la solicitud creada
      *
      * Validaciones:
      * - Solicitud no puede ser null
-     * - Se asigna estado automáticamente (cliente no puede definirlo)
+     * - El estado NO se asigna aquí (se asigna en @PrePersist de la entidad)
      *
      * Logging:
      * - INFO: Solicitud creada exitosamente
      * - ERROR: Si hay error en persistencia
      *
-     * @param solicitud la solicitud a crear (sin estado)
-     * @return la solicitud guardada con estado "En revisión"
+     * @param solicitud la solicitud a crear (sin estado, se asigna en @PrePersist)
+     * @return la solicitud guardada con estado "Pendiente"
      * @throws IllegalArgumentException si solicitud es null
      */
     public Solicitud crearSolicitud(Solicitud solicitud) {
@@ -54,15 +54,16 @@ public class SolicitudService {
         }
 
         try {
-            // Regla de negocio: toda solicitud nueva inicia en "En revisión"
-            solicitud.setEstado(ESTADO_EN_REVISION);
+            // El estado inicial se asigna en @PrePersist de la entidad como "Pendiente" (T.1.2)
+            // NO asignamos el estado aquí para permitir que @PrePersist lo haga correctamente
 
             // Guardar en BD
             Solicitud solicitudGuardada = solicitudRepository.save(solicitud);
 
             // Logging: auditoría de creación
-            log.info("Solicitud creada exitosamente con ID: {} para solicitante: {}",
-                    solicitudGuardada.getId(), obtenerIdSolicitanteSeguro(solicitudGuardada));
+            log.info("Solicitud creada exitosamente con ID: {} para solicitante: {} - Estado: {}",
+                    solicitudGuardada.getId(), obtenerIdSolicitanteSeguro(solicitudGuardada),
+                    solicitudGuardada.getEstado());
 
             return solicitudGuardada;
 

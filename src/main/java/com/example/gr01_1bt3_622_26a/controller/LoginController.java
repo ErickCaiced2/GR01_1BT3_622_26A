@@ -51,7 +51,7 @@ public class LoginController {
      *
      * El formulario es el mismo para todos los roles.
      * Al ingresar credenciales, el sistema automáticamente:
-     * - SOLICITANTE → `/solicitudes/mis-solicitudes`
+     * - SOLICITANTE → `/` (inicio con sesión activa)
      * - ADMIN → `/admin/dashboard`
      * - STAFF → `/admin/solicitudes/gestionar`
      */
@@ -93,7 +93,7 @@ public class LoginController {
      * 🆕 FLUJO UNIFICADO: Procesar login para TODOS los roles
      *
      * Valida credenciales y redirige automáticamente según el rol del usuario:
-     * - SOLICITANTE → `/solicitudes/mis-solicitudes`
+     * - SOLICITANTE → `/` (inicio con sesión activa)
      * - ADMIN → `/admin/dashboard`
      * - STAFF → `/admin/solicitudes/gestionar`
      *
@@ -267,7 +267,7 @@ public class LoginController {
      * 🆕 FLUJO UNIFICADO: Redirigir según el rol del usuario
      *
      * Implementa el redirecionamiento automático según rol:
-     * - SOLICITANTE → `/solicitudes/mis-solicitudes`
+     * - SOLICITANTE → `/` (inicio con sesión activa)
      * - ADMIN → `/admin/dashboard`
      * - STAFF → `/admin/solicitudes/gestionar`
      * - Otro → `/` (inicio)
@@ -284,7 +284,7 @@ public class LoginController {
         return switch (rol) {
             case "ADMIN" -> "redirect:/admin/dashboard";
             case "STAFF" -> "redirect:/admin/solicitudes/gestionar";
-            case "SOLICITANTE" -> "redirect:/solicitudes/mis-solicitudes";
+            case "SOLICITANTE" -> "redirect:/";
             default -> {
                 log.warn("⚠️ Rol desconocido: {}, redirigiendo a inicio", rol);
                 yield "redirect:/";
