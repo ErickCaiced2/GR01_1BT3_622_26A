@@ -3,19 +3,46 @@
 [![Java](https://img.shields.io/badge/Java-22-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.5-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Maven](https://img.shields.io/badge/Maven-3.6+-blue.svg)](https://maven.apache.org/)
+[![Docker](https://img.shields.io/badge/Docker-29.4+-blue.svg)](https://www.docker.com/)
 [![License](https://img.shields.io/badge/License-Educational-yellow.svg)](#licencia)
 
 Una aplicación web **Spring Boot + JSP** para gestionar de forma integral el proceso de adopción de mascotas. Permite registrar mascotas disponibles, solicitar adopciones, validar solicitantes y realizar seguimiento de adopciones exitosas.
 
-## 📋 Tabla de Contenidos
+## 🚀 ¿Cómo Empezar? (5 minutos)
 
-- [Características](#características)
-- [Requisitos](#requisitos)
-- [Instalación](#instalación)
-- [Estructura del Proyecto](#estructura-del-proyecto)
-- [Tecnologías](#tecnologías)
-- [Configuración](#configuración)
-- [Licencia](#licencia)
+### Opción Rápida: Todo Automático
+
+```bash
+# 1. Descargar
+git clone https://github.com/ErickCaiced2/GR01_1BT3_622_26A.git
+cd GR01_1BT3_622_26A
+
+# 2. Compilar
+./mvnw clean package -DskipTests  # macOS/Linux
+.\mvnw clean package -DskipTests  # Windows
+
+# 3. Ejecutar
+docker compose up -d
+
+# 4. ¡Listo!
+# Abre: http://localhost:8090
+```
+
+### Opción Detallada con Pasos
+
+👉 **[VER QUICK_START.md](QUICK_START.md)** ← Empieza aquí si es tu primer setup
+
+---
+
+## 📚 Documentación
+
+| Documento | Propósito |
+|-----------|-----------|
+| **[QUICK_START.md](QUICK_START.md)** | Setup en 5 minutos (recomendado para principiantes) |
+| **[SETUP.md](SETUP.md)** | Guía completa con todos los pasos, troubleshooting y CI/CD |
+| **[ARQUITECTURA.md](ARQUITECTURA.md)** | Diagramas y explicación de cómo funciona todo |
+
+---
 
 ## ✨ Características
 
@@ -25,159 +52,201 @@ Una aplicación web **Spring Boot + JSP** para gestionar de forma integral el pr
 - ✅ **Seguimiento de Adopciones**: Historial y estado de cada adopción
 - ✅ **Dashboard Administrativo**: Panel de control para administradores
 - ✅ **Búsqueda y Filtros**: Funcionalidad para encontrar mascotas
+- ✅ **Completamente Dockerizado**: Funciona igual en Windows, macOS, Linux
+
+---
 
 ## 📋 Requisitos
 
-- **Java**: 22 o superior
-- **Maven**: 3.6 o superior
-- **Base de Datos**: MySQL 8.0+ o H2 (en memoria)
-- **Docker**: Opcional
+### Requisitos Mínimos
+- **RAM:** 4 GB (6+ recomendado)
+- **Disco:** 8 GB libres
+- **CPU:** 64-bit
 
-## 🚀 Instalación
+### Software Requerido
+- **Docker Desktop** 29.4.1+ [[Descargar](https://www.docker.com/products/docker-desktop)]
+- **Git** 2.40+ [[Descargar](https://git-scm.com/)]
 
-### 1. Clonar el Repositorio
+**Eso es todo.** No necesitas instalar Maven, MySQL, Java localmente.
 
-```bash
-git clone https://github.com/ErickCaiced2/GR01_1BT3_622_26A.git
-cd GR01_1BT3_622_26A
-```
+---
 
-### 2. Configurar Base de Datos
+## 🛠️ Stack Tecnológico
 
-#### Opción A: Docker Compose (Recomendado)
+### Backend
+- **Java 22** - Lenguaje de programación
+- **Spring Boot 4.0.5** - Framework web
+- **Spring Data JPA** - Acceso a datos
+- **MySQL 8.0** - Base de datos
 
-```bash
-docker-compose up -d
-```
+### Frontend
+- **JSP/JSTL** - Vistas (templates)
+- **HTML5 + CSS3** - Markup y estilos
+- **Bootstrap** - Framework CSS
 
-#### Opción B: MySQL Local
+### DevOps
+- **Docker** - Containerización
+- **Docker Compose** - Orquestación
+- **Maven** - Build tool (wrapper incluido)
+- **Jenkins** (opcional) - CI/CD
 
-```sql
-CREATE DATABASE adopciones_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'adopciones_user'@'localhost' IDENTIFIED BY 'adopciones_pass';
-GRANT ALL PRIVILEGES ON adopciones_db.* TO 'adopciones_user'@'localhost';
-FLUSH PRIVILEGES;
-```
-
-#### Opción C: H2 (Sin Instalación)
-
-La aplicación usa H2 por defecto para desarrollo.
-
-### 3. Compilar
-
-```bash
-mvn clean install
-```
-
-### 4. Ejecutar
-
-```bash
-# Con Maven
-mvn spring-boot:run
-
-# O con JAR
-java -jar target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.jar
-```
-
-**URL**: http://localhost:8080
+---
 
 ## 📁 Estructura del Proyecto
 
 ```
-src/
-├── main/java/com/example/gr01_1bt3_622_26a/
-│   ├── controller/        # Controladores MVC
-│   │   ├── AdopcionController.java
-│   │   ├── MascotaController.java
-│   │   ├── SolicitanteController.java
-│   │   └── SolicitudController.java
-│   ├── entity/            # Entidades JPA
-│   │   ├── Adopcion.java
-│   │   ├── Mascota.java
-│   │   ├── Solicitante.java
-│   │   ├── Solicitud.java
-│   │   └── Foto.java
-│   ├── repository/        # Repositorios
-│   │   ├── AdopcionRepository.java
-│   │   ├── MascotaRepository.java
-│   │   ├── SolicitanteRepository.java
-│   │   ├── SolicitudRepository.java
-│   │   └── FotoRepository.java
-│   └── service/           # Servicios
-│       ├── AdopcionService.java
-│       ├── MascotaService.java
-│       ├── SolicitanteService.java
-│       └── SolicitudService.java
-├── main/resources/
-│   ├── application.properties
-│   ├── schema-mysql.sql
-│   └── init-database.sql
-└── webapp/WEB-INF/jsp/    # Vistas JSP
-    ├── mascotas/
-    ├── solicitudes/
-    ├── adopciones/
-    └── admin/
+GR01_1BT3_622_26A/
+├── src/main/
+│   ├── java/com/example/gr01_1bt3_622_26a/
+│   │   ├── controller/        # Controladores MVC
+│   │   ├── entity/            # Modelos (Mascota, Solicitud, etc.)
+│   │   ├── repository/        # Acceso BD (JPA)
+│   │   └── service/           # Lógica de negocio
+│   └── resources/
+│       ├── 01-schema.sql      # Estructura BD (auto-ejecutado)
+│       ├── 02-data.sql        # Datos de ejemplo
+│       ├── application.properties
+│       └── templates/         # Vistas JSP
+│
+├── src/main/webapp/WEB-INF/jsp/  # Vistas JSP
+│
+├── compose.yaml           # Orquestación Docker
+├── Dockerfile             # Especificación imagen Docker
+├── pom.xml                # Dependencias Maven
+├── mvnw / mvnw.cmd       # Maven Wrapper
+│
+└── DOCUMENTACIÓN
+    ├── QUICK_START.md     # 👈 Empieza aquí
+    ├── SETUP.md           # Guía completa
+    ├── ARQUITECTURA.md    # Diagramas
+    └── README.md          # Este archivo
 ```
 
-## 🛠️ Tecnologías
+---
 
-- **Spring Boot 4.0.5** - Framework principal
-- **Spring Data JPA** - Acceso a datos
-- **Spring Web MVC** - Controladores
-- **MySQL 8.0** - Base de datos
-- **H2 Database** - Desarrollo
-- **JSP + JSTL** - Vistas
-- **Project Lombok** - Utilidades
-- **Maven** - Build tool
+## 🚀 Flujo Automatizado
 
-## ⚙️ Configuración
-
-Edita `src/main/resources/application.properties`:
-
-```properties
-# Base de Datos
-spring.datasource.url=jdbc:mysql://localhost:3306/adopciones_db
-spring.datasource.username=adopciones_user
-spring.datasource.password=adopciones_pass
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
-
-# JPA/Hibernate
-spring.jpa.hibernate.ddl-auto=validate
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
-
-# Servidor
-server.port=8080
-
-# Logging
-logging.level.root=INFO
-logging.level.com.example.gr01_1bt3_622_26a=DEBUG
+```
+Tu máquina
+   ↓
+Docker Desktop + Git
+   ↓
+git clone (descarga código)
+   ↓
+./mvnw clean package (compila JAR/WAR)
+   ↓
+docker compose up -d (levanta)
+   ├─ MySQL 8.0 inicia
+   ├─ 01-schema.sql se ejecuta automáticamente
+   ├─ Spring Boot App se construye
+   └─ Se conectan automáticamente
+   ↓
+✅ http://localhost:8090 LISTO
 ```
 
-## 📡 API Endpoints
+---
 
-### Mascotas
-- `GET /mascotas` - Listar todas
-- `GET /mascotas/{id}` - Obtener una
-- `POST /mascotas` - Crear
-- `PUT /mascotas/{id}` - Actualizar
-- `DELETE /mascotas/{id}` - Eliminar
+## 📊 Acceso a Servicios
 
-### Solicitudes
-- `GET /solicitudes` - Listar todas
-- `POST /solicitudes` - Crear
-- `GET /solicitudes/{id}` - Detalle
+| Servicio | URL | Credenciales | Descripción |
+|----------|-----|--------------|-------------|
+| **App Web** | http://localhost:8090 | Admin precargado | Interfaz principal |
+| **MySQL** | localhost:3306 | `myuser` / `secret` | Base de datos |
+| **Jenkins** (opt) | http://localhost:8080 | Tu user admin | CI/CD |
 
-### Adopciones
-- `GET /adopciones` - Listar todas
-- `POST /adopciones` - Crear
+---
 
-## 🤝 Contribuir
+## 🔄 Ciclo de Desarrollo
 
-1. Fork el repositorio
-2. Crea rama: `git checkout -b feature/miFeature`
-3. Commit: `git commit -m 'Agrega miFeature'`
-4. Push: `git push origin feature/miFeature`
-5. Pull Request
+```bash
+# Editas código
+# ↓
+./mvnw clean package -DskipTests
+
+# ↓
+docker compose up -d --build
+
+# ↓
+http://localhost:8090 actualizado
+```
+
+---
+
+## 📖 Comandos Útiles
+
+```bash
+# Ver estado de servicios
+docker compose ps
+
+# Ver logs en vivo
+docker compose logs -f adopciones-app
+
+# Acceder a MySQL CLI
+docker exec -it adopciones-mysql mysql -u myuser -psecret -D adopciones_db
+
+# Detener servicios (mantiene datos)
+docker compose down
+
+# Limpiar todo (borra datos)
+docker compose down -v
+
+# Reiniciar después de cambios
+./mvnw clean package -DskipTests && docker compose up -d --build
+```
+
+---
+
+## 🆘 Solución de Problemas
+
+### "Connection refused on port 8090"
+```bash
+# Espera 30 seg más a que MySQL esté listo
+docker compose logs mysql | tail -20
+```
+
+### "Port 8090 already in use"
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+### "Docker Desktop not running"
+```bash
+# Abre manualmente: Menu de inicio → Docker
+# Espera a que muestre ✅
+docker ps
+```
+
+👉 **Para más soluciones:** [Ver SETUP.md → Solución de Problemas](SETUP.md#--solución-de-problemas)
+
+---
+
+## 🔒 Seguridad
+
+- ✅ Usuario no-root en contenedores (`appuser`)
+- ✅ Healthchecks automáticos
+- ✅ Contraseñas configurables en `.env`
+- ⚠️ Para producción: usar secrets, no ENV variables
+
+---
+
+## 🤖 CI/CD con Jenkins (OPCIONAL)
+
+Para automatizar deploys con cada push a GitHub:
+
+👉 **[Ver SETUP.md → Automatización con Jenkins](SETUP.md#-automatización-con-jenkins-opcional---para-cicd)**
+
+---
+
+## 📞 Soporte
+
+Si tienes problemas:
+
+1. **Revisa los logs:** `docker compose logs -f [servicio]`
+2. **Lee SETUP.md:** Tiene troubleshooting detallado
+3. **Limpiar y reintentar:** `docker compose down -v && docker compose up -d`
+
+---
 
 ## 📝 Licencia
 
@@ -185,8 +254,21 @@ Proyecto educativo GR01_1BT3_622_26A
 
 ---
 
-**Autor**: Erick Caicedo  
-**GitHub**: [@ErickCaiced2](https://github.com/ErickCaiced2)  
-**Proyecto**: [GR01_1BT3_622_26A](https://github.com/ErickCaiced2/GR01_1BT3_622_26A)
+## 👨‍💻 Autor
 
-**Última actualización**: Abril 2026
+**Erick Caicedo**
+- GitHub: [@ErickCaiced2](https://github.com/ErickCaiced2)
+- Proyecto: [GR01_1BT3_622_26A](https://github.com/ErickCaiced2/GR01_1BT3_622_26A)
+
+---
+
+## 🎯 Siguientes Pasos
+
+1. **Primero:** Lee **[QUICK_START.md](QUICK_START.md)** (5 min)
+2. **Luego:** Explora la app en http://localhost:8090
+3. **Después:** Lee **[SETUP.md](SETUP.md)** para entender todo en detalle
+4. **Finalmente:** Mira **[ARQUITECTURA.md](ARQUITECTURA.md)** para diagramas
+
+---
+
+**¡Listo! Ya tienes todo lo que necesitas. ¡A adoptar mascotas! 🐾**
