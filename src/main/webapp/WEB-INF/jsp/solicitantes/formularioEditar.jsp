@@ -11,23 +11,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary-color: #FF6B6B; --secondary-color: #4ECDC4; }
-        .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); }
         .form-container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .form-title { color: var(--primary-color); margin-bottom: 30px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/"><i class="fas fa-paw"></i> Sistema de Adopciones</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/mascotas/disponibles">Mascotas</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
 
     <div class="container my-5">
         <div class="row justify-content-center">

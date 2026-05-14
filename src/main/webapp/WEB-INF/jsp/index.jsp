@@ -431,10 +431,12 @@
                                     <i class="fas fa-user-circle"></i> ${sessionScope.nombre}
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li><a class="dropdown-item" href="/solicitudes/mis-solicitudes"><i class="fas fa-list"></i> Mis Solicitudes</a></li>
+                                    <li><a class="dropdown-item" href="/solicitantes/perfil"><i class="fas fa-user-circle"></i> Mi Perfil</a></li>
+                                    <li><a class="dropdown-item" href="/solicitudes/mis-solicitudes"><i class="fas fa-file-contract"></i> Mis Solicitudes</a></li>
                                     <li><a class="dropdown-item" href="/mascotas/disponibles"><i class="fas fa-heart"></i> Mascotas</a></li>
+                                    <li><a class="dropdown-item" href="/solicitantes/documentos"><i class="fas fa-file-upload"></i> Documentación</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                                    <li><a class="dropdown-item" href="/logout" style="color: #FF6B6B;"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
                                 </ul>
                             </li>
                         </c:when>

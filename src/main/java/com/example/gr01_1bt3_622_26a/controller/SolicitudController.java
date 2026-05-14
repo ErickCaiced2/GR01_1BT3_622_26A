@@ -10,13 +10,16 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -219,49 +222,59 @@ public class SolicitudController {
     }
     
     @PostMapping("/{id}/aprobar")
-    public String aprobarSolicitud(@PathVariable Long id,
-                                   @RequestParam(required = false) String observaciones,
-                                   RedirectAttributes redirectAttributes) {
+    public ResponseEntity<?> aprobarSolicitud(@PathVariable Long id,
+                                   @RequestParam(required = false) String observaciones) {
         try {
             Solicitud solicitud = solicitudService.aprobarSolicitud(id, observaciones != null ? observaciones : "");
             if (solicitud != null) {
                 log.info("Solicitud {} aprobada exitosamente", id);
-                redirectAttributes.addFlashAttribute("mensaje", "Solicitud aprobada exitosamente");
+                Map<String, String> response = new HashMap<>();
+                response.put("mensaje", "Solicitud aprobada exitosamente");
+                return ResponseEntity.ok(response);
             }
         } catch (Exception e) {
             log.error("Error al aprobar solicitud {}: {}", id, e.getMessage());
-            redirectAttributes.addFlashAttribute("error", "Error al aprobar solicitud");
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Error al aprobar solicitud: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
-        return "redirect:/admin/solicitudes/gestionar";
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "No se pudo aprobar la solicitud");
+        return ResponseEntity.badRequest().body(error);
     }
     
     @PostMapping("/{id}/rechazar")
-    public String rechazarSolicitud(@PathVariable Long id,
-                                   @RequestParam String razon,
-                                   RedirectAttributes redirectAttributes) {
+    public ResponseEntity<?> rechazarSolicitud(@PathVariable Long id,
+                                   @RequestParam String razon) {
         try {
             if (razon == null || razon.trim().isEmpty()) {
                 log.warn("Intento de rechazar solicitud {} sin razón", id);
-                redirectAttributes.addFlashAttribute("error", "Debes proporcionar una razón para rechazar");
-                return "redirect:/admin/solicitudes/gestionar";
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Debes proporcionar una razón para rechazar");
+                return ResponseEntity.badRequest().body(error);
             }
 
             Solicitud solicitud = solicitudService.rechazarSolicitud(id, razon);
             if (solicitud != null) {
                 log.info("Solicitud {} rechazada exitosamente", id);
-                redirectAttributes.addFlashAttribute("mensaje", "Solicitud rechazada exitosamente");
+                Map<String, String> response = new HashMap<>();
+                response.put("mensaje", "Solicitud rechazada exitosamente");
+                return ResponseEntity.ok(response);
             }
         } catch (Exception e) {
             log.error("Error al rechazar solicitud {}: {}", id, e.getMessage());
-            redirectAttributes.addFlashAttribute("error", "Error al rechazar solicitud");
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Error al rechazar solicitud: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
-        return "redirect:/admin/solicitudes/gestionar";
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "No se pudo rechazar la solicitud");
+        return ResponseEntity.badRequest().body(error);
     }
 
     @PostMapping("/{id}/enviar-a-revision")
-    public String enviarARevision(@PathVariable Long id,
-                                 @RequestParam(required = false) String observaciones,
-                                 RedirectAttributes redirectAttributes) {
+    public ResponseEntity<?> enviarARevision(@PathVariable Long id,
+                                 @RequestParam(required = false) String observaciones) {
         try {
             log.info("Enviando solicitud {} a revisión", id);
 
@@ -269,8 +282,9 @@ public class SolicitudController {
             Optional<Solicitud> solicitudOpt = solicitudService.obtenerPorId(id);
             if (solicitudOpt.isEmpty()) {
                 log.warn("Solicitud {} no encontrada", id);
-                redirectAttributes.addFlashAttribute("error", "Solicitud no encontrada");
-                return "redirect:/admin/solicitudes/gestionar";
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Solicitud no encontrada");
+                return ResponseEntity.badRequest().body(error);
             }
 
             Solicitud solicitud = solicitudOpt.get();
@@ -281,12 +295,15 @@ public class SolicitudController {
 
             solicitudService.actualizarSolicitud(solicitud);
             log.info("Solicitud {} enviada a revisión exitosamente", id);
-            redirectAttributes.addFlashAttribute("mensaje", "Solicitud enviada a revisión");
+            Map<String, String> response = new HashMap<>();
+            response.put("mensaje", "Solicitud enviada a revisión exitosamente");
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             log.error("Error al enviar solicitud {} a revisión: {}", id, e.getMessage());
-            redirectAttributes.addFlashAttribute("error", "Error al enviar a revisión");
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Error al enviar a revisión: " + e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
-        return "redirect:/admin/solicitudes/gestionar";
     }
 }

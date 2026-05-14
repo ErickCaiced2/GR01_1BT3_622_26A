@@ -12,7 +12,6 @@
     <style>
         :root { --primary-color: #FF6B6B; --secondary-color: #4ECDC4; }
         body { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); min-height: 100vh; }
-        .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); }
         .form-container { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
         .form-title { color: var(--primary-color); margin-bottom: 30px; font-weight: bold; }
         .btn-register { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); border: none; color: white; font-weight: bold; }
@@ -23,11 +22,7 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/"><i class="fas fa-paw"></i> Sistema de Adopciones</a>
-        </div>
-    </nav>
+    <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
 
     <div class="container my-5">
         <div class="row justify-content-center">

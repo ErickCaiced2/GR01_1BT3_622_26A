@@ -170,6 +170,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <form id="revisionForm">
+                <!-- Campo oculto para guardar el ID de la solicitud -->
+                <input type="hidden" id="revisionSolicitudId" value="">
                 <div class="modal-body">
                     <p class="mb-3">Enviarás a revisión la solicitud de <strong id="revisionSolicitante"></strong>.</p>
                     <div class="mb-3">
@@ -194,6 +196,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <form id="aprobarForm">
+                <!-- Campo oculto para guardar el ID de la solicitud -->
+                <input type="hidden" id="aprobarSolicitudId" value="">
                 <div class="modal-body">
                     <p class="mb-3">Aprobaras la solicitud de <strong id="aprobarSolicitante"></strong>.</p>
                     <div class="mb-3">
@@ -218,6 +222,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <form id="rechazarForm">
+                <!-- Campo oculto para guardar el ID de la solicitud -->
+                <input type="hidden" id="rechazarSolicitudId" value="">
                 <div class="modal-body">
                     <p class="mb-3">Rechazaras la solicitud de <strong id="rechazarSolicitante"></strong>.</p>
                     <div class="mb-3">
@@ -257,26 +263,151 @@
         return header ? header.getAttribute('content') : 'X-CSRF-TOKEN';
     }
 
+    // DEBUG: Verificar qué botones existen en la página
+    console.log('Total de botones con data-solicitud-id:', document.querySelectorAll('[data-solicitud-id]').length);
+    document.querySelectorAll('[data-solicitud-id]').forEach((btn, i) => {
+        console.log(`Botón ${i}: ID="${btn.getAttribute('data-solicitud-id')}", Solicitante="${btn.getAttribute('data-solicitante')}"`)
+    });
+
+    // Usar event delegation para capturar clicks en botones (funciona incluso si se cargan dinámicamente)
+    document.addEventListener('click', function(event) {
+        // IMPORTANTE: Ignorar clicks en botones dentro de modales (para no resetear solicitudActual)
+        if (event.target.closest('.modal')) {
+            console.log('Click en modal ignorado - no resetear solicitudActual');
+            return;
+        }
+
+        const clickedElement = event.target;
+        console.log('Click detectado en:', clickedElement.tagName, clickedElement.className);
+
+        const button = event.target.closest('button[data-bs-target="#revisionModal"]');
+        if (button) {
+            solicitudActual = button.getAttribute('data-solicitud-id');
+            const solicitante = button.getAttribute('data-solicitante');
+            console.log('✓ Botón de revisión clickeado. ID:', solicitudActual, 'Solicitante:', solicitante);
+
+            if (!solicitudActual || solicitudActual.trim() === '') {
+                console.error('✗ ERROR: El atributo data-solicitud-id está vacío en el HTML');
+                console.log('HTML del botón:', button.outerHTML);
+                alert('Error: No se pudo obtener el ID de la solicitud. Revisa la consola.');
+                return;
+            }
+
+            document.getElementById('revisionSolicitante').textContent = solicitante;
+        }
+
+        const buttonAprobar = event.target.closest('button[data-bs-target="#aprobarModal"]');
+        if (buttonAprobar) {
+            solicitudActual = buttonAprobar.getAttribute('data-solicitud-id');
+            const solicitante = buttonAprobar.getAttribute('data-solicitante');
+            console.log('✓ Botón de aprobación clickeado. ID:', solicitudActual, 'Solicitante:', solicitante);
+
+            if (!solicitudActual || solicitudActual.trim() === '') {
+                console.error('✗ ERROR: El atributo data-solicitud-id está vacío en el HTML');
+                console.log('HTML del botón:', buttonAprobar.outerHTML);
+                alert('Error: No se pudo obtener el ID de la solicitud. Revisa la consola.');
+                return;
+            }
+
+            document.getElementById('aprobarSolicitante').textContent = solicitante;
+        }
+
+        const buttonRechazar = event.target.closest('button[data-bs-target="#rechazarModal"]');
+        if (buttonRechazar) {
+            solicitudActual = buttonRechazar.getAttribute('data-solicitud-id');
+            const solicitante = buttonRechazar.getAttribute('data-solicitante');
+            console.log('✓ Botón de rechazo clickeado. ID:', solicitudActual, 'Solicitante:', solicitante);
+
+            if (!solicitudActual || solicitudActual.trim() === '') {
+                console.error('✗ ERROR: El atributo data-solicitud-id está vacío en el HTML');
+                console.log('HTML del botón:', buttonRechazar.outerHTML);
+                alert('Error: No se pudo obtener el ID de la solicitud. Revisa la consola.');
+                return;
+            }
+
+            document.getElementById('rechazarSolicitante').textContent = solicitante;
+        }
+    });
+
+    // Event listeners para los modales - Guardar ID en campo oculto
     revisionModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
-        solicitudActual = button.getAttribute('data-solicitud-id');
+        if (!button) {
+            console.warn('No relatedTarget en modal de revisión');
+            return;
+        }
+        const idCapturado = button.getAttribute('data-solicitud-id');
+        console.log('✓ Modal de revisión abierto. ID del botón:', idCapturado);
+
+        // Guardar el ID en el campo oculto del form
+        document.getElementById('revisionSolicitudId').value = idCapturado;
+
+        if (idCapturado) {
+            solicitudActual = idCapturado;
+        }
         document.getElementById('revisionSolicitante').textContent = button.getAttribute('data-solicitante');
     });
 
     aprobarModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
-        solicitudActual = button.getAttribute('data-solicitud-id');
+        if (!button) {
+            console.warn('No relatedTarget en modal de aprobación');
+            return;
+        }
+        const idCapturado = button.getAttribute('data-solicitud-id');
+        console.log('✓ Modal de aprobación abierto. ID del botón:', idCapturado);
+
+        // Guardar el ID en el campo oculto del form
+        document.getElementById('aprobarSolicitudId').value = idCapturado;
+
+        if (idCapturado) {
+            solicitudActual = idCapturado;
+        }
         document.getElementById('aprobarSolicitante').textContent = button.getAttribute('data-solicitante');
     });
 
     rechazarModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
-        solicitudActual = button.getAttribute('data-solicitud-id');
+        if (!button) {
+            console.warn('No relatedTarget en modal de rechazo');
+            return;
+        }
+        const idCapturado = button.getAttribute('data-solicitud-id');
+        console.log('✓ Modal de rechazo abierto. ID del botón:', idCapturado);
+
+        // Guardar el ID en el campo oculto del form
+        document.getElementById('rechazarSolicitudId').value = idCapturado;
+
+        if (idCapturado) {
+            solicitudActual = idCapturado;
+        }
         document.getElementById('rechazarSolicitante').textContent = button.getAttribute('data-solicitante');
     });
 
     revisionForm.addEventListener('submit', async function (event) {
         event.preventDefault();
+
+        // Obtener el ID del campo oculto (releer directamente del DOM)
+        const fieldElement = document.getElementById('revisionSolicitudId');
+        let solicitudId = fieldElement ? fieldElement.value : '';
+
+        // Limpiar espacios en blanco
+        solicitudId = solicitudId.trim();
+
+        console.log('=== REVISION FORM SUBMIT ===');
+        console.log('Campo element existe?:', !!fieldElement);
+        console.log('Valor crudo del campo:', JSON.stringify(fieldElement.value));
+        console.log('Valor limpio:', JSON.stringify(solicitudId));
+        console.log('Largo:', solicitudId.length);
+        console.log('Es número?:', !isNaN(solicitudId));
+
+        // Validación: ID debe tener valor
+        if (!solicitudId || solicitudId === '') {
+            alert('Error: No se pudo obtener el ID de la solicitud. Por favor, intenta nuevamente.');
+            console.error('ID vacío. Valor del campo:', fieldElement.value);
+            return;
+        }
+
         const observaciones = document.getElementById('observacionesRevision').value.trim();
         const body = new URLSearchParams();
         if (observaciones) {
@@ -284,12 +415,16 @@
         }
 
         try {
-            await enviarCambioEstado(`/solicitudes/${solicitudActual}/enviar-a-revision`, body);
+            // Construir URL sin template strings
+            const url = '/solicitudes/' + solicitudId + '/enviar-a-revision';
+            console.log('URL final:', url);
+            await enviarCambioEstado(url, body);
             document.getElementById('estadoToastBody').textContent = 'Solicitud enviada a revisión exitosamente.';
             toast.show();
             bootstrap.Modal.getInstance(revisionModal).hide();
             setTimeout(() => window.location.reload(), 700);
         } catch (error) {
+            console.error('Error en revisión:', error);
             document.getElementById('estadoToastBody').textContent = 'Error: ' + error.message;
             toast.show();
         }
@@ -297,6 +432,26 @@
 
     aprobarForm.addEventListener('submit', async function (event) {
         event.preventDefault();
+
+        // Obtener el ID del campo oculto (releer directamente del DOM)
+        const fieldElement = document.getElementById('aprobarSolicitudId');
+        let solicitudId = fieldElement ? fieldElement.value : '';
+
+        // Limpiar espacios en blanco
+        solicitudId = solicitudId.trim();
+
+        console.log('=== APROBAR FORM SUBMIT ===');
+        console.log('Campo element existe?:', !!fieldElement);
+        console.log('Valor crudo del campo:', JSON.stringify(fieldElement.value));
+        console.log('Valor limpio:', JSON.stringify(solicitudId));
+
+        // Validación: ID debe tener valor
+        if (!solicitudId || solicitudId === '') {
+            alert('Error: No se pudo obtener el ID de la solicitud. Por favor, intenta nuevamente.');
+            console.error('ID vacío. Valor del campo:', fieldElement.value);
+            return;
+        }
+
         const observaciones = document.getElementById('observacionesTexto').value.trim();
         const body = new URLSearchParams();
         if (observaciones) {
@@ -304,12 +459,16 @@
         }
 
         try {
-            await enviarCambioEstado(`/solicitudes/${solicitudActual}/aprobar`, body);
+            // Construir URL sin template strings
+            const url = '/solicitudes/' + solicitudId + '/aprobar';
+            console.log('URL final:', url);
+            await enviarCambioEstado(url, body);
             document.getElementById('estadoToastBody').textContent = 'Solicitud aprobada exitosamente.';
             toast.show();
             bootstrap.Modal.getInstance(aprobarModal).hide();
             setTimeout(() => window.location.reload(), 700);
         } catch (error) {
+            console.error('Error en aprobación:', error);
             document.getElementById('estadoToastBody').textContent = 'Error: ' + error.message;
             toast.show();
         }
@@ -317,6 +476,26 @@
 
     rechazarForm.addEventListener('submit', async function (event) {
         event.preventDefault();
+
+        // Obtener el ID del campo oculto (releer directamente del DOM)
+        const fieldElement = document.getElementById('rechazarSolicitudId');
+        let solicitudId = fieldElement ? fieldElement.value : '';
+
+        // Limpiar espacios en blanco
+        solicitudId = solicitudId.trim();
+
+        console.log('=== RECHAZAR FORM SUBMIT ===');
+        console.log('Campo element existe?:', !!fieldElement);
+        console.log('Valor crudo del campo:', JSON.stringify(fieldElement.value));
+        console.log('Valor limpio:', JSON.stringify(solicitudId));
+
+        // Validación: ID debe tener valor
+        if (!solicitudId || solicitudId === '') {
+            alert('Error: No se pudo obtener el ID de la solicitud. Por favor, intenta nuevamente.');
+            console.error('ID vacío. Valor del campo:', fieldElement.value);
+            return;
+        }
+
         const razon = document.getElementById('razonRechazo').value.trim();
         if (!razon) {
             alert('Debes ingresar una razón para rechazar la solicitud');
@@ -327,12 +506,16 @@
         body.append('razon', razon);
 
         try {
-            await enviarCambioEstado(`/solicitudes/${solicitudActual}/rechazar`, body);
+            // Construir URL sin template strings
+            const url = '/solicitudes/' + solicitudId + '/rechazar';
+            console.log('URL final:', url);
+            await enviarCambioEstado(url, body);
             document.getElementById('estadoToastBody').textContent = 'Solicitud rechazada exitosamente.';
             toast.show();
             bootstrap.Modal.getInstance(rechazarModal).hide();
             setTimeout(() => window.location.reload(), 700);
         } catch (error) {
+            console.error('Error en rechazo:', error);
             document.getElementById('estadoToastBody').textContent = 'Error: ' + error.message;
             toast.show();
         }

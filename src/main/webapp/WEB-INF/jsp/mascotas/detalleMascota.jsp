@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary-color: #FF6B6B; --secondary-color: #4ECDC4; }
-        .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); }
         .info-section { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
         .badge-disponible { background-color: #28a745; }
         .badge-adoptado { background-color: #007bff; }
@@ -19,17 +18,7 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/"><i class="fas fa-paw"></i> Sistema de Adopciones</a>
-            <div class="collapse navbar-collapse">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/mascotas/lista">Mascotas</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
 
     <div class="container my-5">
         <c:if test="${param.exito}">

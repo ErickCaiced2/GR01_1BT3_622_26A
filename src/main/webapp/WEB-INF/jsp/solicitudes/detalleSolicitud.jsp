@@ -17,8 +17,12 @@
             --danger-color: #dc3545;
         }
         body { background-color: #f5f7fa; }
-        .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); }
-        .page-header {
+    </style>
+</head>
+<body>
+    <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
+
+    <div class="page-header">
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
             padding: 30px 0;
@@ -127,14 +131,7 @@
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/"><i class="fas fa-paw"></i> Sistema de Adopciones</a>
-            <span class="navbar-text text-white ms-auto">
-                <i class="fas fa-heart"></i> Encontrando hogares para mascotas
-            </span>
-        </div>
-    </nav>
+    <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
 
     <div class="page-header">
         <div class="container">
