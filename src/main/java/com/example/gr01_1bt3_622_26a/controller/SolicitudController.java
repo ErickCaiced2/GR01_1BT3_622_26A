@@ -6,10 +6,14 @@ import com.example.gr01_1bt3_622_26a.entity.Mascota;
 import com.example.gr01_1bt3_622_26a.service.SolicitudService;
 import com.example.gr01_1bt3_622_26a.service.SolicitanteService;
 import com.example.gr01_1bt3_622_26a.service.MascotaService;
+import com.example.gr01_1bt3_622_26a.service.ContratoService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,7 +35,8 @@ public class SolicitudController {
     private final SolicitudService solicitudService;
     private final SolicitanteService solicitanteService;
     private final MascotaService mascotaService;
-    
+    private final ContratoService contratoService;
+
     @GetMapping("/formulario")
     public String mostrarFormulario(
             @RequestParam(value = "mascotaId", required = false) Long mascotaId,
@@ -304,6 +309,69 @@ public class SolicitudController {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Error al enviar a revisión: " + e.getMessage());
             return ResponseEntity.badRequest().body(error);
+        }
+    }
+
+    /**
+     * Descarga el contrato PDF de una solicitud aprobada
+     *
+     * Endpoint: GET /solicitudes/{id}/contrato/descargar
+     * Solo permite descargar si la solicitud está Aprobada
+     *
+     * @param id ID de la solicitud
+     * @return PDF del contrato o error 404/403
+     */
+    @GetMapping("/{id}/contrato/descargar")
+    public ResponseEntity<?> descargarContratoSolicitud(@PathVariable Long id) {
+        log.info("Solicitud de descarga de contrato para solicitud ID: {}", id);
+
+        try {
+            // Verificar que la solicitud existe
+            Optional<Solicitud> solicitudOpt = solicitudService.obtenerPorId(id);
+            if (solicitudOpt.isEmpty()) {
+                log.warn("Intento de descargar contrato para solicitud inexistente: {}", id);
+                return ResponseEntity.notFound().build();
+            }
+
+            Solicitud solicitud = solicitudOpt.get();
+
+            // Verificar que esté aprobada
+            if (!"Aprobada".equals(solicitud.getEstado())) {
+                log.warn("Intento de descargar contrato para solicitud no aprobada. ID: {}, Estado: {}",
+                    id, solicitud.getEstado());
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("El contrato solo puede descargarse si la solicitud ha sido aprobada");
+            }
+
+            // Para generar el PDF de la solicitud, usamos el método que referencia a una adopción
+            // Si no existe adopción, generamos desde la solicitud directamente
+            byte[] pdfContent = contratoService.generarContratoPDFDesdeSolicitud(id);
+
+            if (pdfContent == null || pdfContent.length == 0) {
+                log.error("PDF generado vacío para solicitud ID: {}", id);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error: No se pudo generar el PDF del contrato");
+            }
+
+            // Construir headers HTTP
+            String nombreArchivo = String.format("contrato_adopcion_solicitud_%d.pdf", id);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", nombreArchivo);
+            headers.setContentLength(pdfContent.length);
+
+            log.info("Contrato PDF descargado para solicitud ID: {} - Tamaño: {} bytes",
+                id, pdfContent.length);
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfContent);
+
+        } catch (RuntimeException e) {
+            log.error("Error al descargar contrato para solicitud ID: {}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al generar el contrato: " + e.getMessage());
         }
     }
 }

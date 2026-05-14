@@ -17,18 +17,15 @@
             --danger-color: #dc3545;
         }
         body { background-color: #f5f7fa; }
-    </style>
-</head>
-<body>
-    <jsp:include page="/WEB-INF/jsp/navbar.jsp" />
 
-    <div class="page-header">
+        .page-header {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             color: white;
             padding: 30px 0;
             margin-bottom: 30px;
             border-radius: 0 0 15px 15px;
         }
+
         .info-card {
             background: white;
             border-radius: 12px;
@@ -297,6 +294,19 @@
                         </p>
                     </div>
                 </div>
+
+                <!-- DESCARGA DE CONTRATO (Solo si está aprobada) -->
+                <c:if test="${solicitud.estado == 'Aprobada'}">
+                    <div class="mt-4 p-4 bg-success bg-opacity-10 rounded border border-success">
+                        <p class="text-success mb-3">
+                            <i class="fas fa-file-pdf"></i>
+                            <strong>¡Solicitud Aprobada!</strong> Descarga tu contrato de adopción.
+                        </p>
+                        <a href="/solicitudes/${solicitud.id}/contrato/descargar" class="btn btn-success">
+                            <i class="fas fa-download"></i> Descargar Contrato PDF
+                        </a>
+                    </div>
+                </c:if>
 
                 <!-- FOOTER -->
                 <div class="mt-5 p-4 bg-light rounded text-center">

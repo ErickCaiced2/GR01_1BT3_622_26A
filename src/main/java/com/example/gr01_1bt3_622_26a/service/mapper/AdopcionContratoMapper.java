@@ -2,6 +2,7 @@ package com.example.gr01_1bt3_622_26a.service.mapper;
 
 import com.example.gr01_1bt3_622_26a.dto.ContratoDTO;
 import com.example.gr01_1bt3_622_26a.entity.Adopcion;
+import com.example.gr01_1bt3_622_26a.entity.Solicitud;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -192,6 +193,113 @@ public class AdopcionContratoMapper {
                 System.currentTimeMillis()
         );
         log.debug("Número de contrato generado: {}", numeroContrato);
+        return numeroContrato;
+    }
+
+    /**
+     * Convierte una Solicitud aprobada a ContratoDB
+     *
+     * @param solicitud Entidad Solicitud con sus relaciones cargadas
+     * @return ContratoDTO con todos los campos mapeados
+     * @throws NullPointerException si solicitud o sus relaciones son null
+     */
+    public ContratoDTO toContratoDTODesdeSolicitud(Solicitud solicitud) {
+        if (solicitud == null) {
+            log.warn("Intento de mapear solicitud null");
+            throw new IllegalArgumentException("La solicitud no puede ser nula");
+        }
+
+        log.debug("Mapeando Solicitud ID: {} a ContratoDTO", solicitud.getId());
+
+        try {
+            ContratoDTO dto = ContratoDTO.builder()
+                    // Datos de Solicitud (alternativa a adopción)
+                    .adopcionId(solicitud.getId())
+
+                    // Datos del Refugio
+                    .nombreRefugio(nombreRefugio)
+                    .representanteLegal(representanteLegal)
+
+                    // Datos del Solicitante (desde Solicitud)
+                    .nombreAdoptante(mapearNombreSolicitanteDesdeSolicitud(solicitud))
+                    .cedulaAdoptante(mapearCedulaSolicitanteDesdeSolicitud(solicitud))
+                    .emailAdoptante(mapearEmailSolicitanteDesdeSolicitud(solicitud))
+                    .telefonoAdoptante(mapearTelefonoSolicitanteDesdeSolicitud(solicitud))
+
+                    // Datos de la Mascota (desde Solicitud)
+                    .nombreMascota(mapearNombreMascotaDesdeSolicitud(solicitud))
+                    .tipoMascota(mapearTipoMascotaDesdeSolicitud(solicitud))
+                    .razaMascota(mapearRazaMascotaDesdeSolicitud(solicitud))
+                    .edadMascota(mapearEdadMascotaDesdeSolicitud(solicitud))
+                    .descripcionMascota(mapearDescripcionMascotaDesdeSolicitud(solicitud))
+                    .colorMascota(mapearColorMascotaDesdeSolicitud(solicitud))
+
+                    // Datos de Vacunas
+                    .vacunasMascota("Vacunación desde solicitud registrada")
+
+                    // Datos generados
+                    .fechaGeneracion(LocalDate.now())
+                    .numeroContrato(generarNumeroContratoDesde(solicitud.getId()))
+
+                    .build();
+
+            log.debug("Mapeo exitoso para Solicitud ID: {}", solicitud.getId());
+            return dto;
+
+        } catch (NullPointerException e) {
+            log.error("Error en mapeo: relación nula en Solicitud ID: {}", solicitud.getId(), e);
+            throw new IllegalArgumentException("La solicitud debe tener asociada un solicitante y una mascota", e);
+        }
+    }
+
+    // Métodos helper para mapear desde Solicitud
+    private String mapearNombreSolicitanteDesdeSolicitud(Solicitud solicitud) {
+        return solicitud.getSolicitante() != null ? solicitud.getSolicitante().getNombre() : "Nombre no disponible";
+    }
+
+    private String mapearCedulaSolicitanteDesdeSolicitud(Solicitud solicitud) {
+        return solicitud.getSolicitante() != null ? solicitud.getSolicitante().getDocumentoIdentidad() : "---";
+    }
+
+    private String mapearEmailSolicitanteDesdeSolicitud(Solicitud solicitud) {
+        return solicitud.getSolicitante() != null ? solicitud.getSolicitante().getEmail() : "email@no-disponible.com";
+    }
+
+    private String mapearTelefonoSolicitanteDesdeSolicitud(Solicitud solicitud) {
+        return solicitud.getSolicitante() != null ? solicitud.getSolicitante().getTelefono() : "No disponible";
+    }
+
+    private String mapearNombreMascotaDesdeSolicitud(Solicitud solicitud) {
+        return solicitud.getMascota() != null ? solicitud.getMascota().getNombre() : "Mascota sin nombre";
+    }
+
+    private String mapearTipoMascotaDesdeSolicitud(Solicitud solicitud) {
+        return solicitud.getMascota() != null ? solicitud.getMascota().getTipo() : "Tipo desconocido";
+    }
+
+    private String mapearRazaMascotaDesdeSolicitud(Solicitud solicitud) {
+        return solicitud.getMascota() != null ? solicitud.getMascota().getRaza() : "Raza desconocida";
+    }
+
+    private Integer mapearEdadMascotaDesdeSolicitud(Solicitud solicitud) {
+        return solicitud.getMascota() != null ? solicitud.getMascota().getEdad() : 0;
+    }
+
+    private String mapearDescripcionMascotaDesdeSolicitud(Solicitud solicitud) {
+        return solicitud.getMascota() != null ? solicitud.getMascota().getDescripcion() : "Sin descripción";
+    }
+
+    private String mapearColorMascotaDesdeSolicitud(Solicitud solicitud) {
+        return solicitud.getMascota() != null ? solicitud.getMascota().getColor() : "Color no especificado";
+    }
+
+    private String generarNumeroContratoDesde(Long solicitudId) {
+        String numeroContrato = String.format(
+                "CONTRATO-SOL-%d-%d",
+                solicitudId,
+                System.currentTimeMillis()
+        );
+        log.debug("Número de contrato generado desde solicitud: {}", numeroContrato);
         return numeroContrato;
     }
 }
