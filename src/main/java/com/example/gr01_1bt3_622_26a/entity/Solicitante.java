@@ -18,7 +18,7 @@ public class Solicitante {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre es requerido")
+    @NotBlank(message = "El nombre es necesario")
     @Column(nullable = false)
     private String nombre;
 

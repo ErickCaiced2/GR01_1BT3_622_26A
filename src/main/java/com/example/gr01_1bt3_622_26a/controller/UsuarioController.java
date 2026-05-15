@@ -60,6 +60,15 @@ public class UsuarioController {
                 return "redirect:/usuarios/registro";
             }
 
+            // Validar que el documento no exista (HU2CA1)
+            if (documentoIdentidad != null && !documentoIdentidad.isBlank()) {
+                if (solicitanteService.obtenerPorDocumento(documentoIdentidad).isPresent()) {
+                    log.warn("⚠️ Intento de registro con documento duplicado: {}", documentoIdentidad);
+                    redirectAttributes.addFlashAttribute("error", "El documento de identidad ya existe");
+                    return "redirect:/usuarios/registro";
+                }
+            }
+
             // 1️⃣ Crear Usuario (con credenciales)
             Usuario usuario = Usuario.builder()
                     .email(email)
