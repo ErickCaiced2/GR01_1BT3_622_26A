@@ -1,743 +1,76 @@
-# 📚 Guía Completa de Instalación y Configuración
-## Sistema de Adopciones de Mascotas
+# Guía de Configuración del Entorno - Sistema de Adopciones de Mascotas
 
-> **Versión:** 2026-05-14 | **Estado:** ✅ Completamente Funcional  
-> **Arquitectura:** Docker Compose + Spring Boot 4.0.5 + MySQL 8.0 + Jenkins (Opcional)
-
----
-
-## 🎯 ¿Cómo Funciona Este Proyecto?
-
-```
-┌─────────────────────────────────────────┐
-│  TU MÁQUINA (Windows / macOS / Linux)  │
-├─────────────────────────────────────────┤
-│                                         │
-│  1️⃣  REQUISITO: Docker Desktop         │
-│      └─ Ejecuta contenedores Linux     │
-│                                         │
-│  2️⃣  Jenkins (Opcional en tu máquina)  │
-│      └─ Orquesta todo el pipeline      │
-│         ├─ Compila código (mvnw)       │
-│         ├─ Generawar (Maven)           │
-│         └─ Ejecuta: docker compose up  │
-│                                         │
-│  3️⃣  Docker Compose (AUTOMÁTICO)       │
-│      Levanta DOS servicios:             │
-│                                         │
-│      🐳 MySQL 8.0 (Contenedor)          │
-│      ├─ Ejecuta: 01-schema.sql (auto)  │
-│      └─ BD lista con tablas             │
-│                                         │
-│      🐾 Spring Boot App (Contenedor)    │
-│      ├─ Construido desde Dockerfile    │
-│      ├─ Conecta a MySQL                │
-│      └─ Escucha en :8090               │
-│                                         │
-└─────────────────────────────────────────┘
-```
+> **Versión actualizada:** 2026-05-03  
+> **Estado:** ✅ Completamente funcional con Docker + Jenkins + MySQL
 
 ---
 
-## 📋 Checklist de Requisitos
+## 📋 Requisitos Previos
 
-### Hardware Mínimo
-- ✅ **RAM:** 4 GB (6+ recomendado para desarrollo cómodo)
-- ✅ **Disco:** 8 GB libres
-- ✅ **CPU:** 64-bit (ARM64 también soportado)
-- ✅ **Virtualizacion:** Hyper-V (Windows) o equivalente habilitado
-
-### Software Requerido (EN TU MÁQUINA)
-
-| Componente | Versión | Instalado | Notas |
-|-----------|---------|-----------|-------|
-| **Docker Desktop** | 29.4.1+ | ❌ Ver paso 1 | Windows/macOS/Linux |
-| **Git** | 2.40+ | ✅ | Descarga código |
-| **Java/Maven** | No necesita | ✅ | Incluido en proyecto |
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y ejecutándose
+- Git
+- PowerShell (Windows) o Bash (Linux/Mac)
+- ~5 GB de espacio en disco
 
 ---
 
-## 🚀 PASO 1: Instalar Docker Desktop (CRÍTICO)
-
-Este es el **requisito más importante**. Todo lo demás ocurre dentro de Docker.
-
-### Windows 10/11
-
-#### 1.1 Descargar Docker Desktop
-
-- URL: https://www.docker.com/products/docker-desktop
-- Click en **"Download for Windows"**
-- Se descarga: `Docker Desktop Installer.exe (~500 MB)`
-
-#### 1.2 Instalar
-
-```powershell
-# El instalador puede pedirte permisos de administrador
-# Haz click derecho → "Ejecutar como Administrador"
-
-# Espera a que se complete (~5 minutos)
-```
-
-#### 1.3 Habilitar WSL 2 (Windows Subsystem for Linux)
-
-Si aparece un diálogo, sigue estos pasos:
-
-```powershell
-# En PowerShell como Administrador ejecuta:
-wsl --install
-
-# Luego reinicia el sistema
-Restart-Computer
-```
-
-#### 1.4 Ejecutar Docker Desktop
-
-```powershell
-# Después de reiniciar, busca "Docker" en el menú de inicio
-# Click en "Docker Desktop"
-# Espera a que el ícono en la bandeja muestre ✅ "Docker is running"
-# (~1 minuto)
-```
-
-### macOS
-
-#### 1.1 Descargar
-- URL: https://www.docker.com/products/docker-desktop
-- Click en **"Download for Mac"** (elige **Apple Silicon** si tienes M1/M2 o **Intel**)
-
-#### 1.2 Instalar
-```bash
-# Se descarga Docker.dmg
-# Haz click en Docker.dmg
-# Arrastra el ícono Docker a Applications
-# Espera instalación (~2 minutos)
-```
-
-#### 1.3 Ejecutar
-```bash
-# Applications → Docker
-# Permite acceso (puede pedir contraseña)
-# Espera ícono ✅ en la barra de estado
-```
-
-### Linux (Ubuntu/Debian)
+## 1️⃣ Clonar el Repositorio
 
 ```bash
-# Instalar Docker Engine
-sudo apt-get update
-sudo apt-get install -y docker.io docker-compose
-
-# Agregar tu usuario al grupo docker (sin sudo)
-sudo usermod -aG docker $USER
-
-# Aplicar cambios
-newgrp docker
-
-# Verificar
-docker ps
-```
-
----
-
-## ✅ PASO 2: Verificar Instalación de Docker
-
-Abre **PowerShell** (Windows), **Terminal** (macOS) o **Bash** (Linux) y ejecuta:
-
-### 2.1 Script de Validación
-
-```powershell
-# Windows PowerShell
-
-Write-Host "🔍 Verificando Docker..."
-docker --version
-docker-compose --version
-docker ps
-
-Write-Host ""
-Write-Host "✅ Docker está listo si ves versiones arriba"
-```
-
-```bash
-# macOS / Linux Bash
-
-echo "🔍 Verificando Docker..."
-docker --version
-docker-compose --version
-docker ps
-
-echo ""
-echo "✅ Docker está listo si ves versiones arriba"
-```
-
-**Salida esperada:**
-```
-Docker version 29.4.1, build 055a478
-Docker Compose version v5.1.3
-CONTAINER ID   IMAGE   COMMAND   CREATED   STATUS   PORTS   NAMES
-(lista vacía es ok)
-✅ Docker está listo si ves versiones arriba
-```
-
-**Si hay error:** 
-- ❌ "docker: command not found" → Docker Desktop no está en PATH, reinicia o agrega manualmente
-- ❌ "error during connect" → Docker no está corriendo, abre Docker Desktop
-- ❌ "permission denied" → En Linux, ejecuta: `sudo usermod -aG docker $USER && newgrp docker`
-
----
-
-## ✅ PASO 3: Instalar Git (Si No Lo Tienes)
-
-Git es necesario para descargar el código del repositorio.
-
-### Windows
-
-```powershell
-# Descargar desde: https://git-scm.com/download/win
-# Ejecutar instalador git-*.exe
-# Usar valores por defecto
-# Verificar:
-git --version
-# Debería mostrar: git version 2.45.1.windows.1 (o similar)
-```
-
-### macOS
-
-```bash
-# Con Homebrew
-brew install git
-
-# O desde: https://git-scm.com/download/mac
-
-# Verificar:
-git --version
-```
-
-### Linux
-
-```bash
-# Ubuntu/Debian
-sudo apt-get update
-sudo apt-get install -y git
-
-# Verificar:
-git --version
-```
-
----
-
-## 🚀 PASO 4: Descargar el Código del Proyecto
-
-```bash
-# Abre tu terminal favorita en la carpeta donde quieras trabajar
-
 git clone https://github.com/ErickCaiced2/GR01_1BT3_622_26A.git
 cd GR01_1BT3_622_26A
-
-# Verificar que descargó correctamente
-ls -la  # macOS/Linux
-dir     # Windows
-
-# Debería ver: compose.yaml, pom.xml, Dockerfile, src/, etc.
 ```
 
 ---
 
-## 🔨 PASO 5: Compilar la Aplicación (Maven)
-
-Ahora compilamos el código Java en un WAR que Docker ejecutará.
-
-```powershell
-# Windows PowerShell
-.\mvnw clean package -DskipTests
-
-# macOS/Linux Bash
-./mvnw clean package -DskipTests
-```
-
-**Esto hace:**
-1. Descarga dependencias Maven (~500 MB primera vez)
-2. Compila código Java
-3. Genera: `target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war`
-4. **Tiempo:** ~3 min primera vez, ~30 seg después (caché)
-
-**Espera hasta ver:**
-```
-[INFO] BUILD SUCCESS
-```
-
----
-
-## 🎯️ PASO 6: El Flujo Automático de Docker Compose
-
-**IMPORTANTE:** Esto es lo que hace Docker Compose automáticamente:
-
-```
-Tu comando: docker compose up -d
-             └─ Lee compose.yaml
-                ├─ SERVICIO 1: MySQL
-                │  ├─ Descarga imagen: mysql:8.0
-                │  ├─ Crea contenedor: adopciones-mysql
-                │  ├─ Monta volumen con: 01-schema.sql
-                │  ├─ Ejecuta AUTOMÁTICAMENTE: 01-schema.sql
-                │  │  (crea tablas: usuario, mascota, solicitud, etc.)
-                │  ├─ Bind Puerto: 3306 → 3306
-                │  └─ Espera healthcheck (mysqladmin ping)
-                │
-                ├─ SERVICIO 2: Spring Boot App
-                │  ├─ Lee Dockerfile
-                │  ├─ Construye imagen desde WAR compilado
-                │  ├─ Crea contenedor: adopciones-app
-                │  ├─ Establece variables de entorno:
-                │  │  ├─ SPRING_DATASOURCE_URL=mysql://adopciones-mysql:3306
-                │  │  ├─ SPRING_DATASOURCE_USERNAME=myuser
-                │  │  └─ SPRING_DATASOURCE_PASSWORD=secret
-                │  ├─ Solo inicia DESPUÉS que MySQL esté listo
-                │  │  (depends_on: mysql.service_healthy)
-                │  └─ Bind Puerto: 8090 → 8090
-                │
-                └─ RESULTADO: Servicios listos en segundos ⏱️
-```
-
----
-
-## ✅ PASO 7: Levantar Todo con Docker Compose
-
-Ahora que ya compilaste el código, ejecuta Docker Compose:
+## 2️⃣ Crear la Red Compartida de Docker
 
 ```bash
-# Levanta MySQL + App
-docker compose up -d
-
-# Ver estado
-docker compose ps
-
-# Espera 20-30 segundos
+docker network create adopciones-network
 ```
 
-**Salida esperada:**
-```
-CONTAINER ID  IMAGE                      STATUS
-abc123        mysql:8.0                  Up 1 second (health: starting)
-def456        adopciones-sistema:latest  Up 1 second
-```
-
-**Espera a que MySQL muestre:**
-```
-(health: healthy)  ← MySQL lista
+Verifica que se creó correctamente:
+```bash
+docker network inspect adopciones-network
 ```
 
 ---
 
-## 🎉 PASO 8: ¡LISTO! Accede a la Aplicación
-
-Abre tu navegador:
-
-| Servicio | URL | Credenciales |
-|----------|-----|--------------|
-| 🐾 **App** | http://localhost:8090 | Admin precargado |
-| 💾 **MySQL** | localhost:3306 | `myuser` / `secret` |
-
-**Para ver logs en tiempo real:**
+## 3️⃣ Levantar MySQL 8.0
 
 ```bash
-docker compose logs -f adopciones-app
+docker run -d \
+  --name adopciones-mysql \
+  --network adopciones-network \
+  -e MYSQL_ROOT_PASSWORD=1234 \
+  -e MYSQL_DATABASE=adopciones_db \
+  -e MYSQL_USER=myuser \
+  -e MYSQL_PASSWORD=secret \
+  -p 3306:3306 \
+  mysql:8.0
 ```
 
-Cuando veas:
-```
-✅ Started GR01_1BT3_622_26AApplication
-```
-
-¡Funciona! 🚀
-
----
-
----
-
-## ✅ PASO 9: Verificar que Todo Funciona Correctamente
-
-Después de ejecutar `docker compose up -d` y esperar 20-30 segundos:
-
-### 9.1 Verificar Estado de Servicios
+**Esperar a que MySQL esté listo (15-20 segundos):**
 
 ```bash
-docker compose ps
+docker exec adopciones-mysql mysqladmin ping -h localhost -u root -p1234
 ```
 
-**Debería ver:**
+Debería mostrar:
 ```
-CONTAINER ID  NAMES              STATUS              PORTS
-abc123        adopciones-mysql   Up 45 seconds (healthy)  0.0.0.0:3306->3306/tcp
-def456        adopciones-app     Up 30 seconds            0.0.0.0:8090->8090/tcp
-```
-
-### 9.2 Verificar que MySQL Inició Correctamente
-
-```bash
-docker exec adopciones-mysql mysql -u root -p1234 -e "SHOW DATABASES;"
-```
-
-**Debería ver:**
-```
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| adopciones_db      |  ← ✅ Nuestra BD
-| mysql              |
-| performance_schema |
-| sys                |
-+--------------------+
-```
-
-### 9.3 Verificar que las Tablas se Crearon
-
-```bash
-docker exec -it adopciones-mysql mysql -u myuser -psecret -D adopciones_db -e "SHOW TABLES;"
-```
-
-**Debería ver:**
-```
-+---------------------------+
-| Tables_in_adopciones_db   |
-+---------------------------+
-| usuario                   |  ← ✅ Tabla creada por 01-schema.sql
-| mascota                   |
-| solicitud                 |
-| solicitud_estado          |
-| foto                      |
-| adopcion                  |
-| mascota_compatibilidad    |
-| spring_session            |
-| spring_session_attributes |
-+---------------------------+
-```
-
-### 9.4 Verificar que la App está Corriendo
-
-**Opción A: Desde el navegador**
-```
-http://localhost:8090
-```
-
-**Opción B: Desde terminal**
-
-```powershell
-# Windows PowerShell
-(Invoke-WebRequest -Uri http://localhost:8090/actuator/health).Content
-
-# macOS/Linux
-curl http://localhost:8090/actuator/health
-```
-
-**Debería retornar:**
-```json
-{"status":"UP"}
-```
-
-### 9.5 Ver Logs de la Aplicación
-
-```bash
-docker compose logs -f adopciones-app
-```
-
-**Cuando veas:**
-```
-✅ Started GR01_1BT3_622_26AApplication in X.XXX seconds
-```
-
-¡LA APLICACIÓN ESTÁ LISTA! 🎉
-
----
-
-## 🔄 Ciclo de Desarrollo Local
-
-Cuando cambies código Java y quieras ver los cambios:
-
-```bash
-# 1. Compila nuevamente (genera nuevo WAR)
-.\mvnw clean package -DskipTests
-
-# 2. Reconstruye la imagen Docker usando el nuevo WAR
-docker compose up -d --build
-
-# 3. Espera 30 segundos
-# 4. Ver que se actualizó
-docker compose logs -f adopciones-app
-
-# Cuando veas el mensaje de "Started" = cambios listos
+mysqld is alive
 ```
 
 ---
 
-## 📊 Acceso a Servicios (EN TU MÁQUINA AHORA)
+## 4️⃣ Levantar Jenkins con Docker in Docker (DinD)
 
-| Componente | URL/Host | Credenciales | Descripción |
-|-----------|----------|--------------|-------------|
-| 🐾 **App Web** | http://localhost:8090 | Admin (precargado) | Interfaz web de adopciones |
-| 💾 **MySQL CLI** | localhost:3306 | `myuser` / `secret` | Base de datos |
-| 📊 **Health Check** | http://localhost:8090/actuator/health | No requiere | Estado de app |
-
----
-
-## 📁 Estructura del Proyecto
-
-```
-GR01_1BT3_622_26A/
-│
-├── compose.yaml .................. 🔧 Orquestación: MySQL + App
-├── Dockerfile .................... 📦 Especificación imagen Docker
-├── pom.xml ....................... 📚 Dependencias Maven (Spring Boot, etc.)
-│
-├── src/main/
-│   ├── java/
-│   │   └── com/example/gr01_1bt3_622_26a/
-│   │       ├── controller/ ....... 🎮 Controladores MVC (rutas HTTP)
-│   │       ├── entity/ ........... 📊 Modelos (Mascota, Solicitud, etc.)
-│   │       ├── repository/ ....... 🗄️  Acceso a BD (JPA)
-│   │       └── service/ .......... ⚙️  Lógica de negocio
-│   │
-│   └── resources/
-│       ├── 01-schema.sql ......... 📋 CRÍTICO: Estructura BD (auto-ejecutado)
-│       ├── 02-data.sql ........... 🌱 Datos de ejemplo
-│       └── application.properties  ⚙️  Configuración Spring Boot
-│
-├── mvnw / mvnw.cmd ............... 🔨 Maven Wrapper (sin instalar mvn)
-│
-└── README.md / SETUP.md .......... 📖 Documentación
-```
-
----
-
-## 🚨 Solución de Problemas
-
-### ❌ Error: "Connection refused on port 8090"
-
-**Causa:** MySQL aún no está listo
-
-```bash
-# Ver logs de MySQL
-docker compose logs mysql
-
-# Espera hasta ver:
-# "ready for acceptance of connections"
-
-# Verifica con:
-docker compose ps
-# Debería mostrar: mysql STATUS (healthy)
-```
-
-**Solución:** Espera 30-60 segundos completos
-
----
-
-### ❌ Error: "Port 8090 already in use"
-
-**Causa:** Hay otro contenedor en puerto 8090
-
-```bash
-# Detén todo
-docker compose down
-
-# Elimina volumen (si quieres resetear datos)
-docker compose down -v
-
-# Reinicia
-docker compose up -d
-```
-
----
-
-### ❌ Error: "mvnw: permission denied" (macOS/Linux)
-
-**Causa:** Archivo no tiene permisos de ejecución
-
-```bash
-chmod +x ./mvnw
-./mvnw clean package -DskipTests
-```
-
----
-
-### ❌ Error: "Docker Desktop not running"
-
-**Causa:** Docker no está iniciado
-
-```bash
-# Windows: Abre el Menu de Inicio → "Docker"
-# macOS: Abre Applications → Docker
-# Linux: docker systemctl start
-
-# Verifica:
-docker ps
-```
-
----
-
-### ❌ Error: "mysql: command not found"
-
-**Causa:** MySQL CLI no está instalado (normal, lo ejecutamos en Docker)
-
-```bash
-# CORRECTO: Usar desde Docker
-docker exec -it adopciones-mysql mysql -u root -p1234
-
-# NO: ejecutar directamente mysql
-```
-
----
-
-### 🔧 Limpiar y Resetear Completamente
-
-```bash
-# ⚠️ ESTO BORRA TODO
-
-# Detener todos los contenedores
-docker compose down
-
-# Eliminar volúmenes (BD se borra)
-docker compose down -v
-
-# Eliminar imágenes
-docker image rm adopciones-sistema:latest mysql:8.0
-
-# Limpiar volúmenes huérfanos
-docker volume prune -f
-
-# Ahora puedes volver a empezar desde cero
-docker compose up -d
-```
-
----
-
-### 📊 Diagnosticar Problemas
-
-```bash
-# 1. Ver estado de servicios
-docker compose ps
-
-# 2. Ver logs completos
-docker compose logs
-
-# 3. Logs en tiempo real
-docker compose logs -f adopciones-app
-docker compose logs -f mysql
-
-# 4. Entrar en contenedor
-docker compose exec adopciones-app bash
-docker compose exec mysql bash
-
-# 5. Verificar conectividad desde app a MySQL
-docker exec adopciones-app ping adopciones-mysql
-
-# 6. Ver procesos en contenedor
-docker compose top mysql
-docker compose top adopciones-app
-```
-
----
-
-## 📖 Comandos Útiles
-
-
-```bash
-# Ver estado actual
-docker compose ps
-
-# Ver logs en tiempo real
-docker compose logs -f adopciones-app
-docker compose logs -f mysql
-
-# Acceder a MySQL directamente
-docker exec -it adopciones-mysql mysql -u myuser -psecret -D adopciones_db
-
-# Detener servicios (mantiene datos)
-docker compose down
-
-# Detener y eliminar datos (CUIDADO)
-docker compose down -v
-
-# Reiniciar servicios
-docker compose restart
-
-# Reconstruir imagen y levantar
-docker compose up -d --build
-
-# Ver volúmenes
-docker volume ls
-
-# Red de Docker
-docker network ls
-```
-
----
-
-## 🔧 Configuración de Variables de Entorno
-
-Si necesitas cambiar credenciales, crea un archivo `.env` en la raíz del proyecto:
-
-```env
-MYSQL_ROOT_PASSWORD=tu_password_root
-MYSQL_USER=tu_usuario
-MYSQL_PASSWORD=tu_password
-MYSQL_DATABASE=tu_bd
-```
-
-Luego: `docker compose up -d`
-
----
-
-## 📦 Estructura del Proyecto Spring Boot
-
-```
-src/main/java/com/example/gr01_1bt3_622_26a/
-├── controller/      # Controladores MVC
-├── entity/          # Entidades JPA (Mascota, Solicitud, etc.)
-├── repository/      # Acceso a base de datos
-└── service/         # Lógica de negocio
-```
-
----
-
-## 🤖 Automatización con Jenkins (OPCIONAL - Para CI/CD)
-
-> Esta sección explica cómo **Jenkins automatiza TODO** lo que hiciste manualmente arriba.  
-> Es **OPCIONAL** - usa esto cuando quieras que cada push a GitHub dispare un deploy automático.
-
-### Conceptual: Qué Hace Jenkins
-
-```
-┌─────────────────────────────────────────┐
-│  REPOSITORIO GitHub (tu código)         │
-│  ↑ Haces push                           │
-└─────────────────────────────────────────┘
-         ↓ Webhook notification
-┌─────────────────────────────────────────┐
-│  JENKINS (ejecutándose en tu máquina)   │
-│                                         │
-│  Job: "Adopciones-Deploy"               │
-│  ├─ git clone (descarga código)         │
-│  ├─ ./mvnw clean package  (compila)     │
-│  │  └─ genera WAR en target/            │
-│  ├─ docker compose down  (limpia)       │
-│  ├─ docker compose up -d  (levanta)     │
-│  │  ├─ MySQL se inicia                  │
-│  │  ├─ 01-schema.sql se ejecuta         │
-│  │  └─ App se construye y levanta       │
-│  └─ docker compose ps  (verifica)       │
-└─────────────────────────────────────────┘
-         ↓
-┌─────────────────────────────────────────┐
-│  RESULTADO: App actualizada en :8090    │
-│  ✅ Automáticamente, sin tocar nada     │
-└─────────────────────────────────────────┘
-```
-
-### 1️⃣ Instalar Jenkins (Contenedor)
+### 4.1 Crear el Contenedor Jenkins
 
 ```bash
 docker run -d \
   --name jenkins \
+  --network adopciones-network \
   -p 8080:8080 \
   -p 50000:50000 \
   -v jenkins_home:/var/jenkins_home \
@@ -745,207 +78,404 @@ docker run -d \
   jenkins/jenkins:lts
 ```
 
-Espera ~2 minutos a que Jenkins inicie.
-
-### 2️⃣ Acceder a Jenkins y Obtener Token
+### 4.2 Instalar Docker CLI + Docker Compose en Jenkins
 
 ```bash
-# Abre en navegador
-http://localhost:8080
-
-# En terminal, obtén el token de administrador inicial
-docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
-```
-
-Copia el token, pégalo en Jenkins, instala plugins recomendados y crea usuario admin.
-
-### 3️⃣ Instalar Docker CLI en Jenkins
-
-Jenkins necesita `docker` y `docker-compose` para ejecutar comandos:
-
-```bash
-# Actualizar paquetes
+# Actualizar repositorios
 docker exec -u root jenkins apt-get update
 
-# Instalar Docker CLI
+# Instalar Docker CLI (sin daemon)
 docker exec -u root jenkins apt-get install -y docker.io
 
-# Agregar al grupo docker
-docker exec -u root jenkins usermod -aG docker jenkins
+# Descargar Docker Compose v2 binario (más confiable que plugin)
+docker exec -u root jenkins sh -c 'curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose'
 
-# Verificar acceso
-docker exec jenkins docker ps
+# Hacer ejecutable
+docker exec -u root jenkins chmod +x /usr/local/bin/docker-compose
+
+# Verificar instalación
+docker exec jenkins docker --version
 docker exec jenkins docker-compose --version
 ```
 
-### 4️⃣ Crear Job en Jenkins
+### 4.3 Configurar Permisos (con persistencia)
 
-**En Jenkins (http://localhost:8080):**
+```bash
+docker exec -u root jenkins usermod -aG docker jenkins
+docker exec -u root jenkins chmod 666 /var/run/docker.sock
+```
 
-1. Click en **Nueva Tarea**
-2. **Nombre:** `Adopciones-Deploy`
-3. **Tipo:** Proyecto de estilo libre → **Crear**
+> ⚠️ **Nota:** `chmod 666` se aplica en el momento pero se pierde si Docker Desktop reinicia el socket.  
+> Para que persista en cada reinicio del contenedor Jenkins, recuerda volver a ejecutar:
+> ```bash
+> docker exec -u root jenkins chmod 666 /var/run/docker.sock
+> ```
+> O bien, al recrear Jenkins, agrégale la variable de entorno `-e DOCKER_OPTS=""` o usa un script de inicio.
 
-### 5️⃣ Configurar Job
+### 4.4 Verificar que Docker Funciona dentro de Jenkins
 
-#### Sección: "Gestión del Código Fuente"
+```bash
+docker exec jenkins docker ps
+```
 
-- ✅ Click en **Git**
-- URL Repositorio: `https://github.com/ErickCaiced2/GR01_1BT3_622_26A.git`
-- Rama: `*/main`
+Debería mostrar los contenedores disponibles.
 
-#### Sección: "Pasos de Construcción"
+---
 
-Click en **Agregar paso** → **Ejecutar shell**
+## 5️⃣ Acceder a Jenkins
 
-**Pega este SCRIPT EXACTO** (esto replica lo que hiciste manualmente):
+1. Abre el navegador en: **http://localhost:8080**
+
+2. Obtén la contraseña inicial:
+```bash
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+3. Copia la contraseña y pégala en Jenkins
+4. Completa la instalación (Install Suggested Plugins)
+5. Crea tu usuario admin
+
+---
+
+## 6️⃣ Configurar Maven en Jenkins
+
+1. En Jenkins → **Administrar Jenkins** → **Global Tool Configuration**
+2. Busca **Maven installations**
+3. Click en **Add Maven**
+4. Configurar:
+   - **Nombre:** `Maven 3.9`
+   - ☑ **Install automatically**
+   - **Versión:** `3.9.6` (o la más reciente)
+5. **Guardar**
+
+---
+
+## 7️⃣ Crear el Job de Jenkins
+
+### 7.1 Nueva Tarea
+
+1. Click en **Nueva tarea**
+2. **Nombre:** `EjecucionSistemaAdopciones`
+3. **Tipo:** Proyecto de estilo libre
+4. Click **Crear**
+
+### 7.2 Configurar Gestión del Código Fuente
+
+1. **Gestión del código fuente** → **Git**
+2. **URL del repositorio:**
+   ```
+   https://github.com/ErickCaiced2/GR01_1BT3_622_26A.git
+   ```
+3. **Rama:** `*/Prueba` (o `*/main` según sea necesario)
+4. **Guardar**
+
+### 7.3 Configurar Desencadenador de Compilación (Opcional)
+
+1. **Desencadenadores** → ☑ **Sondear el repositorio SCM**
+2. **Expresión cron:** `H/5 * * * *` (cada 5 minutos)
+3. O usar **GitHub hook trigger for GITScm polling** si tienes webhooks configurados
+
+### 7.4 Configurar Pasos de Construcción
+
+**Paso 1: Ejecutar Shell**
+
+1. **Pasos de construcción** → **Agregar paso** → **Ejecutar shell**
+2. Pega el script completo abajo:
+
+> ✅ **Nota:** El script usa `docker-compose` (binario descargado en 4.2) para orquestar todos los servicios  
+> definidos en `compose.yaml`. Esto automatiza completamente la inicialización de base de datos  
+> con todos los scripts SQL ejecutados por Docker al levantar MySQL.
 
 ```bash
 #!/bin/bash
 set -e
 
+echo "=== [1/4] Compilar WAR ==="
+bash mvnw clean package
+test -f target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war
+
+echo "=== [2/4] Detener contenedores anteriores ==="
+docker-compose down 2>/dev/null || true
+docker rm -f adopciones-mysql adopciones-app 2>/dev/null || true
+
+echo "=== [3/4] Levantar stack completo (MySQL + App) ==="
+docker-compose up -d
+
+echo "=== [4/4] Esperar a que servicios estén listos ==="
+sleep 15
+docker-compose exec -T mysql mysqladmin ping -h localhost -u root -p1234 || sleep 20
+
+echo "=== Estado de servicios ==="
+docker-compose ps
 echo ""
-echo "╔════════════════════════════════════════╗"
-echo "║  🚀 JENKINS DEPLOY AUTOMÁTICO         ║"
-echo "║     Sistema de Adopciones             ║"
-echo "╚════════════════════════════════════════╝"
+echo "📊 Dashboard: http://localhost:8080"
+echo "🐾 Aplicación:  http://localhost:8090"
+echo "💾 MySQL:      localhost:3306"
 echo ""
-
-# ==========================================================
-# PASO 1: Compilar código Java (genera WAR)
-# ==========================================================
-echo "[1/4] 🔨 Compilando código Java..."
-./mvnw clean package -DskipTests
-test -f target/GR01_1BT3_622_26A-0.0.1-SNAPSHOT.war && echo "✅ WAR generado" || exit 1
-
-# ==========================================================
-# PASO 2: Limpiar contenedores anteriores
-# ==========================================================
-echo "[2/4] 🧹 Limpiando contenedores previos..."
-docker compose down 2>/dev/null || true
-sleep 3
-
-# ==========================================================
-# PASO 3: Levantar stack (MySQL + App automáticamente)
-# ==========================================================
-echo "[3/4] 🐳 Levantando Docker Compose..."
-docker compose up -d
-
-# Esperar a MySQL (healthcheck)
-echo "⏳ Esperando a MySQL..."
-for i in {1..30}; do
-  if docker exec adopciones-mysql mysqladmin ping -h localhost -u root -p1234 &>/dev/null; then
-    echo "✅ MySQL listo"
-    break
-  fi
-  echo -n "."
-  sleep 2
-done
-
-# Esperar a que App inicie
-sleep 10
-
-# ==========================================================
-# PASO 4: Verificar que todo funciona
-# ==========================================================
-echo "[4/4] ✅ Verificando servicios..."
-docker compose ps
-docker compose logs --no-log-prefix adopciones-app | grep "Started GR01_1BT3_622_26AApplication" && echo "✅ ¡APP INICIADA!" || echo "⚠️ Revisar logs"
-
-echo ""
-echo "╔════════════════════════════════════════╗"
-echo "║  ✅ DEPLOY COMPLETADO                  ║"
-echo "╚════════════════════════════════════════╝"
-echo ""
-echo "📱 Servicios disponibles:"
-echo "   🐾 App: http://localhost:8090"
-echo "   💾 BD:  localhost:3306"
-echo ""
+echo "✅ Despliegue completado"
 ```
 
-Click en **Guardar**
-
-### 6️⃣ Ejecutar Deploy Manual
-
-**En Jenkins:**
-- Click en el job `Adopciones-Deploy`
-- Click en **Construir ahora**
-- Ver logs en tiempo real
-
-**Desde terminal:**
-```bash
-curl -X POST http://localhost:8080/job/Adopciones-Deploy/build
-```
-
-### 7️⃣ (Opcional) Disparar Automáticamente con Webhooks
-
-Para que cada push a GitHub dispare Jenkins automáticamente:
-
-**En GitHub:**
-1. Settings → Webhooks → Add webhook
-2. Payload URL: `http://tu-ip-jenkins:8080/github-webhook/`
-3. Content type: `application/json`
-4. Selecciona "Push events"
-5. Click "Add webhook"
-
-**En Jenkins:**
-1. Job Settings → Desencadenadores
-2. ✅ **GitHub hook trigger for GITScm polling**
-
-Ahora cada push dispara automáticamente el deploy.
+3. **Guardar**
 
 ---
 
-## 📖 Resumen: Comandos del Día a Día
+## 8️⃣ Verificar que Todo Funciona
+
+### Estado de Servicios
+
+| Servicio | URL | Descripción |
+|----------|-----|-------------|
+| Jenkins | http://localhost:8080 | Orquestador CI/CD |
+| Aplicación | http://localhost:8090 | Spring Boot War |
+| MySQL | localhost:3306 | Base de datos |
+
+### Verificar MySQL
 
 ```bash
-# 🔍 Ver qué está corriendo
-docker compose ps
+docker exec adopciones-mysql mysql -u root -p1234 -e "SHOW DATABASES;"
+```
 
-# 📊 Ver logs en vivo
-docker compose logs -f adopciones-app
+### Verificar Aplicación
 
-# 🔧 Acceder a MySQL CLI
-docker exec -it adopciones-mysql mysql -u myuser -psecret -D adopciones_db
+Después de ejecutar el build en Jenkins:
 
-# 🔄 Después de cambiar código
-./mvnw clean package -DskipTests
-docker compose up -d --build
+```bash
+curl http://localhost:8090/actuator/health
+```
 
-# 🛑 Detener (mantiene datos)
-docker compose down
-
-# 🧹 Limpiar todo (borra datos)
-docker compose down -v
-
-# 🔌 Conectar a contenedor interactivamente
-docker compose exec adopciones-app bash
-docker compose exec mysql bash
+Debería retornar:
+```json
+{"status":"UP"}
 ```
 
 ---
 
-## 📊 Credenciales por Defecto
+## 9️⃣ Estructura de Contenedores (Docker Compose)
 
-Cambiar en `.env` si lo necesitas:
+```
+adopciones-network (Red automática de compose)
+│
+├── adopciones-mysql (mysql:8.0)
+│   ├── Puerto: 3306
+│   ├── Base de datos: adopciones_db
+│   ├── Usuario app: myuser
+│   ├── Contraseñas: myuser/secret, root/1234
+│   ├── Volúmenes SQL (auto-ejecutados):
+│   │   ├── 01-schema-mysql.sql
+│   │   ├── 02-init-database.sql
+│   │   ├── 03-V2-SolicitudEstados.sql
+│   │   ├── 04-V3-MascotaCompatibilidad.sql
+│   │   └── 05-V4-Usuarios.sql
+│   └── Healthcheck: mysqladmin ping
+│
+├── adopciones-app (Spring Boot War)
+│   ├── Puerto: 8090
+│   ├── Conecta a: adopciones-mysql:3306
+│   ├── Depende de: MySQL (service_healthy)
+│   └── Reinicio automático
+│
+└── jenkins (jenkins:lts con DinD)
+    ├── Puerto: 8080
+    ├── Puerto agentes: 50000
+    ├── Volumen: jenkins_home (persistente)
+    └── Socket Docker: /var/run/docker.sock (para ejecutar compose)
+```
 
-```env
-MYSQL_ROOT_PASSWORD=1234
-MYSQL_USER=myuser
-MYSQL_PASSWORD=secret
-MYSQL_DATABASE=adopciones_db
+**Ventajas de Docker Compose:**
+- ✅ Levanta todos los servicios en orden correcto
+- ✅ Ejecuta scripts SQL automáticamente al iniciar MySQL
+- ✅ Maneja dependencias entre servicios (healthcheck)
+- ✅ Red compartida creada automáticamente
+- ✅ Variables de entorno centralizadas en `compose.yaml`
+- ✅ Comandos `docker compose down` limpian todo
+
+---
+
+## 🔟 Flujo de Trabajo Automatizado
+
+```
+1. Haces git push a rama Prueba
+           ↓
+2. Jenkins detecta cambios (cada 5 min)
+           ↓
+3. Jenkins ejecuta automáticamente:
+   ✓ Maven compila código (mvnw clean package)
+   ✓ Genera WAR empaquetado
+   ✓ Ejecuta docker-compose down (limpia previos)
+   ✓ Ejecuta docker-compose up -d (levanta stack)
+           ↓
+4. Docker Compose orquesta:
+   ✓ Crea red automática
+   ✓ Levanta MySQL con scripts SQL auto-ejecutados
+   ✓ Construye imagen Docker de la app
+   ✓ Conecta app a MySQL cuando está listo
+           ↓
+5. Aplicación actualizada en http://localhost:8090
+   ✓ Conectada a MySQL con datos inicializados
+   ✓ Con últimos cambios del código
+   ✓ Base de datos completamente configurada
+```
+
+**Tiempo total:** 2-3 minutos desde push hasta producción con BD lista
+
+**Datos inicializados automáticamente:**
+- ✅ Tablas creadas (schema-mysql.sql)
+- ✅ Migrations ejecutadas (V2, V3, V4)
+- ✅ Usuarios de ejemplo insertados
+- ✅ Datos de ejemplo para mascotas, solicitantes, etc.
+
+---
+
+## 1️⃣1️⃣ Dockerfile (Incluido en el Proyecto)
+
+El proyecto incluye `Dockerfile` ya configurado con:
+- ✅ Java 21
+- ✅ Usuario no-root (appuser)
+- ✅ curl instalado (para healthcheck)
+- ✅ Healthcheck automático
+- ✅ Credenciales sobrescribibles
+
+**No necesitas modificarlo.** Las variables de entorno se pasan desde Jenkins.
+
+---
+
+## 1️⃣2️⃣ Troubleshooting
+
+### Error: "Network not found"
+
+```bash
+docker network create adopciones-network
+```
+
+### Error: "MySQL connection refused"
+
+Espera 30 segundos después de levantar MySQL:
+```bash
+docker logs adopciones-mysql
+```
+
+### Error: "Application not responding"
+
+Revisa los logs:
+```bash
+docker logs adopciones-app
+```
+
+### Error: "Jenkins no ve Docker"
+
+```bash
+docker exec -u root jenkins chmod 666 /var/run/docker.sock
+docker restart jenkins
+```
+
+### Resetear todo
+
+```bash
+docker stop $(docker ps -aq)
+docker rm $(docker ps -aq)
+docker network rm adopciones-network
+docker volume rm jenkins_home
+
+# Vuelve a empezar desde el paso 2
 ```
 
 ---
 
-## ✨ Características de Esta Configuración
+## 1️⃣3️⃣ Comandos Útiles
 
-✅ **Simple:** Sin buildx ni complejidades innecesarias  
-✅ **Reproducible:** Funciona igual en Windows, macOS, Linux  
-✅ **Automática:** Docker Compose maneja todas las dependencias  
-✅ **Rápida:** Caché de Maven acelera builds posteriores  
-✅ **Segura:** Usuario no-root en Docker, healthchecks automáticos  
-✅ **Escalable:** Fácil agregar más servicios  
+```bash
+# Ver logs en tiempo real
+docker logs -f adopciones-app
+docker logs -f adopciones-mysql
+docker logs -f jenkins
+
+# Acceder a MySQL
+docker exec -it adopciones-mysql mysql -u root -p1234 -D adopciones_db
+
+# Listar contenedores
+docker ps -a
+
+# Ver estado de red
+docker network inspect adopciones-network
+
+# Ejecutar build manualmente en Jenkins
+curl -X POST http://localhost:8080/job/EjecucionSistemaAdopciones/build
+
+# Ver imágenes Docker
+docker images | grep adopciones
+
+# Limpiar imágenes antiguas
+docker image prune -a
+```
+
+---
+
+## 1️⃣4️⃣ Credenciales y Configuración
+
+| Componente | Usuario | Contraseña | Host | Puerto |
+|-----------|---------|-----------|------|--------|
+| MySQL | root / myuser | 1234 / secret | adopciones-mysql | 3306 |
+| MySQL BD | - | - | adopciones_db | - |
+| Jenkins | (Tu usuario admin) | (Tu contraseña) | localhost | 8080 |
+| App | - | - | localhost | 8090 |
+
+---
+
+## 1️⃣5️⃣ Notas Importantes
+
+### ✅ Lo que mantenemos igual
+
+- Dockerfile con usuario no-root (seguridad)
+- Spring Boot 4.0.5 con Java 21
+- WAR como artefacto final
+- MySQL 8.0
+
+### ✅ Lo que cambió
+
+- Deploy con **`docker-compose` orchestration** desde Jenkins (bin en `/usr/local/bin/docker-compose`)
+- Script SQL ejecutado automáticamente al iniciar MySQL:
+  - `schema-mysql.sql` → Define tablas
+  - `init-database.sql` → Datos de ejemplo
+  - `V2__SolicitudEstados.sql` → Migrations
+  - `V3__MascotaCompatibilidad.sql` → Migrations
+  - `V4__Usuarios.sql` → Tabla usuarios con datos
+- Archivo `compose.yaml` en raíz del proyecto orquesta MySQL + App
+- MySQL container: `adopciones-mysql`
+- Base de datos por defecto: `adopciones_db`
+- Usuario app por defecto: `myuser/secret`
+- Permisos Docker socket: `docker exec -u root jenkins usermod -aG docker jenkins`
+- Jenkins puede ejecutar `docker` y `docker-compose` correctamente
+
+### 📝 Ventajas de esta configuración
+
+1. **Reproducibilidad**: El mismo `compose.yaml` funciona en cualquier máquina
+2. **Inicialización automática**: No necesitas ejecutar scripts SQL manualmente
+3. **Dependencias**: Compose espera a que MySQL esté listo antes de levantar la app
+4. **Escalabilidad**: Fácil agregar más servicios al `compose.yaml`
+5. **Limpieza**: `docker compose down` elimina todo correctamente
+
+### ⚠️ Para Producción
+
+- Cambiar credenciales MySQL (en `.env` en lugar de valores por defecto)
+- No pasar ENV variables sensibles (usar Docker Secrets o Vault)
+- Usar HTTPS en lugar de HTTP
+- Configurar backups de volumen `jenkins_home`
+- Usar base de datos RDS/managed en lugar de contenedor
+
+---
+
+## 🎯 Resumen
+
+1. ✅ Clonar repo
+2. ✅ Crear red Docker
+3. ✅ Levantar MySQL
+4. ✅ Levantar Jenkins
+5. ✅ Instalar Docker CLI en Jenkins
+6. ✅ Configurar Maven en Jenkins
+7. ✅ Crear job con script CI/CD
+8. ✅ ¡Listo! Cada push dispara deploy automático
+
+**Tiempo total de configuración: ~30 minutos**
 
 ---
 
@@ -953,38 +483,6 @@ MYSQL_DATABASE=adopciones_db
 
 Si tienes problemas:
 
-1. **Ver logs:** `docker compose logs -f [servicio]`
-2. **Verificar conectividad:** `docker compose exec mysql mysqladmin ping`
-3. **Resetear:** `docker compose down -v && docker compose up -d`
-4. **Revisar QUICK_START.md** para soluciones rápidas
-
----
-
-## 📚 Recursos Adicionales
-
-- [README.md](README.md) - Documentación del proyecto
-- [QUICK_START.md](QUICK_START.md) - Setup en 2 minutos
-- [Docker Compose Docs](https://docs.docker.com/compose/)
-- [Spring Boot Docs](https://spring.io/projects/spring-boot)
-
----
-
-## 🎯 Checklist Final
-
-Después de completar el setup, verifica:
-
-- [ ] ✅ Docker Desktop instalado y ejecutándose
-- [ ] ✅ `docker ps` funciona sin errores
-- [ ] ✅ Git instalado (`git --version`)
-- [ ] ✅ Código descargado (`git clone`)
-- [ ] ✅ Compilación exitosa (`./mvnw clean package`)
-- [ ] ✅ `docker compose up -d` levantó servicios
-- [ ] ✅ MySQL healthcheck ahora muestra "healthy"
-- [ ] ✅ App accesible en http://localhost:8090
-- [ ] ✅ Logs muestran "Started GR01_1BT3_622_26AApplication"
-
-**Si todo está marcado: ¡Tu ambiente está 100% funcional! 🎉**
-
----
-
-**¡Listo! Ya tienes tu ambiente funcionando. ¡A desarrollar! 🚀**
+1. Revisa los logs: `docker logs [container-name]`
+2. Verifica la conectividad: `docker exec [container] ping [otro-container]`
+3. Limpia y reinicia: `docker-compose down && docker-compose up -d`
