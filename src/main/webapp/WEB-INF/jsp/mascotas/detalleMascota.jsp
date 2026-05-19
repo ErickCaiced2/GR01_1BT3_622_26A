@@ -137,7 +137,7 @@
 
                 <div class="info-section">
                     <h5>Información del Registro</h5>
-                    <p><strong><i class="fas fa-calendar"></i> Fecha de Registro:</strong> <fmt:formatDate value="${mascota.fechaRegistro}" pattern="dd/MM/yyyy"/></p>
+                    <p><strong><i class="fas fa-calendar"></i> Fecha de Registro:</strong> ${mascota.fechaRegistro}</p>
                     <p><strong><i class="fas fa-info-circle"></i> ID:</strong> #${mascota.id}</p>
                 </div>
 
