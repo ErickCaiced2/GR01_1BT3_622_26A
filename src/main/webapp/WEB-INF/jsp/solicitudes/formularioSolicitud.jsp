@@ -110,11 +110,49 @@
                         </div>
 
                         <div class="mb-3">
-                            <div class="form-check">
-                                <form:checkbox path="tieneJardin" cssClass="form-check-input" id="tieneJardin" />
-                                <form:label path="tieneJardin" cssClass="form-check-label" for="tieneJardin">¿Tienes jardín?</form:label>
+                            <form:label path="tieneJardin" cssClass="form-label">¿Tienes jardín? *</form:label>
+                            <div id="tieneJardinContainer">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" id="tieneJardinSi" name="tieneJardin" value="true" required>
+                                    <label class="form-check-label" for="tieneJardinSi">
+                                        <i class="fas fa-check-circle text-success"></i> Sí
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" id="tieneJardinNo" name="tieneJardin" value="false" required>
+                                    <label class="form-check-label" for="tieneJardinNo">
+                                        <i class="fas fa-times-circle text-danger"></i> No
+                                    </label>
+                                </div>
                             </div>
+                            <!-- Sincronizar el valor con el campo oculto de Spring Form -->
+                            <form:hidden path="tieneJardin" id="tieneJardinHidden" />
+                            <small class="text-muted d-block mt-2">Por favor selecciona una opción</small>
                         </div>
+
+                        <script>
+                            // Sincronizar radio buttons con el campo hidden de Spring Form
+                            document.getElementById('tieneJardinSi').addEventListener('change', function() {
+                                if (this.checked) {
+                                    document.getElementById('tieneJardinHidden').value = 'true';
+                                }
+                            });
+                            document.getElementById('tieneJardinNo').addEventListener('change', function() {
+                                if (this.checked) {
+                                    document.getElementById('tieneJardinHidden').value = 'false';
+                                }
+                            });
+
+                            // Sincronizar el valor inicial si existe
+                            window.addEventListener('load', function() {
+                                const hiddenValue = document.getElementById('tieneJardinHidden').value;
+                                if (hiddenValue === 'true') {
+                                    document.getElementById('tieneJardinSi').checked = true;
+                                } else if (hiddenValue === 'false') {
+                                    document.getElementById('tieneJardinNo').checked = true;
+                                }
+                            });
+                        </script>
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary btn-lg">

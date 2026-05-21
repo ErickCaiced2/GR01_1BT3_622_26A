@@ -82,6 +82,7 @@ public class MascotaController {
     @PostMapping("/registrar")
     public String registrarMascota(@Valid @ModelAttribute("mascota") Mascota mascota,
             BindingResult bindingResult,
+            @RequestParam(value = "foto", required = false) MultipartFile foto,
             HttpSession session,
             RedirectAttributes redirectAttributes,
             Model model) {
@@ -103,6 +104,20 @@ public class MascotaController {
         try {
             Mascota mascotaRegistrada = mascotaService.registrarMascota(mascota);
             log.info("Mascota registrada exitosamente con ID: {}", mascotaRegistrada.getId());
+
+            // Cargar foto si se proporciona
+            if (foto != null && !foto.isEmpty()) {
+                try {
+                    String nombreArchivo = guardarArchivo(foto);
+                    guardarFotoMascota(mascotaRegistrada.getId(), nombreArchivo);
+                    log.info("Foto cargada exitosamente durante el registro");
+                    redirectAttributes.addFlashAttribute("mensaje", "Mascota registrada con foto exitosamente");
+                } catch (IOException e) {
+                    log.warn("No se pudo cargar la foto, pero la mascota fue registrada. Error: {}", e.getMessage());
+                    redirectAttributes.addFlashAttribute("advertencia", "Mascota registrada, pero la foto no se pudo cargar");
+                }
+            }
+
             return "redirect:/mascotas/detalle/" + mascotaRegistrada.getId() + "?exito=true";
         } catch (Exception e) {
             log.error("Error al registrar mascota", e);
@@ -178,6 +193,7 @@ public class MascotaController {
     public String actualizarMascota(@PathVariable Long id,
             @Valid @ModelAttribute("mascota") Mascota mascota,
             BindingResult bindingResult,
+            @RequestParam(value = "foto", required = false) MultipartFile foto,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         // Proteger endpoint: solo administradores pueden actualizar mascotas
@@ -197,6 +213,20 @@ public class MascotaController {
         try {
             mascotaService.actualizarMascota(id, mascota);
             log.info("Mascota actualizada exitosamente");
+
+            // Cargar foto si se proporciona
+            if (foto != null && !foto.isEmpty()) {
+                try {
+                    String nombreArchivo = guardarArchivo(foto);
+                    guardarFotoMascota(id, nombreArchivo);
+                    log.info("Foto cargada exitosamente durante la actualización");
+                    redirectAttributes.addFlashAttribute("mensaje", "Mascota actualizada con foto exitosamente");
+                } catch (IOException e) {
+                    log.warn("No se pudo cargar la foto, pero la mascota fue actualizada. Error: {}", e.getMessage());
+                    redirectAttributes.addFlashAttribute("advertencia", "Mascota actualizada, pero la foto no se pudo cargar");
+                }
+            }
+
             return "redirect:/mascotas/detalle/" + id + "?exito=true";
         } catch (Exception e) {
             log.error("Error al actualizar mascota", e);

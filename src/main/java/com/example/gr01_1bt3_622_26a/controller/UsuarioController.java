@@ -53,20 +53,30 @@ public class UsuarioController {
         log.info("🔐 Creando nuevo usuario con email: {}", email);
 
         try {
-            // Validar que el email no exista
-            if (solicitanteService.solicitanteExistePorEmail(email)) {
+            // Validar duplicados - revisar ambos campos para mostrar mensajes específicos
+            boolean emailExiste = solicitanteService.solicitanteExistePorEmail(email);
+            boolean documentoExiste = documentoIdentidad != null && !documentoIdentidad.isBlank()
+                    && solicitanteService.obtenerPorDocumento(documentoIdentidad).isPresent();
+
+            // Si ambos campos son duplicados
+            if (emailExiste && documentoExiste) {
+                log.warn("⚠️ Intento de registro con email y documento duplicados - Email: {}, Documento: {}", email, documentoIdentidad);
+                redirectAttributes.addFlashAttribute("error", "El email y el documento de identidad ya están registrados");
+                return "redirect:/usuarios/registro";
+            }
+
+            // Si solo el email es duplicado
+            if (emailExiste) {
                 log.warn("⚠️ Intento de registro con email ya existente: {}", email);
                 redirectAttributes.addFlashAttribute("error", "El email ya está registrado");
                 return "redirect:/usuarios/registro";
             }
 
-            // Validar que el documento no exista (HU2CA1)
-            if (documentoIdentidad != null && !documentoIdentidad.isBlank()) {
-                if (solicitanteService.obtenerPorDocumento(documentoIdentidad).isPresent()) {
-                    log.warn("⚠️ Intento de registro con documento duplicado: {}", documentoIdentidad);
-                    redirectAttributes.addFlashAttribute("error", "El documento de identidad ya existe");
-                    return "redirect:/usuarios/registro";
-                }
+            // Si solo el documento es duplicado (HU2CA1)
+            if (documentoExiste) {
+                log.warn("⚠️ Intento de registro con documento duplicado: {}", documentoIdentidad);
+                redirectAttributes.addFlashAttribute("error", "El documento de identidad ya está registrado");
+                return "redirect:/usuarios/registro";
             }
 
             // 1️⃣ Crear Usuario (con credenciales)

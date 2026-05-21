@@ -35,38 +35,72 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="nombre" class="form-label">Nombre *</label>
-                                <input type="text" class="form-control" id="nombre" name="nombre" required>
+                                <input type="text" class="form-control" id="nombre" name="nombre"
+                                       pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+"
+                                       placeholder="Solo letras"
+                                       title="El nombre solo debe contener letras"
+                                       required>
+                                <small class="text-muted">Solo letras permitidas</small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="apellido" class="form-label">Apellido *</label>
-                                <input type="text" class="form-control" id="apellido" name="apellido" required>
+                                <input type="text" class="form-control" id="apellido" name="apellido"
+                                       pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+"
+                                       placeholder="Solo letras"
+                                       title="El apellido solo debe contener letras"
+                                       required>
+                                <small class="text-muted">Solo letras permitidas</small>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="email" class="form-label">Email *</label>
-                                <input type="email" class="form-control" id="email" name="email" required>
+                                <input type="email" class="form-control" id="email" name="email"
+                                       placeholder="ejemplo@correo.com"
+                                       title="Ingresa un email válido"
+                                       required>
+                                <small class="text-muted">Formato: usuario@dominio.com</small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="telefono" class="form-label">Teléfono *</label>
-                                <input type="tel" class="form-control" id="telefono" name="telefono" required>
+                                <input type="tel" class="form-control" id="telefono" name="telefono"
+                                       pattern="[0-9]+"
+                                       maxlength="10"
+                                       placeholder="Ej: 3001234567"
+                                       title="El teléfono solo debe contener números (máximo 10 dígitos)"
+                                       required>
+                                <small class="text-muted">Solo números, máximo 10 dígitos</small>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label for="direccion" class="form-label">Dirección *</label>
-                            <input type="text" class="form-control" id="direccion" name="direccion" required>
+                            <input type="text" class="form-control" id="direccion" name="direccion"
+                                   placeholder="Calle, número y complementos"
+                                   maxlength="100"
+                                   required>
+                            <small class="text-muted">Máximo 100 caracteres</small>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="ciudad" class="form-label">Ciudad *</label>
-                                <input type="text" class="form-control" id="ciudad" name="ciudad" required>
+                                <input type="text" class="form-control" id="ciudad" name="ciudad"
+                                       pattern="[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+"
+                                       placeholder="Solo letras"
+                                       title="La ciudad solo debe contener letras"
+                                       required>
+                                <small class="text-muted">Solo letras permitidas</small>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="documentoIdentidad" class="form-label">Documento de Identidad *</label>
-                                <input type="text" class="form-control" id="documentoIdentidad" name="documentoIdentidad" required>
+                                <input type="text" class="form-control" id="documentoIdentidad" name="documentoIdentidad"
+                                       pattern="[0-9]+"
+                                       placeholder="Ej: 1234567890"
+                                       title="El documento solo debe contener números"
+                                       required>
+                                <small class="text-muted">Solo números permitidos</small>
                             </div>
                         </div>
 
@@ -114,21 +148,117 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Validar que las contraseñas coincidan
-        document.querySelector('form').addEventListener('submit', function(e) {
+        // Obtener referencias a los campos
+        const nombreInput = document.getElementById('nombre');
+        const apellidoInput = document.getElementById('apellido');
+        const ciudadInput = document.getElementById('ciudad');
+        const telefonoInput = document.getElementById('telefono');
+        const documentoInput = document.getElementById('documentoIdentidad');
+        const direccionInput = document.getElementById('direccion');
+        const form = document.querySelector('form');
+
+         // Función para permitir solo letras y espacios
+         function permitirSoloLetras(event) {
+             event.target.value = event.target.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+         }
+
+        // Función para permitir solo números
+        function permitirSoloNumeros(event) {
+            event.target.value = event.target.value.replace(/[^0-9]/g, '');
+        }
+
+        // Event listeners para validación en tiempo real
+        nombreInput.addEventListener('input', permitirSoloLetras);
+        apellidoInput.addEventListener('input', permitirSoloLetras);
+        ciudadInput.addEventListener('input', permitirSoloLetras);
+        telefonoInput.addEventListener('input', permitirSoloNumeros);
+        documentoInput.addEventListener('input', permitirSoloNumeros);
+
+        // Validar que las contraseñas coincidan y otros campos
+        form.addEventListener('submit', function(e) {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            const nombre = nombreInput.value.trim();
+            const apellido = apellidoInput.value.trim();
+            const telefono = telefonoInput.value.trim();
+            const documento = documentoInput.value.trim();
+
+            // Validar que no estén vacíos
+            if (!nombre) {
+                e.preventDefault();
+                alert('El nombre es requerido');
+                nombreInput.focus();
+                return false;
+            }
+
+            if (!apellido) {
+                e.preventDefault();
+                alert('El apellido es requerido');
+                apellidoInput.focus();
+                return false;
+            }
+
+            if (telefono.length < 7) {
+                e.preventDefault();
+                alert('El teléfono debe tener al menos 7 dígitos');
+                telefonoInput.focus();
+                return false;
+            }
+
+            if (!documento || documento.length < 8) {
+                e.preventDefault();
+                alert('El documento debe tener al menos 8 dígitos');
+                documentoInput.focus();
+                return false;
+            }
 
             if (password !== confirmPassword) {
                 e.preventDefault();
                 alert('Las contraseñas no coinciden');
+                document.getElementById('confirmPassword').focus();
                 return false;
             }
 
             if (password.length < 6) {
                 e.preventDefault();
                 alert('La contraseña debe tener al menos 6 caracteres');
+                document.getElementById('password').focus();
                 return false;
+            }
+
+            return true;
+        });
+
+        // Eventos para validación en tiempo real
+        nombreInput.addEventListener('blur', function() {
+            if (this.value.trim() === '') {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+
+        apellidoInput.addEventListener('blur', function() {
+            if (this.value.trim() === '') {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+
+        telefonoInput.addEventListener('blur', function() {
+            if (this.value.length < 7) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+
+        documentoInput.addEventListener('blur', function() {
+            if (this.value.length < 8) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
             }
         });
     </script>
