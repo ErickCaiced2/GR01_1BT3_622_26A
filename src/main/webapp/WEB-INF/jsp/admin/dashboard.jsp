@@ -310,9 +310,10 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <form id="aprobarForm" data-endpoint="/solicitudes" data-action="aprobar">
+                <!-- Campo oculto para guardar el ID de la solicitud -->
+                <input type="hidden" id="aprobarSolicitudId" value="">
                 <div class="modal-body">
                     <p class="mb-3">Aprobaras la solicitud de <strong id="aprobarSolicitante"></strong>.</p>
-                    <input type="hidden" name="observaciones" id="aprobarObservaciones">
                     <div class="mb-3">
                         <label for="observacionesTexto" class="form-label">Observaciones opcionales</label>
                         <textarea class="form-control" id="observacionesTexto" rows="3" placeholder="Agrega una observacion breve"></textarea>
@@ -335,6 +336,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <form id="rechazarForm" data-endpoint="/solicitudes" data-action="rechazar">
+                <!-- Campo oculto para guardar el ID de la solicitud -->
+                <input type="hidden" id="rechazarSolicitudId" value="">
                 <div class="modal-body">
                     <p class="mb-3">Rechazaras la solicitud de <strong id="rechazarSolicitante"></strong>.</p>
                     <div class="mb-3">
@@ -360,48 +363,168 @@
     const toast = new bootstrap.Toast(document.getElementById('estadoToast'));
     let solicitudActual = null;
 
+    // Usar event delegation para capturar clicks en botones
+    document.addEventListener('click', function(event) {
+        // Ignorar clicks en botones dentro de modales
+        if (event.target.closest('.modal')) {
+            return;
+        }
+
+        const buttonAprobar = event.target.closest('button[data-bs-target="#aprobarModal"]');
+        if (buttonAprobar) {
+            solicitudActual = buttonAprobar.getAttribute('data-solicitud-id');
+            const solicitante = buttonAprobar.getAttribute('data-solicitante');
+            console.log('✓ Botón de aprobación clickeado. ID:', solicitudActual, 'Solicitante:', solicitante);
+
+            if (!solicitudActual || solicitudActual.trim() === '') {
+                console.error('✗ ERROR: El atributo data-solicitud-id está vacío en el HTML');
+                alert('Error: No se pudo obtener el ID de la solicitud. Revisa la consola.');
+                return;
+            }
+
+            document.getElementById('aprobarSolicitudId').value = solicitudActual;
+            document.getElementById('aprobarSolicitante').textContent = solicitante;
+        }
+
+        const buttonRechazar = event.target.closest('button[data-bs-target="#rechazarModal"]');
+        if (buttonRechazar) {
+            solicitudActual = buttonRechazar.getAttribute('data-solicitud-id');
+            const solicitante = buttonRechazar.getAttribute('data-solicitante');
+            console.log('✓ Botón de rechazo clickeado. ID:', solicitudActual, 'Solicitante:', solicitante);
+
+            if (!solicitudActual || solicitudActual.trim() === '') {
+                console.error('✗ ERROR: El atributo data-solicitud-id está vacío en el HTML');
+                alert('Error: No se pudo obtener el ID de la solicitud. Revisa la consola.');
+                return;
+            }
+
+            document.getElementById('rechazarSolicitudId').value = solicitudActual;
+            document.getElementById('rechazarSolicitante').textContent = solicitante;
+        }
+    });
+
+    // Event listeners para los modales - Guardar ID en campo oculto
     aprobarModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
-        solicitudActual = button.getAttribute('data-solicitud-id');
+        if (!button) {
+            console.warn('No relatedTarget en modal de aprobación');
+            return;
+        }
+        const idCapturado = button.getAttribute('data-solicitud-id');
+        console.log('✓ Modal de aprobación abierto. ID del botón:', idCapturado);
+
+        // Guardar el ID en el campo oculto del form
+        document.getElementById('aprobarSolicitudId').value = idCapturado;
+
+        if (idCapturado) {
+            solicitudActual = idCapturado;
+        }
         document.getElementById('aprobarSolicitante').textContent = button.getAttribute('data-solicitante');
     });
 
     rechazarModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
-        solicitudActual = button.getAttribute('data-solicitud-id');
+        if (!button) {
+            console.warn('No relatedTarget en modal de rechazo');
+            return;
+        }
+        const idCapturado = button.getAttribute('data-solicitud-id');
+        console.log('✓ Modal de rechazo abierto. ID del botón:', idCapturado);
+
+        // Guardar el ID en el campo oculto del form
+        document.getElementById('rechazarSolicitudId').value = idCapturado;
+
+        if (idCapturado) {
+            solicitudActual = idCapturado;
+        }
         document.getElementById('rechazarSolicitante').textContent = button.getAttribute('data-solicitante');
     });
 
     aprobarForm.addEventListener('submit', async function (event) {
         event.preventDefault();
+
+        // Obtener el ID del campo oculto
+        const fieldElement = document.getElementById('aprobarSolicitudId');
+        let solicitudId = fieldElement ? fieldElement.value : '';
+
+        // Limpiar espacios en blanco
+        solicitudId = solicitudId.trim();
+
+        console.log('=== APROBAR FORM SUBMIT ===');
+        console.log('Valor del ID:', JSON.stringify(solicitudId));
+
+        // Validación: ID debe tener valor
+        if (!solicitudId || solicitudId === '') {
+            alert('Error: No se pudo obtener el ID de la solicitud. Por favor, intenta nuevamente.');
+            console.error('ID vacío. Valor del campo:', fieldElement.value);
+            return;
+        }
+
         const observaciones = document.getElementById('observacionesTexto').value.trim();
         const body = new URLSearchParams();
         if (observaciones) {
             body.append('observaciones', observaciones);
         }
 
-        await enviarCambioEstado(`/solicitudes/${solicitudActual}/aprobar`, body);
-        document.getElementById('estadoToastBody').textContent = 'Solicitud aprobada exitosamente.';
-        toast.show();
-        bootstrap.Modal.getInstance(aprobarModal).hide();
-        setTimeout(() => window.location.reload(), 700);
+        try {
+            // Construir URL
+            const url = '/solicitudes/' + solicitudId + '/aprobar';
+            console.log('URL final:', url);
+            await enviarCambioEstado(url, body);
+            document.getElementById('estadoToastBody').textContent = 'Solicitud aprobada exitosamente.';
+            toast.show();
+            bootstrap.Modal.getInstance(aprobarModal).hide();
+            setTimeout(() => window.location.reload(), 700);
+        } catch (error) {
+            console.error('Error en aprobación:', error);
+            document.getElementById('estadoToastBody').textContent = 'Error: ' + error.message;
+            toast.show();
+        }
     });
 
     rechazarForm.addEventListener('submit', async function (event) {
         event.preventDefault();
+
+        // Obtener el ID del campo oculto
+        const fieldElement = document.getElementById('rechazarSolicitudId');
+        let solicitudId = fieldElement ? fieldElement.value : '';
+
+        // Limpiar espacios en blanco
+        solicitudId = solicitudId.trim();
+
+        console.log('=== RECHAZAR FORM SUBMIT ===');
+        console.log('Valor del ID:', JSON.stringify(solicitudId));
+
+        // Validación: ID debe tener valor
+        if (!solicitudId || solicitudId === '') {
+            alert('Error: No se pudo obtener el ID de la solicitud. Por favor, intenta nuevamente.');
+            console.error('ID vacío. Valor del campo:', fieldElement.value);
+            return;
+        }
+
         const razon = document.getElementById('razonRechazo').value.trim();
         if (!razon) {
+            alert('Debes ingresar una razón para rechazar la solicitud');
             return;
         }
 
         const body = new URLSearchParams();
         body.append('razon', razon);
 
-        await enviarCambioEstado(`/solicitudes/${solicitudActual}/rechazar`, body);
-        document.getElementById('estadoToastBody').textContent = 'Solicitud rechazada exitosamente.';
-        toast.show();
-        bootstrap.Modal.getInstance(rechazarModal).hide();
-        setTimeout(() => window.location.reload(), 700);
+        try {
+            // Construir URL
+            const url = '/solicitudes/' + solicitudId + '/rechazar';
+            console.log('URL final:', url);
+            await enviarCambioEstado(url, body);
+            document.getElementById('estadoToastBody').textContent = 'Solicitud rechazada exitosamente.';
+            toast.show();
+            bootstrap.Modal.getInstance(rechazarModal).hide();
+            setTimeout(() => window.location.reload(), 700);
+        } catch (error) {
+            console.error('Error en rechazo:', error);
+            document.getElementById('estadoToastBody').textContent = 'Error: ' + error.message;
+            toast.show();
+        }
     });
 
     async function enviarCambioEstado(url, body) {
@@ -414,7 +537,8 @@
         });
 
         if (!response.ok) {
-            throw new Error('No fue posible actualizar el estado');
+            const errorMsg = await response.text();
+            throw new Error(errorMsg || 'No fue posible actualizar el estado');
         }
     }
 </script>
