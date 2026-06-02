@@ -374,4 +374,70 @@ public class SolicitudController {
                     .body("Error al generar el contrato: " + e.getMessage());
         }
     }
+
+    /**
+     * Obtiene los datos de una solicitud en formato JSON para mostrar en modal
+     *
+     * Endpoint: GET /solicitudes/{id}/api/detalle
+     * @param id ID de la solicitud
+     * @return JSON con datos de la solicitud
+     */
+    @GetMapping("/{id}/api/detalle")
+    @ResponseBody
+    public ResponseEntity<?> obtenerDetalleSolicitudAPI(@PathVariable Long id) {
+        try {
+            Optional<Solicitud> solicitudOpt = solicitudService.obtenerPorId(id);
+            if (solicitudOpt.isEmpty()) {
+                log.warn("Solicitud {} no encontrada", id);
+                return ResponseEntity.notFound().build();
+            }
+
+            Solicitud solicitud = solicitudOpt.get();
+            Map<String, Object> response = new HashMap<>();
+
+            // Datos de la solicitud
+            response.put("id", solicitud.getId());
+            response.put("estado", solicitud.getEstado());
+            response.put("motivo", solicitud.getMotivo());
+            response.put("numeroMascotas", solicitud.getNumeroMascotas());
+            response.put("tipoVivienda", solicitud.getTipoVivienda());
+            response.put("tieneJardin", solicitud.getTieneJardin());
+            response.put("fechaSolicitud", solicitud.getFechaSolicitud());
+
+            // Datos del solicitante
+            Map<String, Object> solicitanteMap = new HashMap<>();
+            if (solicitud.getSolicitante() != null) {
+                Solicitante sol = solicitud.getSolicitante();
+                solicitanteMap.put("nombre", sol.getNombre());
+                solicitanteMap.put("apellido", sol.getApellido());
+                solicitanteMap.put("email", sol.getEmail());
+                solicitanteMap.put("telefono", sol.getTelefono());
+                solicitanteMap.put("tipoDocumento", sol.getTipoDocumento());
+                solicitanteMap.put("documentoIdentidad", sol.getDocumentoIdentidad());
+                solicitanteMap.put("direccion", sol.getDireccion());
+                solicitanteMap.put("ciudad", sol.getCiudad());
+            }
+            response.put("solicitante", solicitanteMap);
+
+            // Datos de la mascota
+            Map<String, Object> mascotaMap = new HashMap<>();
+            if (solicitud.getMascota() != null) {
+                Mascota mac = solicitud.getMascota();
+                mascotaMap.put("nombre", mac.getNombre());
+                mascotaMap.put("tipo", mac.getTipo());
+                mascotaMap.put("raza", mac.getRaza());
+                mascotaMap.put("edad", mac.getEdad());
+            }
+            response.put("mascota", mascotaMap);
+
+            log.info("Detalle de solicitud {} obtenido exitosamente", id);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Error al obtener detalle de solicitud {}: {}", id, e.getMessage());
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Error al obtener detalle de solicitud");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
 }

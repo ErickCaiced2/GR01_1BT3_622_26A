@@ -12,9 +12,49 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: #f8f9fa; }
-        .page-wrap { padding: 28px 20px 40px; }
-        .page-title { color: #2C3E50; font-weight: 700; margin-bottom: 12px; }
+        :root {
+            --primary-color: #FF6B6B;
+            --secondary-color: #4ECDC4;
+            --dark-color: #2C3E50;
+            --panel-bg: #f8f9fa;
+        }
+
+        body {
+            background: var(--panel-bg);
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar {
+            background-color: var(--dark-color);
+            min-height: calc(100vh - 56px);
+            padding-top: 20px;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 14px 20px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-left-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .content {
+            padding: 28px 20px 40px;
+        }
+
+        .page-title { color: var(--dark-color); font-weight: 700; margin-bottom: 12px; }
         .page-subtitle { color: #6c757d; margin-bottom: 22px; }
         .panel-section {
             background: white;
@@ -27,25 +67,60 @@
         .toast-container { z-index: 1080; }
         .modal-header.approve { background: #eaf7ef; }
         .modal-header.reject { background: #fdeeee; }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                min-height: auto;
+            }
+        }
     </style>
 </head>
 <body>
-<div class="container-fluid page-wrap">
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-        <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-2">
-                    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Gestionar estados</li>
-                </ol>
-            </nav>
-            <h1 class="page-title"><i class="fas fa-tasks"></i> Gestionar estados de solicitudes</h1>
-            <p class="page-subtitle">Filtra por estado, fecha o solicitante y actualiza sin salir de la pantalla.</p>
-        </div>
-        <a href="/admin/dashboard" class="btn btn-dark">
-            <i class="fas fa-arrow-left"></i> Volver al dashboard
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-paw"></i> Sistema de Adopciones
         </a>
+        <span class="navbar-text text-white">
+            <i class="fas fa-user-shield"></i> Panel de Administracion
+        </span>
     </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <aside class="col-lg-2 sidebar">
+            <a href="/admin/dashboard">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="/admin/solicitudes/gestionar" class="active">
+                <i class="fas fa-tasks"></i> Gestionar estados
+            </a>
+            <a href="/mascotas/lista">
+                <i class="fas fa-list"></i> Lista de Mascotas
+            </a>
+            <a href="/mascotas/registrar">
+                <i class="fas fa-plus-circle"></i> Registrar Mascota
+            </a>
+            <a href="/admin/reporte/mascotas">
+                <i class="fas fa-chart-bar"></i> Reportes
+            </a>
+            <hr style="border-color: rgba(255,255,255,0.2);">
+            <a href="/acceso">
+                <i class="fas fa-home"></i> Ir al sitio
+            </a>
+        </aside>
+
+        <main class="col-lg-10 content">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h1 class="page-title"><i class="fas fa-tasks"></i> Gestionar estados de solicitudes</h1>
+                    <p class="page-subtitle">Filtra por estado, fecha o solicitante y actualiza sin salir de la pantalla.</p>
+                </div>
+                <a href="/admin/dashboard" class="btn btn-dark">
+                    <i class="fas fa-arrow-left"></i> Volver al dashboard
+                </a>
+            </div>
 
     <section class="panel-section">
         <form method="get" action="/admin/solicitudes/gestionar" class="row g-3 align-items-end">
@@ -109,31 +184,41 @@
                                 <td><span class="badge bg-secondary">${solicitud.estado}</span></td>
                                 <td class="text-end">
                                     <div class="action-group justify-content-end">
-                                        <button type="button"
-                                                class="btn btn-primary btn-sm"
-                                                data-solicitud-id="${solicitud.id}"
-                                                data-solicitante="${solicitud.solicitante.nombre}"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#revisionModal"
-                                                <c:if test="${solicitud.estado == 'En revisión'}">disabled</c:if>>
-                                            <i class="fas fa-sync-alt"></i> A Revisión
-                                        </button>
-                                        <button type="button"
-                                                class="btn btn-success btn-sm"
-                                                data-solicitud-id="${solicitud.id}"
-                                                data-solicitante="${solicitud.solicitante.nombre}"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#aprobarModal">
-                                            <i class="fas fa-check"></i> Aprobar
-                                        </button>
-                                        <button type="button"
-                                                class="btn btn-danger btn-sm"
-                                                data-solicitud-id="${solicitud.id}"
-                                                data-solicitante="${solicitud.solicitante.nombre}"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#rechazarModal">
-                                            <i class="fas fa-times"></i> Rechazar
-                                        </button>
+                                        <c:if test="${solicitud.estado != 'En revisión'}">
+                                            <button type="button"
+                                                    class="btn btn-primary btn-sm"
+                                                    data-solicitud-id="${solicitud.id}"
+                                                    data-solicitante="${solicitud.solicitante.nombre}"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#revisionModal">
+                                                <i class="fas fa-sync-alt"></i> A Revisión
+                                            </button>
+                                        </c:if>
+                                        <c:if test="${solicitud.estado == 'En revisión'}">
+                                            <button type="button"
+                                                    class="btn btn-info btn-sm"
+                                                    data-solicitud-id="${solicitud.id}"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#detalleModal">
+                                                <i class="fas fa-eye"></i> Ver Detalles
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-success btn-sm"
+                                                    data-solicitud-id="${solicitud.id}"
+                                                    data-solicitante="${solicitud.solicitante.nombre}"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#aprobarModal">
+                                                <i class="fas fa-check"></i> Aprobar
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-danger btn-sm"
+                                                    data-solicitud-id="${solicitud.id}"
+                                                    data-solicitante="${solicitud.solicitante.nombre}"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#rechazarModal">
+                                                <i class="fas fa-times"></i> Rechazar
+                                            </button>
+                                        </c:if>
                                     </div>
                                 </td>
                             </tr>
@@ -151,6 +236,8 @@
             </table>
         </div>
     </section>
+        </main>
+    </div>
 </div>
 
 <div class="toast-container position-fixed top-0 end-0 p-3">
@@ -236,6 +323,28 @@
                     <button type="submit" class="btn btn-danger">Confirmar rechazo</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Ver Detalles de la Solicitud -->
+<div class="modal fade" id="detalleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #e3f5ff;">
+                <h5 class="modal-title"><i class="fas fa-file-alt text-info"></i> Detalle de Solicitud</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="detalleModalBody" style="max-height: 70vh; overflow-y: auto;">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
         </div>
     </div>
 </div>
@@ -384,6 +493,27 @@
         document.getElementById('rechazarSolicitante').textContent = button.getAttribute('data-solicitante');
     });
 
+    // Event listener para el modal de detalles
+    const detalleModal = document.getElementById('detalleModal');
+    detalleModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        if (!button) {
+            console.warn('No relatedTarget en modal de detalles');
+            return;
+        }
+        const idCapturado = button.getAttribute('data-solicitud-id');
+        console.log('✓ Modal de detalles abierto. ID del botón:', idCapturado);
+
+        if (!idCapturado || idCapturado.trim() === '') {
+            console.error('✗ ERROR: El atributo data-solicitud-id está vacío');
+            console.log('HTML del botón:', button.outerHTML);
+            return;
+        }
+
+        // Llamar a la función para cargar los detalles
+        cargarDetalleSolicitud(idCapturado);
+    });
+
     revisionForm.addEventListener('submit', async function (event) {
         event.preventDefault();
 
@@ -520,6 +650,121 @@
             toast.show();
         }
     });
+
+    // Función para cargar detalle de la solicitud
+    async function cargarDetalleSolicitud(solicitudId) {
+        console.log('🔍 cargarDetalleSolicitud() llamada con solicitudId:', solicitudId, 'tipo:', typeof solicitudId);
+        const modalBody = document.getElementById('detalleModalBody');
+
+        try {
+            const url = '/solicitudes/' + solicitudId + '/api/detalle';
+            console.log('📡 Haciendo fetch a:', url);
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('No se pudo cargar el detalle');
+
+            const solicitud = await response.json();
+
+            // Renderizar el HTML del detalle
+            let html = `
+                <div class="mb-4">
+                    <h6 class="text-primary mb-3"><i class="fas fa-user"></i> Información del Solicitante</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">Nombre Completo</small>
+                            <p class="fw-bold">${solicitud.solicitante.nombre} ${solicitud.solicitante.apellido}</p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">Email</small>
+                            <p class="fw-bold">${solicitud.solicitante.email}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">Teléfono</small>
+                            <p class="fw-bold">${solicitud.solicitante.telefono}</p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">Documento</small>
+                            <p class="fw-bold">${solicitud.solicitante.tipoDocumento}: ${solicitud.solicitante.documentoIdentidad}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">Dirección</small>
+                            <p class="fw-bold">${solicitud.solicitante.direccion}</p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">Ciudad</small>
+                            <p class="fw-bold">${solicitud.solicitante.ciudad}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="mb-4">
+                    <h6 class="text-info mb-3"><i class="fas fa-paw"></i> Mascota Solicitada</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">Nombre</small>
+                            <p class="fw-bold">${solicitud.mascota.nombre}</p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">Tipo</small>
+                            <p class="fw-bold">${solicitud.mascota.tipo}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">Raza</small>
+                            <p class="fw-bold">${solicitud.mascota.raza || 'N/A'}</p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">Edad</small>
+                            <p class="fw-bold">${solicitud.mascota.edad} años</p>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="mb-4">
+                    <h6 class="text-secondary mb-3"><i class="fas fa-clipboard-list"></i> Detalles de la Solicitud</h6>
+                    <div class="mb-2">
+                        <small class="text-muted">Motivo de Adopción</small>
+                        <p class="fw-bold">${solicitud.motivo}</p>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">Mascotas que posee</small>
+                            <p class="fw-bold">${solicitud.numeroMascotas}</p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">Tipo de Vivienda</small>
+                            <p class="fw-bold">${solicitud.tipoVivienda}</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">¿Tiene Jardín?</small>
+                            <p class="fw-bold">
+                                ${solicitud.tieneJardin ? '<i class="fas fa-check-circle text-success"></i> Sí' : '<i class="fas fa-times-circle text-danger"></i> No'}
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <small class="text-muted">Fecha de Solicitud</small>
+                            <p class="fw-bold">${solicitud.fechaSolicitud}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            modalBody.innerHTML = html;
+        } catch (error) {
+            console.error('Error cargando detalle:', error);
+            modalBody.innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Error al cargar los detalles. Intenta nuevamente.</div>`;
+        }
+    }
 
     async function enviarCambioEstado(url, body) {
         const csrfToken = getCsrfToken();
