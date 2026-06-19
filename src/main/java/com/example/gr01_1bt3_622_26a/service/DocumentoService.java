@@ -191,7 +191,7 @@ public class DocumentoService {
 
     public void verificarDocumento(Long id, String estado, String comentarios) {
         DocumentoSolicitante documento = documentoRepository.findById(id)
-                .orElseThrow();
+                .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado: " + id));
 
         documento.setEstadoVerificacion(estado);
         documentoRepository.save(documento);

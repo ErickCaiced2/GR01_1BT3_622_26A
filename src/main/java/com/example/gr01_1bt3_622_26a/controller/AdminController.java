@@ -1,7 +1,9 @@
 package com.example.gr01_1bt3_622_26a.controller;
 
+import com.example.gr01_1bt3_622_26a.entity.DocumentoSolicitante;
 import com.example.gr01_1bt3_622_26a.entity.Mascota;
 import com.example.gr01_1bt3_622_26a.entity.Solicitud;
+import com.example.gr01_1bt3_622_26a.service.DocumentoService;
 import com.example.gr01_1bt3_622_26a.service.MascotaService;
 import com.example.gr01_1bt3_622_26a.service.SolicitudService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -37,6 +40,7 @@ public class AdminController {
 
     private final MascotaService mascotaService;
     private final SolicitudService solicitudService;
+    private final DocumentoService documentoService;
 
     /**
      * Dashboard principal de administracion
@@ -62,6 +66,27 @@ public class AdminController {
     /**
      * Reporte de mascotas
      */
+    /**
+     * Vista admin para revisar documentos de un solicitante (HU9, HU10)
+     */
+    @GetMapping("/documentos")
+    public String verDocumentosSolicitante(
+            @RequestParam(required = false) Long solicitanteId,
+            Model model) {
+
+        log.info("Vista admin documentos, solicitanteId={}", solicitanteId);
+
+        model.addAttribute("solicitanteId", solicitanteId);
+
+        List<DocumentoSolicitante> documentos = solicitanteId != null
+                ? documentoService.obtenerPorSolicitante(solicitanteId)
+                : Collections.emptyList();
+
+        model.addAttribute("documentos", documentos);
+
+        return "admin/documentos";
+    }
+
     @GetMapping("/reporte/mascotas")
     public String reporteMascotas(Model model) {
         log.info("Accediendo al reporte de mascotas");

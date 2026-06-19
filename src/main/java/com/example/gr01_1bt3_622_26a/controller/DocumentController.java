@@ -2,6 +2,7 @@ package com.example.gr01_1bt3_622_26a.controller;
 
 import com.example.gr01_1bt3_622_26a.dto.DocumentoDTO;
 import com.example.gr01_1bt3_622_26a.entity.DocumentoSolicitante;
+import com.example.gr01_1bt3_622_26a.service.DocumentoDuplicadoException;
 import com.example.gr01_1bt3_622_26a.service.DocumentoService;
 
 import lombok.RequiredArgsConstructor;
@@ -101,6 +102,14 @@ public class DocumentController {
                             )
                     );
 
+        } catch (DocumentoDuplicadoException e) {
+
+            log.warn("Documento duplicado: {}", e.getMessage());
+
+            return ResponseEntity
+                    .badRequest()
+                    .body(Map.of("error", e.getMessage()));
+
         } catch (
 
                 IOException |
@@ -197,26 +206,37 @@ public class DocumentController {
             String comentarios
     ) {
 
-        // ── Verificación documento ─────────────────────────
+        try {
 
-        documentoService.verificarDocumento(
-                id,
-                estado,
-                comentarios
-        );
+            // ── Verificación documento ─────────────────────────
 
-        log.info(
-                "Documento {} verificado con estado {}",
-                id,
-                estado
-        );
+            documentoService.verificarDocumento(
+                    id,
+                    estado,
+                    comentarios
+            );
 
-        return ResponseEntity.ok(
+            log.info(
+                    "Documento {} verificado con estado {}",
+                    id,
+                    estado
+            );
 
-                Map.of(
-                        "mensaje",
-                        "Documento verificado"
-                )
-        );
+            return ResponseEntity.ok(
+
+                    Map.of(
+                            "mensaje",
+                            "Documento verificado"
+                    )
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            log.warn("Documento no encontrado para verificar: {}", id);
+
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 }

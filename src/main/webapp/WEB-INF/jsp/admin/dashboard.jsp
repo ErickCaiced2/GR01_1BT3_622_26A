@@ -165,6 +165,9 @@
             <a href="/admin/solicitudes/gestionar">
                 <i class="fas fa-tasks"></i> Gestionar estados
             </a>
+            <a href="/admin/documentos">
+                <i class="fas fa-file-alt"></i> Documentos
+            </a>
             <a href="/mascotas/lista">
                 <i class="fas fa-list"></i> Lista de Mascotas
             </a>
