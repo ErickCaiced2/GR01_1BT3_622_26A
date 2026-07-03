@@ -314,6 +314,9 @@
                         <i class="fas fa-info-circle"></i>
                         ¿Alguna duda? Contáctanos a través de nuestros canales de soporte.
                     </p>
+                    <a href="${whatsappUrl}" target="_blank" class="btn btn-success">
+                        <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
+                    </a>
                     <a href="/" class="btn btn-primary">
                         <i class="fas fa-home"></i> Volver al Inicio
                     </a>

@@ -1,19 +1,27 @@
 package com.example.gr01_1bt3_622_26a.controller;
 
+import com.example.gr01_1bt3_622_26a.entity.ActualizacionBienestar;
 import com.example.gr01_1bt3_622_26a.entity.DocumentoSolicitante;
 import com.example.gr01_1bt3_622_26a.entity.Mascota;
 import com.example.gr01_1bt3_622_26a.entity.Solicitud;
+import com.example.gr01_1bt3_622_26a.service.BienestarService;
 import com.example.gr01_1bt3_622_26a.service.DocumentoService;
+import com.example.gr01_1bt3_622_26a.service.EstadisticasService;
 import com.example.gr01_1bt3_622_26a.service.MascotaService;
+import com.example.gr01_1bt3_622_26a.service.ReporteService;
 import com.example.gr01_1bt3_622_26a.service.SolicitudService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -41,6 +49,9 @@ public class AdminController {
     private final MascotaService mascotaService;
     private final SolicitudService solicitudService;
     private final DocumentoService documentoService;
+    private final BienestarService bienestarService;
+    private final EstadisticasService estadisticasService;
+    private final ReporteService reporteService;
 
     /**
      * Dashboard principal de administracion
@@ -87,6 +98,34 @@ public class AdminController {
         return "admin/documentos";
     }
 
+    /**
+     * HU16: Vista admin con todas las actualizaciones de bienestar reportadas
+     * por los adoptantes.
+     */
+    @GetMapping("/bienestar")
+    public String bienestar(Model model) {
+        log.info("Accediendo a actualizaciones de bienestar");
+
+        List<ActualizacionBienestar> actualizaciones = bienestarService.listarTodas();
+        model.addAttribute("actualizaciones", actualizaciones);
+
+        return "admin/bienestar";
+    }
+
+    /**
+     * HU17: Vista dedicada de estadísticas generales del sistema (mascotas,
+     * solicitudes por estado, adopciones y tasa de aprobación).
+     */
+    @GetMapping("/estadisticas")
+    public String estadisticas(Model model) {
+        log.info("Accediendo a estadísticas generales del sistema");
+
+        model.addAttribute("estadisticasGenerales", estadisticasService.obtenerEstadisticasGenerales());
+        model.addAttribute("mascotaMasSolicitada", estadisticasService.obtenerMascotaMasSolicitada().orElse(null));
+
+        return "admin/estadisticas";
+    }
+
     @GetMapping("/reporte/mascotas")
     public String reporteMascotas(Model model) {
         log.info("Accediendo al reporte de mascotas");
@@ -98,6 +137,24 @@ public class AdminController {
         model.addAttribute("estadisticas", estadisticas);
 
         return "admin/reporteMascotas";
+    }
+
+    /**
+     * HU18: Genera y descarga el reporte de mascotas registradas en formato PDF.
+     */
+    @GetMapping("/reporte/mascotas/descargar")
+    public ResponseEntity<byte[]> descargarReporteMascotasPDF() {
+        log.info("Solicitud de descarga del reporte de mascotas en PDF");
+
+        byte[] pdfContent = reporteService.generarReporteMascotasPDF();
+        String nombreArchivo = "reporte_mascotas_" + LocalDate.now() + ".pdf";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", nombreArchivo);
+        headers.setContentLength(pdfContent.length);
+
+        return ResponseEntity.ok().headers(headers).body(pdfContent);
     }
 
     @GetMapping("/solicitudes/gestionar")

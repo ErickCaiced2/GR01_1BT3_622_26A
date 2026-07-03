@@ -49,21 +49,28 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     /**
-     * Bean de TemplateEngine para uso manual en ContratoService
+     * Bean de TemplateEngine para uso manual en ContratoService y ReporteService
      * Busca plantillas en classpath:/templates/ para generación de PDFs
      */
     @Bean
-    public TemplateEngine pdfTemplateEngine() {
+    public TemplateEngine pdfTemplateEngine(ITemplateResolver pdfTemplateResolver) {
         SpringTemplateEngine engine = new SpringTemplateEngine();
-        engine.setTemplateResolver(pdfTemplateResolver());
+        engine.setTemplateResolver(pdfTemplateResolver);
         engine.setMessageResolver(new StandardMessageResolver());
         return engine;
     }
 
     /**
-     * Resolvedor de plantillas para PDFs desde classpath
+     * Resolvedor de plantillas para PDFs desde classpath.
+     *
+     * Debe ser un @Bean gestionado por Spring (no un simple new + método privado):
+     * SpringResourceTemplateResolver implementa ApplicationContextAware y necesita
+     * que el contenedor le inyecte el ApplicationContext para poder resolver rutas
+     * "classpath:" — si se instancia fuera del ciclo de vida de Spring, falla con
+     * "Application Context cannot be null" en tiempo de ejecución.
      */
-    private ITemplateResolver pdfTemplateResolver() {
+    @Bean
+    public ITemplateResolver pdfTemplateResolver() {
         SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
         resolver.setPrefix("classpath:/templates/");
         resolver.setSuffix(".html");

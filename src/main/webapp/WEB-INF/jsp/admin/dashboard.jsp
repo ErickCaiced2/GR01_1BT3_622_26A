@@ -168,6 +168,12 @@
             <a href="/admin/documentos">
                 <i class="fas fa-file-alt"></i> Documentos
             </a>
+            <a href="/admin/bienestar">
+                <i class="fas fa-heartbeat"></i> Bienestar
+            </a>
+            <a href="/admin/estadisticas">
+                <i class="fas fa-chart-pie"></i> Estadísticas
+            </a>
             <a href="/mascotas/lista">
                 <i class="fas fa-list"></i> Lista de Mascotas
             </a>

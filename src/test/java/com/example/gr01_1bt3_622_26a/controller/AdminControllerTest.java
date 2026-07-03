@@ -1,9 +1,13 @@
 package com.example.gr01_1bt3_622_26a.controller;
 
+import com.example.gr01_1bt3_622_26a.entity.ActualizacionBienestar;
 import com.example.gr01_1bt3_622_26a.entity.Mascota;
 import com.example.gr01_1bt3_622_26a.entity.Solicitante;
 import com.example.gr01_1bt3_622_26a.entity.Solicitud;
+import com.example.gr01_1bt3_622_26a.service.BienestarService;
+import com.example.gr01_1bt3_622_26a.service.EstadisticasService;
 import com.example.gr01_1bt3_622_26a.service.MascotaService;
+import com.example.gr01_1bt3_622_26a.service.ReporteService;
 import com.example.gr01_1bt3_622_26a.service.SolicitudService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +26,8 @@ import java.util.Map;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -35,6 +41,15 @@ class AdminControllerTest {
 
     @Mock
     private SolicitudService solicitudService;
+
+    @Mock
+    private BienestarService bienestarService;
+
+    @Mock
+    private EstadisticasService estadisticasService;
+
+    @Mock
+    private ReporteService reporteService;
 
     @InjectMocks
     private AdminController adminController;
@@ -100,6 +115,50 @@ class AdminControllerTest {
                 .andExpect(model().attribute("fechaSeleccionada", "2026-05-08"))
                 .andExpect(model().attribute("solicitanteSeleccionado", "ana"))
                 .andExpect(model().attribute("solicitudes", hasSize(1)));
+    }
+
+    @Test
+    @DisplayName("HU16: GET /admin/bienestar lista las actualizaciones registradas")
+    void bienestarListaActualizacionesRegistradas() throws Exception {
+        when(bienestarService.listarTodas()).thenReturn(List.of(
+                ActualizacionBienestar.builder().id(1L).estadoMascota("Feliz").build()
+        ));
+
+        mockMvc.perform(get("/admin/bienestar"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/bienestar"))
+                .andExpect(model().attribute("actualizaciones", hasSize(1)));
+    }
+
+    @Test
+    @DisplayName("HU17: GET /admin/estadisticas expone estadisticasGenerales y mascotaMasSolicitada")
+    void estadisticasExponeEstadisticasGeneralesYMascotaMasSolicitada() throws Exception {
+        when(estadisticasService.obtenerEstadisticasGenerales()).thenReturn(Map.of(
+                "total", 10L, "totalSolicitudes", 4, "tasaAprobacion", 50.0
+        ));
+        when(estadisticasService.obtenerMascotaMasSolicitada()).thenReturn(java.util.Optional.of(
+                Mascota.builder().id(1L).nombre("Max").tipo("Perro").build()
+        ));
+
+        mockMvc.perform(get("/admin/estadisticas"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("admin/estadisticas"))
+                .andExpect(model().attributeExists("estadisticasGenerales"))
+                .andExpect(model().attribute("mascotaMasSolicitada",
+                        org.hamcrest.Matchers.hasProperty("nombre", org.hamcrest.Matchers.is("Max"))));
+    }
+
+    @Test
+    @DisplayName("HU18: GET /admin/reporte/mascotas/descargar retorna un PDF descargable")
+    void descargarReporteMascotasPDFRetornaPDFDescargable() throws Exception {
+        byte[] pdfFalso = "%PDF-1.4 contenido de prueba".getBytes();
+        when(reporteService.generarReporteMascotasPDF()).thenReturn(pdfFalso);
+
+        mockMvc.perform(get("/admin/reporte/mascotas/descargar"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/pdf"))
+                .andExpect(header().string("Content-Disposition",
+                        org.hamcrest.Matchers.containsString("attachment")));
     }
 
     private Solicitud solicitudCon(String nombre, String email, LocalDateTime fecha) {

@@ -83,6 +83,8 @@
             <a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
             <a href="/admin/solicitudes/gestionar"><i class="fas fa-tasks"></i> Gestionar estados</a>
             <a href="/admin/documentos" class="active"><i class="fas fa-file-alt"></i> Documentos</a>
+            <a href="/admin/bienestar"><i class="fas fa-heartbeat"></i> Bienestar</a>
+            <a href="/admin/estadisticas"><i class="fas fa-chart-pie"></i> Estadísticas</a>
             <a href="/mascotas/lista"><i class="fas fa-list"></i> Lista de Mascotas</a>
             <a href="/mascotas/registrar"><i class="fas fa-plus-circle"></i> Registrar Mascota</a>
             <a href="/admin/reporte/mascotas"><i class="fas fa-chart-bar"></i> Reportes</a>

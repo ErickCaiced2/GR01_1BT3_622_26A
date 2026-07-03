@@ -1,5 +1,6 @@
 package com.example.gr01_1bt3_622_26a.repository;
 
+import com.example.gr01_1bt3_622_26a.entity.Mascota;
 import com.example.gr01_1bt3_622_26a.entity.Solicitud;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -32,5 +33,12 @@ public interface SolicitudRepository extends JpaRepository<Solicitud, Long> {
     
     @Query("SELECT DISTINCT s FROM Solicitud s LEFT JOIN FETCH s.solicitante LEFT JOIN FETCH s.mascota WHERE s.solicitante.id = :solicitanteId AND s.estado = :estado ORDER BY s.fechaSolicitud DESC")
     List<Solicitud> findSolicitanteSolicitudesByEstado(@Param("solicitanteId") Long solicitanteId, @Param("estado") String estado);
+
+    /**
+     * HU17: Mascotas ordenadas de mayor a menor número de solicitudes recibidas,
+     * usado para mostrar la "mascota más solicitada" en el panel de estadísticas.
+     */
+    @Query("SELECT s.mascota FROM Solicitud s GROUP BY s.mascota ORDER BY COUNT(s) DESC")
+    List<Mascota> findMascotasOrdenadasPorNumeroSolicitudes();
 }
 

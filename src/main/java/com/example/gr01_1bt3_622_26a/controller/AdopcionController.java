@@ -9,6 +9,8 @@ import com.example.gr01_1bt3_622_26a.service.SolicitudService;
 import com.example.gr01_1bt3_622_26a.service.SolicitanteService;
 import com.example.gr01_1bt3_622_26a.service.MascotaService;
 import com.example.gr01_1bt3_622_26a.service.ContratoService;
+import com.example.gr01_1bt3_622_26a.service.BienestarService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +22,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +37,7 @@ public class AdopcionController {
     private final SolicitanteService solicitanteService;
     private final MascotaService mascotaService;
     private final ContratoService contratoService;
+    private final BienestarService bienestarService;
 
     @PostMapping("/procesar/{solicitudId}")
     public String procesarAdopcion(@PathVariable Long solicitudId, RedirectAttributes redirectAttributes) {
@@ -60,9 +64,43 @@ public class AdopcionController {
         Optional<Adopcion> adopcion = adopcionService.obtenerPorId(id);
         if (adopcion.isPresent()) {
             model.addAttribute("adopcion", adopcion.get());
+            model.addAttribute("actualizacionesBienestar", bienestarService.listarPorAdopcion(id));
             return "adopciones/detalleAdopcion";
         }
         return "redirect:/";
+    }
+
+    /**
+     * HU15: Registra una actualización de bienestar de la mascota adoptada,
+     * enviada por el adoptante desde el detalle de su adopción.
+     */
+    @PostMapping("/{id}/bienestar")
+    public String registrarBienestar(
+            @PathVariable Long id,
+            @RequestParam String estadoMascota,
+            @RequestParam(required = false) String comentario,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Long solicitanteId = (Long) session.getAttribute("solicitanteId");
+        if (solicitanteId == null) {
+            log.warn("Intento de registrar bienestar sin sesión de usuario");
+            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión para registrar una actualización");
+            return "redirect:/adopciones/" + id;
+        }
+
+        try {
+            bienestarService.registrar(id, solicitanteId, estadoMascota, comentario);
+            redirectAttributes.addFlashAttribute("mensaje", "Actualización de bienestar registrada exitosamente");
+        } catch (AccessDeniedException e) {
+            log.warn("Acceso denegado al registrar bienestar para adopción {}: {}", id, e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "No tienes permiso para registrar bienestar en esta adopción");
+        } catch (IllegalArgumentException e) {
+            log.warn("Error al registrar bienestar para adopción {}: {}", id, e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/adopciones/" + id;
     }
 
     @GetMapping("/completadas/lista")

@@ -7,6 +7,7 @@ import com.example.gr01_1bt3_622_26a.service.SolicitudService;
 import com.example.gr01_1bt3_622_26a.service.SolicitanteService;
 import com.example.gr01_1bt3_622_26a.service.MascotaService;
 import com.example.gr01_1bt3_622_26a.service.ContratoService;
+import com.example.gr01_1bt3_622_26a.service.WhatsAppLinkService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class SolicitudController {
     private final SolicitanteService solicitanteService;
     private final MascotaService mascotaService;
     private final ContratoService contratoService;
+    private final WhatsAppLinkService whatsAppLinkService;
 
     @GetMapping("/formulario")
     public String mostrarFormulario(
@@ -203,6 +205,8 @@ public class SolicitudController {
 
         if (solicitud.isPresent()) {
             model.addAttribute("solicitud", solicitud.get());
+            model.addAttribute("whatsappUrl", whatsAppLinkService.construirUrlContactoSolicitud(
+                    id, solicitud.get().getSolicitante().getNombre()));
             return "solicitudes/detalleSolicitud";
         }
 

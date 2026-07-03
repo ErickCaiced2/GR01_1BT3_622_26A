@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -102,31 +103,29 @@ class SolicitudControllerUnitTest {
     // ==================== TEST 1: Aprobar Solicitud ====================
 
     /**
-     * 🔴 TEST 1: Endpoint POST /solicitudes/{id}/aprobar debe retornar 200
+     * TEST 1: Endpoint POST /solicitudes/{id}/aprobar debe retornar 200 con JSON
      *
-     * Objetivo: Verificar que el endpoint aprobar existe y funciona
+     * Objetivo: Verificar que el endpoint aprobar existe y funciona.
      *
-     * RED FLAG:
-     * - Endpoint no existe → 404
-     * - Método no implementado → Error de compilación
-     *
-     * Paso TDD:
-     * 1. ROJO: Ejecutar, ve error 404
-     * 2. VERDE: Crear método en controlador
-     * 3. REFACTOR: Mejorar respuesta
+     * Nota: el controlador expone este endpoint como un pequeño API JSON
+     * (no un redirect) porque las vistas admin (admin/dashboard.jsp y
+     * solicitudes/gestionar-estados.jsp) lo consumen vía fetch() + AJAX para
+     * actualizar la tabla sin recargar la página.
      */
     @Test
-    @DisplayName("T.1.3-TEST1: POST /solicitudes/{id}/aprobar retorna redirect con estado Aprobada")
+    @DisplayName("T.1.3-TEST1: POST /solicitudes/{id}/aprobar retorna 200 con mensaje y persiste estado Aprobada")
     void testAprobarSolicitudViaEndpoint() throws Exception {
-        // Act & Assert: Ejecutar POST y verificar respuesta (el controller hace redirect)
+        // Act & Assert: Ejecutar POST y verificar respuesta JSON
         mockMvc.perform(
                 post("/solicitudes/" + solicitudId + "/aprobar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("observaciones", "Aprobado. Mascota lista para entregar")
         )
-        .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrl("/admin/solicitudes/gestionar"))
-        .andExpect(flash().attribute("mensaje", "Solicitud aprobada exitosamente"));
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.mensaje").value("Solicitud aprobada exitosamente"));
+
+        Solicitud actualizada = solicitudRepository.findById(solicitudId).orElseThrow();
+        org.assertj.core.api.Assertions.assertThat(actualizada.getEstado()).isEqualTo("Aprobada");
     }
 
     // ==================== TEST 2: Rechazar sin Razón ====================
@@ -154,6 +153,23 @@ class SolicitudControllerUnitTest {
                         .contentType(MediaType.APPLICATION_JSON)
         )
         .andExpect(status().isBadRequest());
+    }
+
+    // ==================== TEST 3: Link de WhatsApp en detalle (HU14) ====================
+
+    /**
+     * HU14: GET /solicitudes/{id} debe exponer un atributo "whatsappUrl" listo para
+     * abrir una conversación de WhatsApp con el refugio.
+     */
+    @Test
+    @DisplayName("HU14: GET /solicitudes/{id} agrega el atributo whatsappUrl al modelo")
+    void testDetalleSolicitudExponeWhatsappUrl() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute("solicitanteId", solicitud.getSolicitante().getId());
+
+        mockMvc.perform(get("/solicitudes/" + solicitudId).session(session))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("whatsappUrl"));
     }
 }
 

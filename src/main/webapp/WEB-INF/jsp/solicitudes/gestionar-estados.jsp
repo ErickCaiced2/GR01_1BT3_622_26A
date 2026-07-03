@@ -96,6 +96,15 @@
             <a href="/admin/solicitudes/gestionar" class="active">
                 <i class="fas fa-tasks"></i> Gestionar estados
             </a>
+            <a href="/admin/documentos">
+                <i class="fas fa-file-alt"></i> Documentos
+            </a>
+            <a href="/admin/bienestar">
+                <i class="fas fa-heartbeat"></i> Bienestar
+            </a>
+            <a href="/admin/estadisticas">
+                <i class="fas fa-chart-pie"></i> Estadísticas
+            </a>
             <a href="/mascotas/lista">
                 <i class="fas fa-list"></i> Lista de Mascotas
             </a>
@@ -184,6 +193,13 @@
                                 <td><span class="badge bg-secondary">${solicitud.estado}</span></td>
                                 <td class="text-end">
                                     <div class="action-group justify-content-end">
+                                        <c:if test="${solicitud.estado == 'Aprobada'}">
+                                            <a href="/solicitudes/${solicitud.id}/contrato/descargar"
+                                               class="btn btn-outline-success btn-sm"
+                                               target="_blank">
+                                                <i class="fas fa-file-pdf"></i> Contrato
+                                            </a>
+                                        </c:if>
                                         <c:if test="${solicitud.estado != 'En revisión'}">
                                             <button type="button"
                                                     class="btn btn-primary btn-sm"

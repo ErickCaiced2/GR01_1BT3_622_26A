@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Reporte de Mascotas Registradas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', 'Segoe UI', sans-serif;
+            line-height: 1.5;
+            color: #333;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #1a5490;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1a5490;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .resumen {
+            display: table;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .resumen-item {
+            display: table-cell;
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        .resumen-item .valor {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1a5490;
+        }
+
+        .resumen-item .etiqueta {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        table.mascotas {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table.mascotas th, table.mascotas td {
+            border: 1px solid #ddd;
+            padding: 6px 8px;
+            font-size: 11px;
+            text-align: left;
+        }
+
+        table.mascotas th {
+            background-color: #1a5490;
+            color: white;
+        }
+
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Reporte de Mascotas Registradas</h1>
+        <p>Sistema de Adopciones - Generado el <span th:text="${fechaGeneracion}">01/01/2026</span></p>
+    </div>
+
+    <div class="resumen">
+        <div class="resumen-item">
+            <div class="valor" th:text="${estadisticas.total}">0</div>
+            <div class="etiqueta">Total</div>
+        </div>
+        <div class="resumen-item">
+            <div class="valor" th:text="${estadisticas.disponibles}">0</div>
+            <div class="etiqueta">Disponibles</div>
+        </div>
+        <div class="resumen-item">
+            <div class="valor" th:text="${estadisticas.en_proceso}">0</div>
+            <div class="etiqueta">En Proceso</div>
+        </div>
+        <div class="resumen-item">
+            <div class="valor" th:text="${estadisticas.adoptados}">0</div>
+            <div class="etiqueta">Adoptadas</div>
+        </div>
+    </div>
+
+    <table class="mascotas">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Raza</th>
+                <th>Edad</th>
+                <th>Género</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="mascota, iter : ${mascotas}">
+                <td th:text="${iter.count}">1</td>
+                <td th:text="${mascota.nombre}">Nombre</td>
+                <td th:text="${mascota.tipo}">Tipo</td>
+                <td th:text="${mascota.raza}">Raza</td>
+                <td th:text="${mascota.edad}">0</td>
+                <td th:text="${mascota.genero}">Género</td>
+                <td th:text="${mascota.estado}">Estado</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Sistema de Adopciones &#169; 2026 - Todos los derechos reservados</p>
+    </div>
+</body>
+</html>

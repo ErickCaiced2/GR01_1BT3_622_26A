@@ -82,6 +82,9 @@
                     </p>
                 </div>
                 <div class="col-md-4 text-end">
+                    <a href="/admin/reporte/mascotas/descargar" class="btn btn-success">
+                        <i class="fas fa-file-pdf"></i> Descargar PDF
+                    </a>
                     <button onclick="window.print()" class="btn btn-primary print-btn">
                         <i class="fas fa-print"></i> Imprimir
                     </button>
@@ -155,7 +158,12 @@
                             <td>${mascota.edad} años</td>
                             <td>${mascota.genero}</td>
                             <td>${mascota.color != null ? mascota.color : 'N/A'}</td>
-                            <td>${mascota.pesoKg != null ? mascota.pesoKg + ' kg' : 'N/A'}</td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${mascota.pesoKg != null}">${mascota.pesoKg} kg</c:when>
+                                    <c:otherwise>N/A</c:otherwise>
+                                </c:choose>
+                            </td>
                             <td>
                                 <c:choose>
                                     <c:when test="${mascota.estado == 'Disponible'}">

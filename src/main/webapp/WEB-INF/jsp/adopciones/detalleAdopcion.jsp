@@ -26,6 +26,19 @@
     <div class="container my-5">
         <h2>Adopción #${adopcion.id}</h2>
 
+        <c:if test="${not empty mensaje}">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </c:if>
+        <c:if test="${not empty error}">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                ${error}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </c:if>
+
         <div class="info-section">
             <h5>Estado</h5>
             <span class="badge bg-info">${adopcion.estado}</span>
@@ -34,7 +47,7 @@
         <div class="info-section">
             <h5>Información de Adopción</h5>
             <p><strong>Fecha:</strong> <fmt:formatDate value="${adopcion.fechaAdopcion}" pattern="dd/MM/yyyy"/></p>
-            <p><strong>Usuario:</strong> ${adopcion.usuario.nombre} ${adopcion.usuario.apellido}</p>
+            <p><strong>Adoptante:</strong> ${adopcion.solicitante.nombre} ${adopcion.solicitante.apellido}</p>
             <p><strong>Mascota:</strong> ${adopcion.mascota.nombre}</p>
         </div>
 
@@ -62,6 +75,52 @@
             <div class="info-section">
                 <h5>Observaciones</h5>
                 <p>${adopcion.observaciones}</p>
+            </div>
+        </c:if>
+
+        <!-- HU15: Registro de actualización de bienestar -->
+        <div class="info-section">
+            <h5><i class="fas fa-heartbeat"></i> Registrar actualización de bienestar</h5>
+            <form method="post" action="/adopciones/${adopcion.id}/bienestar">
+                <div class="mb-3">
+                    <label for="estadoMascota" class="form-label">¿Cómo está ${adopcion.mascota.nombre}?</label>
+                    <select class="form-select" id="estadoMascota" name="estadoMascota" required>
+                        <option value="Feliz">😊 Feliz</option>
+                        <option value="Adaptándose">🤔 Adaptándose</option>
+                        <option value="Con problemas">😟 Con problemas</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="comentario" class="form-label">Comentario</label>
+                    <textarea class="form-control" id="comentario" name="comentario" rows="3"
+                              placeholder="Cuéntanos cómo va la adaptación, salud, comportamiento..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Registrar actualización
+                </button>
+            </form>
+        </div>
+
+        <!-- HU15: Historial de actualizaciones de bienestar -->
+        <c:if test="${not empty actualizacionesBienestar}">
+            <div class="info-section">
+                <h5><i class="fas fa-history"></i> Historial de bienestar</h5>
+                <c:forEach var="actualizacion" items="${actualizacionesBienestar}">
+                    <div class="border-start border-3 border-info ps-3 mb-3">
+                        <p class="mb-1">
+                            <span class="badge bg-info">${actualizacion.estadoMascota}</span>
+                            <small class="text-muted">${actualizacion.fechaRegistro}</small>
+                        </p>
+                        <c:if test="${not empty actualizacion.comentario}">
+                            <p class="mb-1">${actualizacion.comentario}</p>
+                        </c:if>
+                        <c:if test="${not empty actualizacion.respuestaAdmin}">
+                            <div class="alert alert-secondary mt-2 mb-0">
+                                <strong>Respuesta del refugio:</strong> ${actualizacion.respuestaAdmin}
+                            </div>
+                        </c:if>
+                    </div>
+                </c:forEach>
             </div>
         </c:if>
 

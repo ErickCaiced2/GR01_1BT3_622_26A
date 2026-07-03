@@ -112,11 +112,30 @@ public class ContratoService {
                 });
 
         try {
-            // Usar directamente HTML manual (Thymeleaf tiene problemas en transacciones)
-            log.debug("Construyendo HTML del contrato manualmente sin Thymeleaf");
-            String htmlContent = construirHTMLContratoManual(solicitud);
+            // Mapear entidades a DTO usando el mapper
+            ContratoDTO contratoDTO = adopcionContratoMapper.toContratoDTODesdeSolicitud(solicitud);
 
-            log.debug("HTML construido. Tamaño: {} bytes", htmlContent.length());
+            // Preparar contexto de Thymeleaf
+            Context context = new Context();
+            context.setVariable("numeroContrato", contratoDTO.getNumeroContrato());
+            context.setVariable("fechaGeneracion", formatearFecha(contratoDTO.getFechaGeneracion()));
+            context.setVariable("nombreRefugio", contratoDTO.getNombreRefugio());
+            context.setVariable("representanteLegal", contratoDTO.getRepresentanteLegal());
+            context.setVariable("nombreAdoptante", contratoDTO.getNombreAdoptante());
+            context.setVariable("cedulaAdoptante", contratoDTO.getCedulaAdoptante());
+            context.setVariable("emailAdoptante", contratoDTO.getEmailAdoptante());
+            context.setVariable("telefonoAdoptante", contratoDTO.getTelefonoAdoptante());
+            context.setVariable("nombreMascota", contratoDTO.getNombreMascota());
+            context.setVariable("tipoMascota", contratoDTO.getTipoMascota());
+            context.setVariable("razaMascota", contratoDTO.getRazaMascota());
+            context.setVariable("edadMascota", contratoDTO.getEdadMascota());
+            context.setVariable("descripcionMascota", contratoDTO.getDescripcionMascota());
+            context.setVariable("colorMascota", contratoDTO.getColorMascota());
+            context.setVariable("vacunasMascota", contratoDTO.getVacunasMascota());
+
+            // Renderizar HTML desde plantilla
+            log.debug("Procesando plantilla HTML para contrato");
+            String htmlContent = templateEngine.process("contratos/contrato-adopcion-template", context);
 
             // Convertir HTML a PDF usando ITextRenderer
             log.debug("Convirtiendo HTML a PDF mediante Flying Saucer");
@@ -130,99 +149,6 @@ public class ContratoService {
             log.error("Error al generar contrato PDF para solicitud ID: {}", solicitudId, e);
             throw new RuntimeException("Error al generar contrato PDF: " + e.getMessage(), e);
         }
-    }
-
-
-    /**
-     * Construye HTML del contrato manualmente sin usar Thymeleaf
-     */
-    private String construirHTMLContratoManual(Solicitud solicitud) {
-        StringBuilder html = new StringBuilder();
-        html.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-        html.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" ");
-        html.append("\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">");
-        html.append("<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"es\">");
-        html.append("<head>");
-        html.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />");
-        html.append("<title>CONTRATO DE ADOPCIÓN</title>");
-        html.append("<style type=\"text/css\">");
-        html.append("body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }");
-        html.append("h1 { text-align: center; color: #333; margin-bottom: 10px; }");
-        html.append("h2 { color: #555; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid #ddd; }");
-        html.append("table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }");
-        html.append("td { padding: 8px; border: 1px solid #ddd; }");
-        html.append(".label { font-weight: bold; background-color: #f0f0f0; width: 30%; }");
-        html.append("p { margin: 5px 0; }");
-        html.append("ul { margin-left: 20px; }");
-        html.append(".footer { margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px; text-align: center; }");
-        html.append("</style>");
-        html.append("</head>");
-        html.append("<body>");
-
-        html.append("<h1>CONTRATO DE ADOPCIÓN DE MASCOTA</h1>");
-        html.append("<p><strong>Número de Contrato:</strong> CONTRATO-SOL-").append(solicitud.getId())
-            .append("-").append(System.currentTimeMillis()).append("</p>");
-        html.append("<p><strong>Fecha:</strong> ").append(formatearFecha(LocalDate.now())).append("</p>");
-
-        html.append("<h2>DATOS DEL ADOPTANTE</h2>");
-        html.append("<table>");
-        html.append("<tr><td class=\"label\">Nombre Completo:</td><td>")
-            .append(solicitud.getSolicitante().getNombre()).append(" ")
-            .append(solicitud.getSolicitante().getApellido()).append("</td></tr>");
-        html.append("<tr><td class=\"label\">Cédula/Documento:</td><td>")
-            .append(solicitud.getSolicitante().getDocumentoIdentidad()).append("</td></tr>");
-        html.append("<tr><td class=\"label\">Email:</td><td>")
-            .append(solicitud.getSolicitante().getEmail()).append("</td></tr>");
-        html.append("<tr><td class=\"label\">Teléfono:</td><td>")
-            .append(solicitud.getSolicitante().getTelefono()).append("</td></tr>");
-        html.append("<tr><td class=\"label\">Ciudad:</td><td>")
-            .append(solicitud.getSolicitante().getCiudad()).append("</td></tr>");
-        html.append("<tr><td class=\"label\">Dirección:</td><td>")
-            .append(solicitud.getSolicitante().getDireccion()).append("</td></tr>");
-        html.append("</table>");
-
-        html.append("<h2>DATOS DE LA MASCOTA</h2>");
-        html.append("<table>");
-        html.append("<tr><td class=\"label\">Nombre:</td><td>")
-            .append(solicitud.getMascota().getNombre()).append("</td></tr>");
-        html.append("<tr><td class=\"label\">Tipo:</td><td>")
-            .append(solicitud.getMascota().getTipo()).append("</td></tr>");
-        html.append("<tr><td class=\"label\">Raza:</td><td>")
-            .append(solicitud.getMascota().getRaza()).append("</td></tr>");
-        html.append("<tr><td class=\"label\">Edad:</td><td>")
-            .append(solicitud.getMascota().getEdad()).append(" años</td></tr>");
-        html.append("<tr><td class=\"label\">Color:</td><td>")
-            .append(solicitud.getMascota().getColor()).append("</td></tr>");
-        html.append("<tr><td class=\"label\">Descripción:</td><td>")
-            .append(solicitud.getMascota().getDescripcion()).append("</td></tr>");
-        html.append("</table>");
-
-        html.append("<h2>TÉRMINOS Y CONDICIONES</h2>");
-        html.append("<p>El adoptante se compromete a asumir la responsabilidad total del animal adoptado y se obliga a:</p>");
-        html.append("<ul>");
-        html.append("<li>Proporcionar alimento nutritivo, agua fresca y cuidados veterinarios adecuados.</li>");
-        html.append("<li>Mantener un entorno seguro, limpio y cómodo para la mascota.</li>");
-        html.append("<li>No abandonar, vender o prestar el animal a terceros sin consentimiento previo del refugio.</li>");
-        html.append("<li>No maltratar, abusar o descuidar al animal.</li>");
-        html.append("<li>Mantener actualizado el registro de vacunaciones y desparasitaciones.</li>");
-        html.append("<li>Informar al refugio de cualquier cambio en la situación del animal.</li>");
-        html.append("</ul>");
-
-        html.append("<p><strong>El incumplimiento de estos términos puede resultar en la retirada del animal.</strong></p>");
-
-        html.append("<div class=\"footer\">");
-        html.append("<p><strong>Fecha de firma:</strong> ").append(formatearFecha(LocalDate.now())).append("</p>");
-        html.append("<br />");
-        html.append("<p>_________________________________</p>");
-        html.append("<p>Firma del Adoptante</p>");
-        html.append("<br /><br />");
-        html.append("<p>_________________________________</p>");
-        html.append("<p>Firma del Refugio</p>");
-        html.append("</div>");
-
-        html.append("</body></html>");
-
-        return html.toString();
     }
 
     /**
@@ -254,53 +180,6 @@ public class ContratoService {
             log.error("Error en conversión HTML a PDF", e);
             throw e;
         }
-    }
-
-    /**
-     * Mapea una entidad Adopcion a ContratoDTO
-     * Extrae información de la adopción, solicitante y mascota
-     *
-     * @param adopcion Entidad de adopción con sus relaciones cargadas
-     * @return DTO con datos mappeados para la plantilla de contrato
-     * @deprecated Usar {@link AdopcionContratoMapper#toContratoDTO(Adopcion)} en su lugar
-     */
-    @Deprecated(since = "1.0", forRemoval = true)
-    private ContratoDTO mapearAdopcionAContrato(Adopcion adopcion) {
-        return adopcionContratoMapper.toContratoDTO(adopcion);
-    }
-
-    /**
-     * Genera un número de contrato único basado en el ID de adopción
-     *
-     * @param adopcionId ID de la adopción
-     * @return Número de contrato formateado (ej: CONTRATO-1-1715429200000)
-     * @deprecated Usar {@link AdopcionContratoMapper} en su lugar
-     */
-    @Deprecated(since = "1.0", forRemoval = true)
-    private String generarNumeroContrato(Long adopcionId) {
-        // Formato: CONTRATO-{adopcionId}-{timestamp}
-        String numeroContrato = String.format(
-                "CONTRATO-%d-%d",
-                adopcionId,
-                System.currentTimeMillis()
-        );
-        log.debug("Número de contrato generado: {}", numeroContrato);
-        return numeroContrato;
-    }
-
-    /**
-     * Genera un resumen del estado de vacunación de la mascota
-     *
-     * @param adopcion Entidad de adopción
-     * @return String con resumen de vacunas ("Aplicadas" o "Pendientes")
-     * @deprecated Usar {@link AdopcionContratoMapper} en su lugar
-     */
-    @Deprecated(since = "1.0", forRemoval = true)
-    private String generarResumenVacunas(Adopcion adopcion) {
-        if (adopcion.getVacunasAplicadas() != null && adopcion.getVacunasAplicadas()) {
-            return "Vacunas aplicadas y registradas";
-        }
-        return "Vacunación pendiente - Se recomienda aplicar dentro de 7 días";
     }
 
     /**

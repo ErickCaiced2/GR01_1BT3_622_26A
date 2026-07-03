@@ -169,6 +169,19 @@ CREATE TABLE IF NOT EXISTS documentos_solicitante (
     INDEX idx_solicitante (solicitante_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS actualizaciones_bienestar (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    adopcion_id BIGINT NOT NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estado_mascota VARCHAR(50) NOT NULL,
+    comentario VARCHAR(1000),
+    respuesta_admin VARCHAR(1000),
+    fecha_respuesta_admin TIMESTAMP NULL,
+    FOREIGN KEY (adopcion_id) REFERENCES adopciones(id) ON DELETE CASCADE,
+    INDEX idx_adopcion (adopcion_id),
+    INDEX idx_fecha_registro (fecha_registro)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ============================================
 -- FINAL: Base de Datos Lista
 -- ============================================

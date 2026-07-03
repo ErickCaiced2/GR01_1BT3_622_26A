@@ -17,12 +17,15 @@ public class SolicitudTest {
     }
 
     /**
-     * 🔴 RED FLAG - Test que falla
-     * @PrePersist debe asignar estado "En revisión" cuando la solicitud es nula
+     * @PrePersist debe asignar estado "Pendiente" cuando la solicitud es nueva.
+     *
+     * Nota: el estado inicial fue movido de "En revisión" a "Pendiente" (ver
+     * FLUJO_SOLICITUD_ADOPCION.md, sección "Estados Iniciales"); el admin mueve
+     * la solicitud a "En revisión" explícitamente vía POST /{id}/enviar-a-revision.
      */
     @Test
-    @DisplayName("🔴 RED - @PrePersist asigna estado 'En revisión' automáticamente")
-    void test_prePersist_asignaEstadoEnRevision() {
+    @DisplayName("@PrePersist asigna estado 'Pendiente' automáticamente")
+    void test_prePersist_asignaEstadoPendiente() {
         // ARRANGE
         solicitud.setEstado(null);
 
@@ -30,7 +33,7 @@ public class SolicitudTest {
         solicitud.prePersist();
 
         // ASSERT
-        assertThat(solicitud.getEstado()).isEqualTo("En revisión");
+        assertThat(solicitud.getEstado()).isEqualTo("Pendiente");
     }
 }
 
