@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -13,6 +14,7 @@
             --primary-color: #FF6B6B;
             --secondary-color: #4ECDC4;
             --dark-color: #2C3E50;
+            --panel-bg: #f8f9fa;
         }
 
         body {
@@ -21,6 +23,31 @@
 
         .navbar {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar {
+            background-color: var(--dark-color);
+            min-height: calc(100vh - 56px);
+            padding-top: 20px;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 14px 20px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-left-color: var(--primary-color);
+        }
+
+        .content {
+            padding: 28px 20px 40px;
         }
 
         .report-header {
@@ -52,11 +79,20 @@
         }
 
         @media print {
-            .btn, .navbar, .print-btn {
+            .btn, .navbar, .sidebar, .print-btn {
                 display: none;
+            }
+            .content {
+                padding: 0;
             }
             .table-container {
                 box-shadow: none;
+            }
+        }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                min-height: auto;
             }
         }
     </style>
@@ -64,14 +100,23 @@
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="/">
                 <i class="fas fa-paw"></i> Sistema de Adopciones
             </a>
+            <span class="navbar-text text-white">
+                <i class="fas fa-user-shield"></i> Panel de Administracion
+            </span>
         </div>
     </nav>
 
-    <div class="container my-5">
+    <div class="container-fluid">
+    <div class="row">
+        <jsp:include page="/WEB-INF/jsp/admin/_sidebar.jsp">
+            <jsp:param name="activo" value="reportes"/>
+        </jsp:include>
+
+        <main class="col-lg-10 content">
         <!-- Report Header -->
         <div class="report-header">
             <div class="row align-items-center">
@@ -190,6 +235,8 @@
         <div class="text-center mt-5 text-muted">
             <p>Sistema de Adopciones © 2026 - Todos los derechos reservados</p>
         </div>
+        </main>
+    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

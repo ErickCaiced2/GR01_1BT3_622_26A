@@ -16,8 +16,26 @@
             --dark-color: #2C3E50;
         }
         body { background-color: #f8f9fa; }
-        .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); }
-        .page-header { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white; padding: 30px 0; margin-bottom: 30px; }
+        .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .sidebar {
+            background-color: var(--dark-color);
+            min-height: calc(100vh - 56px);
+            padding-top: 20px;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 14px 20px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background-color: rgba(255,255,255,0.08);
+            border-left-color: var(--primary-color);
+        }
+        .content { padding: 28px 20px 40px; }
+        .page-header { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 30px; }
         .card { border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.3s; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
         .card-img-top { height: 250px; object-fit: cover; background-color: #e0e0e0; }
@@ -25,33 +43,31 @@
         .badge-adoptado { background-color: #007bff; }
         .badge-proceso { background-color: #ffc107; color: #000; }
         .search-box { background: white; padding: 20px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        @media (max-width: 991px) { .sidebar { min-height: auto; } }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="/"><i class="fas fa-paw"></i> Sistema de Adopciones</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="/mascotas/lista">Mascotas</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/mascotas/registrar">Registrar Mascota</a></li>
-                </ul>
-            </div>
+            <span class="navbar-text text-white">
+                <i class="fas fa-user-shield"></i> Panel de Administracion
+            </span>
         </div>
     </nav>
 
+    <div class="container-fluid">
+    <div class="row">
+        <jsp:include page="/WEB-INF/jsp/admin/_sidebar.jsp">
+            <jsp:param name="activo" value="mascotas"/>
+        </jsp:include>
+
+        <main class="col-lg-10 content">
     <div class="page-header">
-        <div class="container">
             <h1><i class="fas fa-list"></i> Consultar Mascotas (UC02)</h1>
-            <p>Total registradas: <strong>${totalMascotas}</strong></p>
-        </div>
+            <p class="mb-0">Total registradas: <strong>${totalMascotas}</strong></p>
     </div>
 
-    <div class="container">
         <!-- Búsqueda -->
         <div class="search-box">
             <form action="/mascotas/buscar" method="GET" class="d-flex gap-2">
@@ -107,6 +123,8 @@
                 <p>Haz clic en el botón "Nueva Mascota" para comenzar a registrar.</p>
             </div>
         </c:if>
+        </main>
+    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

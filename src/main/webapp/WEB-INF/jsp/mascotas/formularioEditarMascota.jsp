@@ -9,19 +9,47 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary-color: #FF6B6B; --secondary-color: #4ECDC4; }
-        .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); }
+        :root { --primary-color: #FF6B6B; --secondary-color: #4ECDC4; --dark-color: #2C3E50; }
+        .navbar { background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .sidebar {
+            background-color: var(--dark-color);
+            min-height: calc(100vh - 56px);
+            padding-top: 20px;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 14px 20px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background-color: rgba(255,255,255,0.08);
+            border-left-color: var(--primary-color);
+        }
+        .content { padding: 28px 20px 40px; }
         .form-container { background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 30px; }
+        @media (max-width: 991px) { .sidebar { min-height: auto; } }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="/"><i class="fas fa-paw"></i> Sistema de Adopciones</a>
+            <span class="navbar-text text-white">
+                <i class="fas fa-user-shield"></i> Panel de Administracion
+            </span>
         </div>
     </nav>
 
-    <div class="container my-5">
+    <div class="container-fluid">
+    <div class="row">
+        <jsp:include page="/WEB-INF/jsp/admin/_sidebar.jsp">
+            <jsp:param name="activo" value="mascotas"/>
+        </jsp:include>
+
+        <main class="col-lg-10 content">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="form-container">
@@ -118,6 +146,8 @@
                 </div>
             </div>
         </div>
+        </main>
+    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

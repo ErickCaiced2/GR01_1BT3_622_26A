@@ -79,18 +79,9 @@
 
 <div class="container-fluid">
     <div class="row">
-        <aside class="col-lg-2 sidebar">
-            <a href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-            <a href="/admin/solicitudes/gestionar"><i class="fas fa-tasks"></i> Gestionar estados</a>
-            <a href="/admin/documentos" class="active"><i class="fas fa-file-alt"></i> Documentos</a>
-            <a href="/admin/bienestar"><i class="fas fa-heartbeat"></i> Bienestar</a>
-            <a href="/admin/estadisticas"><i class="fas fa-chart-pie"></i> Estadísticas</a>
-            <a href="/mascotas/lista"><i class="fas fa-list"></i> Lista de Mascotas</a>
-            <a href="/mascotas/registrar"><i class="fas fa-plus-circle"></i> Registrar Mascota</a>
-            <a href="/admin/reporte/mascotas"><i class="fas fa-chart-bar"></i> Reportes</a>
-            <hr style="border-color: rgba(255,255,255,0.2);">
-            <a href="/acceso"><i class="fas fa-home"></i> Ir al sitio</a>
-        </aside>
+        <jsp:include page="/WEB-INF/jsp/admin/_sidebar.jsp">
+            <jsp:param name="activo" value="documentos"/>
+        </jsp:include>
 
         <main class="col-lg-10 content">
             <h1 class="page-title"><i class="fas fa-file-alt"></i> Revisar Documentos</h1>

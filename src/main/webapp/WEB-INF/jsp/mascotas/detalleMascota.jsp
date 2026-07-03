@@ -54,6 +54,7 @@
                     <div>
                         <!-- Solo administradores pueden editar y eliminar mascotas -->
                         <c:if test="${sessionScope.rol == 'ADMIN'}">
+                            <a href="/mascotas/lista" class="btn btn-outline-secondary"><i class="fas fa-tachometer-alt"></i> Panel Admin</a>
                             <a href="/mascotas/editar/${mascota.id}" class="btn btn-warning"><i class="fas fa-edit"></i> Editar</a>
                             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarModal">
                                 <i class="fas fa-trash"></i> Eliminar
