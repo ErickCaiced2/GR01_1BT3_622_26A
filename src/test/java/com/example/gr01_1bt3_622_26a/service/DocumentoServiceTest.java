@@ -236,6 +236,46 @@ class DocumentoServiceTest {
         );
     }
 
+    /**
+     * HU10 — Registro de decisión sobre documentos revisados.
+     *
+     * Verifica:
+     *  ✅ Documento Pendiente puede pasar a Verificado o Rechazado
+     *  ✅ Documento ya revisado no puede volver a decidirse (bloqueo)
+     *  ✅ Documento inexistente lanza IllegalArgumentException
+     */
+    @Test
+    @DisplayName("TEST 3: verificarDocumento aplica la decisión y bloquea revisiones repetidas")
+    void testVerificarDocumento_AplicaDecisionYBloqueaRepetidas() {
 
+        DocumentoSolicitante pendiente = DocumentoSolicitante.builder()
+                .id(1L)
+                .estadoVerificacion("Pendiente")
+                .build();
+
+        when(documentoRepository.findById(1L)).thenReturn(Optional.of(pendiente));
+
+        documentoService.verificarDocumento(1L, "Verificado", null);
+
+        assertEquals("Verificado", pendiente.getEstadoVerificacion(),
+                "El estado debe actualizarse cuando el documento está Pendiente");
+
+        DocumentoSolicitante yaRevisado = DocumentoSolicitante.builder()
+                .id(2L)
+                .estadoVerificacion("Verificado")
+                .build();
+
+        when(documentoRepository.findById(2L)).thenReturn(Optional.of(yaRevisado));
+
+        assertThrows(IllegalStateException.class,
+                () -> documentoService.verificarDocumento(2L, "Rechazado", null),
+                "No debe permitir sobrescribir una decisión ya registrada");
+
+        when(documentoRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class,
+                () -> documentoService.verificarDocumento(999L, "Verificado", null),
+                "Debe lanzar excepción si el documento no existe");
+    }
 
 }

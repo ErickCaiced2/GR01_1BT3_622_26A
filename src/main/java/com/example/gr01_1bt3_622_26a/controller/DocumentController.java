@@ -222,11 +222,15 @@ public class DocumentController {
                     estado
             );
 
+            String mensaje = "Rechazado".equals(estado)
+                    ? "Documento rechazado correctamente"
+                    : "Documento verificado correctamente";
+
             return ResponseEntity.ok(
 
                     Map.of(
                             "mensaje",
-                            "Documento verificado"
+                            mensaje
                     )
             );
 
@@ -236,6 +240,14 @@ public class DocumentController {
 
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+
+        } catch (IllegalStateException e) {
+
+            log.warn("Decisión duplicada sobre documento {}: {}", id, e.getMessage());
+
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
                     .body(Map.of("error", e.getMessage()));
         }
     }

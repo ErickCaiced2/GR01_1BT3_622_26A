@@ -339,34 +339,9 @@
 
                     </h4>
 
-                    <div id="documentList">
+                    <div id="documentList" data-solicitante-id="${solicitanteId}">
 
-                        <!-- Ejemplo -->
-                        <div class="document-card">
-
-                            <div>
-
-                                <strong>
-                                    cedula.pdf
-                                </strong>
-
-                                <br>
-
-                                <small class="text-muted">
-
-                                    Documento de identidad
-
-                                </small>
-
-                            </div>
-
-                            <span class="verification-badge pending">
-
-                                Pendiente
-
-                            </span>
-
-                        </div>
+                        <p class="text-muted mb-0">Cargando documentos...</p>
 
                     </div>
 

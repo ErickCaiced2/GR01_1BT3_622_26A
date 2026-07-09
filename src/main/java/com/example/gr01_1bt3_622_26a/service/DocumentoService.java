@@ -193,6 +193,11 @@ public class DocumentoService {
         DocumentoSolicitante documento = documentoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado: " + id));
 
+        if (!"Pendiente".equals(documento.getEstadoVerificacion())) {
+            throw new IllegalStateException("El documento #" + id
+                    + " ya fue revisado (estado actual: " + documento.getEstadoVerificacion() + ")");
+        }
+
         documento.setEstadoVerificacion(estado);
         documentoRepository.save(documento);
     }

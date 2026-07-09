@@ -147,20 +147,27 @@
                                                 </span>
                                             </td>
                                             <td class="text-end">
-                                                <div class="d-flex gap-2 justify-content-end">
-                                                    <button
-                                                        class="btn btn-success btn-sm"
-                                                        onclick="verificarDoc(${doc.id}, 'Verificado')"
-                                                    >
-                                                        <i class="fas fa-check"></i> Verificar
-                                                    </button>
-                                                    <button
-                                                        class="btn btn-danger btn-sm"
-                                                        onclick="verificarDoc(${doc.id}, 'Rechazado')"
-                                                    >
-                                                        <i class="fas fa-times"></i> Rechazar
-                                                    </button>
-                                                </div>
+                                                <c:choose>
+                                                    <c:when test="${doc.estadoVerificacion == 'Pendiente'}">
+                                                        <div class="d-flex gap-2 justify-content-end">
+                                                            <button
+                                                                class="btn btn-success btn-sm"
+                                                                onclick="verificarDoc(${doc.id}, 'Verificado')"
+                                                            >
+                                                                <i class="fas fa-check"></i> Verificar
+                                                            </button>
+                                                            <button
+                                                                class="btn btn-danger btn-sm"
+                                                                onclick="verificarDoc(${doc.id}, 'Rechazado')"
+                                                            >
+                                                                <i class="fas fa-times"></i> Rechazar
+                                                            </button>
+                                                        </div>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <small class="text-muted">Decisión ya registrada</small>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </td>
                                         </tr>
                                     </c:forEach>
@@ -208,7 +215,7 @@
             if (response.ok) {
                 toastEl.classList.remove('text-bg-danger');
                 toastEl.classList.add('text-bg-success');
-                toastBody.textContent = data.mensaje + ' — estado: ' + estado;
+                toastBody.textContent = data.mensaje;
                 toast.show();
                 setTimeout(() => window.location.reload(), 900);
             } else {

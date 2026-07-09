@@ -22,6 +22,8 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 /**
@@ -141,5 +143,57 @@ class DocumentControllerTest {
                 "Archivo demasiado grande",
                 body.get("error")
         );
+    }
+
+    /**
+     * HU10 — Endpoint de verificación diferencia el mensaje de
+     * confirmación entre Verificado y Rechazado, y traduce las
+     * excepciones del servicio a los códigos HTTP correctos.
+     */
+    @Test
+    @DisplayName("TEST 2: verificarDocumento diferencia mensajes y traduce errores a HTTP")
+    void testVerificarDocumento_MensajesYCodigosHttp() {
+
+        // ── Verificado ───────────────────────────────────────
+        doNothing().when(documentoService).verificarDocumento(1L, "Verificado", null);
+
+        ResponseEntity<?> responseVerificado =
+                documentController.verificarDocumento(1L, "Verificado", null);
+
+        assertEquals(HttpStatus.OK, responseVerificado.getStatusCode());
+        assertEquals(
+                "Documento verificado correctamente",
+                ((Map<?, ?>) responseVerificado.getBody()).get("mensaje")
+        );
+
+        // ── Rechazado ────────────────────────────────────────
+        doNothing().when(documentoService).verificarDocumento(2L, "Rechazado", null);
+
+        ResponseEntity<?> responseRechazado =
+                documentController.verificarDocumento(2L, "Rechazado", null);
+
+        assertEquals(HttpStatus.OK, responseRechazado.getStatusCode());
+        assertEquals(
+                "Documento rechazado correctamente",
+                ((Map<?, ?>) responseRechazado.getBody()).get("mensaje")
+        );
+
+        // ── Documento inexistente → 404 ───────────────────────
+        doThrow(new IllegalArgumentException("Documento no encontrado: 999"))
+                .when(documentoService).verificarDocumento(999L, "Verificado", null);
+
+        ResponseEntity<?> responseNotFound =
+                documentController.verificarDocumento(999L, "Verificado", null);
+
+        assertEquals(HttpStatus.NOT_FOUND, responseNotFound.getStatusCode());
+
+        // ── Decisión ya registrada → 409 ──────────────────────
+        doThrow(new IllegalStateException("El documento #3 ya fue revisado (estado actual: Verificado)"))
+                .when(documentoService).verificarDocumento(3L, "Rechazado", null);
+
+        ResponseEntity<?> responseConflict =
+                documentController.verificarDocumento(3L, "Rechazado", null);
+
+        assertEquals(HttpStatus.CONFLICT, responseConflict.getStatusCode());
     }
 }

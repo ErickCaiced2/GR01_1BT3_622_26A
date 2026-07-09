@@ -19,7 +19,7 @@ class DocumentUploadManager {
     /**
      * Constructor principal
      */
-    constructor(dropZoneSelector, fileInputSelector) {
+    constructor(dropZoneSelector, fileInputSelector, solicitanteId) {
 
         this.dropZone =
             document.querySelector(dropZoneSelector);
@@ -33,7 +33,52 @@ class DocumentUploadManager {
         this.documentList =
             document.getElementById('documentList');
 
+        this.solicitanteId = solicitanteId;
+
         this.initializing();
+        this.cargarDocumentosExistentes();
+    }
+
+    /**
+     * Carga la lista real de documentos ya subidos
+     * por el solicitante actual (reemplaza cualquier
+     * contenido de ejemplo/estático de la vista).
+     */
+    async cargarDocumentosExistentes() {
+
+        this.documentList.innerHTML = '';
+
+        try {
+
+            const response = await fetch(
+                '/api/documentos/' + this.solicitanteId
+            );
+
+            if (!response.ok) {
+                return;
+            }
+
+            const documentos = await response.json();
+
+            if (!documentos.length) {
+
+                this.documentList.innerHTML =
+                    '<p class="text-muted mb-0">Aún no has cargado documentos.</p>';
+
+                return;
+            }
+
+            documentos.forEach(doc => {
+                this.actualizarLista(
+                    doc.nombreArchivo,
+                    doc.estadoVerificacion
+                );
+            });
+
+        } catch (err) {
+
+            console.error('No se pudo cargar la lista de documentos', err);
+        }
     }
 
     /**
@@ -136,6 +181,12 @@ class DocumentUploadManager {
 
             await this.uploadFile(file);
         }
+
+        // ── Reinicia el input para que el evento 'change' ──
+        // ── vuelva a dispararse si se reselecciona el mismo ──
+        // ── archivo (el navegador no dispara 'change' si el ──
+        // ── valor del input no cambia) ──────────────────────
+        this.fileInput.value = '';
     }
 
     /**
@@ -172,11 +223,9 @@ class DocumentUploadManager {
             this.getTipoDocumento(file.name)
         );
 
-        // ── ID demo solicitante ────────────────────
-
         formData.append(
             'solicitanteId',
-            1
+            this.solicitanteId
         );
 
         try {
@@ -200,15 +249,15 @@ class DocumentUploadManager {
 
             this.actualizarProgreso(75);
 
+            const data =
+                await response.json();
+
             if (!response.ok) {
 
                 throw new Error(
-                    'Upload failed'
+                    data.error || 'No se pudo subir el documento'
                 );
             }
-
-            const data =
-                await response.json();
 
             // ── Completa progreso ──────────────────
 
@@ -356,6 +405,22 @@ class DocumentUploadManager {
     }
 
     /**
+     * Mapea el estado de verificación a la clase CSS del badge
+     */
+    claseBadgeEstado(estado) {
+
+        if (estado === 'Verificado') {
+            return 'verified';
+        }
+
+        if (estado === 'Rechazado') {
+            return 'rejected';
+        }
+
+        return 'pending';
+    }
+
+    /**
      * Actualiza lista visual
      */
     actualizarLista(nombreArchivo, estado) {
@@ -382,10 +447,7 @@ class DocumentUploadManager {
 
             </div>
 
-            <span class="
-                verification-badge
-                pending
-            ">
+            <span class="verification-badge ${this.claseBadgeEstado(estado)}">
 
                 ${estado}
 
@@ -405,9 +467,14 @@ document.addEventListener(
 
     () => {
 
+        const solicitanteId =
+            document.getElementById('documentList')
+                .dataset.solicitanteId;
+
         new DocumentUploadManager(
             '#dropZone',
-            '#fileInput'
+            '#fileInput',
+            solicitanteId
         );
     }
 );
